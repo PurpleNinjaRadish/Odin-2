@@ -1,0 +1,5 @@
+data_export
+db/odin_demo.db
+db/*.tmp
+*.zip
+__pycache__

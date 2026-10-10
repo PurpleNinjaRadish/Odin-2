@@ -1,0 +1,1516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Odin demo · Project Cerberus</title>
+<meta name="description" content="Demo of Odin, the Secure Student Analyzer for Project Cerberus. Every student on this page is invented.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23E3E8F8'/%3E%3Crect x='6' y='8' width='20' height='4' rx='2' fill='%232E4BB5' opacity='.45'/%3E%3Crect x='6' y='14' width='15' height='4' rx='2' fill='%232E4BB5' opacity='.7'/%3E%3Crect x='6' y='20' width='10' height='4' rx='2' fill='%232E4BB5'/%3E%3C/svg%3E">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&display=swap">
+</head>
+<body>
+<style>
+/* Layout: one working column; a tab bar under a slim header; the student view splits ladder | evidence on wide screens. */
+:root {
+  --bg: #F2F4F6; --surface: #FFFFFF; --sunk: #E9EDF1; --ink: #17212B; --muted: #5A6673; --line: #D8DEE4;
+  --accent: #2E4BB5; --accent-ink: #FFFFFF; --accent-soft: #E3E8F8;
+  --support: #B9402A; --support-bg: #F9E1DB; --approaching: #8F6410; --approaching-bg: #F8ECCF; --tier2: #6B5100; --tier2-bg: #FBE89A;
+  --ongrade: #1C6E66; --ongrade-bg: #D9EEEA; --above: #0F5A52; --above-bg: #B5DDD6; --none: #6B7682; --none-bg: #E6EAEE;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E141A; --surface: #161E26; --sunk: #1D2730; --ink: #E4E9EE; --muted: #9AA6B2; --line: #2A3540;
+  --accent: #8EA4F2; --accent-ink: #0E141A; --accent-soft: #1F2A4A;
+  --support: #F0907A; --support-bg: #3A1F19; --approaching: #E2B65E; --approaching-bg: #362C15; --tier2: #F3D35C; --tier2-bg: #3D3410;
+  --ongrade: #63C7B9; --ongrade-bg: #13312D; --above: #9BE3D8; --above-bg: #1C4A43; --none: #8E99A5; --none-bg: #232D37; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E141A; --surface: #161E26; --sunk: #1D2730; --ink: #E4E9EE; --muted: #9AA6B2; --line: #2A3540;
+  --accent: #8EA4F2; --accent-ink: #0E141A; --accent-soft: #1F2A4A;
+  --support: #F0907A; --support-bg: #3A1F19; --approaching: #E2B65E; --approaching-bg: #362C15; --tier2: #F3D35C; --tier2-bg: #3D3410;
+  --ongrade: #63C7B9; --ongrade-bg: #13312D; --above: #9BE3D8; --above-bg: #1C4A43; --none: #8E99A5; --none-bg: #232D37; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1140px; margin: 0 auto; padding-inline: 16px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 650; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; } h3 { font-size: 1.05rem; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.small { font-size: 0.85rem; }
+button { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+
+/* header */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-block: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.mark { display: grid; gap: 3px; width: 22px; }
+.mark i { display: block; height: 4px; border-radius: 2px; background: var(--accent); }
+.mark i:nth-child(1) { width: 100%; opacity: .45 } .mark i:nth-child(2) { width: 75%; opacity: .7 } .mark i:nth-child(3) { width: 50% }
+.brand h1 { font-size: 1.3rem; }
+.brand .sub { font-size: 0.82rem; color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; margin-left: auto; }
+.seg { display: inline-flex; background: var(--sunk); border-radius: 999px; padding: 3px; }
+.seg button { border: 0; background: transparent; padding: 5px 13px; border-radius: 999px; cursor: pointer; font-size: 0.88rem; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+.banner { background: var(--accent-soft); border-bottom: 1px solid var(--line); }
+.banner .wrap { padding-block: 9px; font-size: 0.88rem; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.banner b { font-weight: 700; }
+
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+nav.tabs .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button { border: 0; background: none; padding: 12px 12px 10px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 600; font-size: 0.93rem; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+main { padding-block: 22px 48px; }
+section.view { display: grid; gap: 20px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.lead { max-width: 68ch; color: var(--muted); }
+
+/* grade-level scale key */
+.scalekey { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; font-size: 0.86rem; }
+.scalekey b { font-family: var(--f-mono); }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px; align-content: start; }
+.stat .n { font-family: var(--f-display); font-size: 1.7rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .l { font-size: 0.86rem; color: var(--muted); }
+.stat.flag { border-color: var(--support); }
+.stat.flag .n { color: var(--support); }
+
+/* bands */
+.b-support { background: var(--support-bg); color: var(--support); }
+.b-approaching { background: var(--approaching-bg); color: var(--approaching); }
+.b-ongrade { background: var(--ongrade-bg); color: var(--ongrade); }
+.b-above { background: var(--above-bg); color: var(--above); }
+.b-none { background: var(--none-bg); color: var(--none); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 0.82rem; color: var(--muted); align-items: center; }
+.legend span.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+.sw.b-support, .fill.b-support, .seg-m.support { background: var(--support); }
+.sw.b-approaching, .fill.b-approaching { background: var(--approaching); }
+.sw.b-ongrade, .fill.b-ongrade, .seg-m.mastered { background: var(--ongrade); }
+.sw.b-above, .fill.b-above { background: var(--above); }
+.sw.b-none, .seg-m.nocheck { background: var(--none); }
+.tag { display: inline-flex; align-items: center; font-family: var(--f-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: .02em; border-radius: 5px; padding: 1px 6px; line-height: 1.5; white-space: nowrap; }
+.tag.p1 { background: var(--ink); color: var(--bg); }
+.tag.p2 { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.tag.wait { background: var(--sunk); color: var(--muted); }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 0.84rem; background: var(--surface); }
+button.chip { cursor: pointer; }
+button.chip:hover { border-color: var(--accent); color: var(--accent); }
+.src { font-family: var(--f-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+
+/* status chips for standards */
+.st { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 10px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+.st.mastered { background: var(--ongrade-bg); color: var(--ongrade); }
+.st.remediate { background: var(--support-bg); color: var(--support); }
+.st.nocheck { background: var(--none-bg); color: var(--none); }
+.st.nottaught { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+
+/* where P1 falls */
+.dist { display: grid; gap: 7px; }
+.dist .row { display: grid; grid-template-columns: minmax(0, 15rem) 1fr 2.2rem; gap: 10px; align-items: center; font-size: 0.9rem; }
+.dist .bar { height: 14px; background: var(--sunk); border-radius: 4px; overflow: hidden; }
+.dist .bar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.dist .row.base .bar i { background: var(--support); }
+.dist .cnt { font-family: var(--f-mono); text-align: right; font-weight: 600; }
+.dist .lvl { color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; margin-right: 6px; }
+
+/* heat map */
+.scroller { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table.heat { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.88rem; }
+table.heat th, table.heat td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+table.heat thead th { font-size: 0.75rem; font-weight: 600; color: var(--muted); vertical-align: bottom; background: var(--surface); }
+table.heat thead th .lv { display: block; font-family: var(--f-mono); font-size: 0.7rem; opacity: .8; }
+table.heat th.who, table.heat td.who { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+table.heat th.tier, table.heat td.tier { border-right: 1px solid var(--line); font-weight: 600; color: var(--ink); }
+table.heat tbody tr { cursor: pointer; }
+table.heat tbody tr:hover td.who, table.heat tbody tr:focus-visible td.who { color: var(--accent); }
+table.heat td.cell { padding: 4px; }
+table.heat td.cell .c { position: relative; display: block; min-width: 50px; border-radius: 6px; padding: 5px 4px; font-family: var(--f-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+table.heat td.ovr .c { font-size: 0.98rem; }
+table.heat td.cell .c.p1 { box-shadow: inset 0 0 0 2px var(--ink); }
+table.heat td.cell .c.p2 { box-shadow: inset 0 0 0 1.5px var(--ink); }
+table.heat td.cell .c .t { position: absolute; top: -7px; right: -3px; font-size: 0.62rem; padding: 0 4px; border-radius: 4px; background: var(--ink); color: var(--bg); line-height: 1.4; }
+table.heat td.cell .c.p2 .t { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+table.heat td.meta { font-size: 0.82rem; color: var(--muted); }
+table.heat tr:last-child td { border-bottom: 0; }
+.code { font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); margin-right: 6px; }
+
+/* student */
+.picker { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; max-width: 100%; }
+.iconbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+.overall { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 20px; align-items: center; }
+.overall .big { font-family: var(--f-display); font-size: 2.6rem; font-weight: 650; line-height: 1; border-radius: 10px; padding: 12px 16px; font-variant-numeric: tabular-nums; text-align: center; min-width: 6.5rem; }
+.overall .big small { display: block; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; margin-top: 6px; }
+.overall .parts { display: grid; gap: 4px; font-size: 0.88rem; }
+.overall .parts div { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+@media (max-width: 520px) { .overall { grid-template-columns: 1fr; } .overall .big { justify-self: start; } }
+.split { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+.ladder { display: grid; gap: 6px; }
+.rung { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 5.4rem; gap: 10px; align-items: center; padding: 8px 8px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; background: none; text-align: left; width: 100%; }
+.rung:hover { background: var(--sunk); }
+.rung[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.rung .lvl { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); text-align: center; }
+.rung .body { display: block; min-width: 0; }
+.rung .nm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-weight: 600; font-size: 0.92rem; margin-bottom: 5px; }
+.track { display: block; position: relative; height: 12px; background: var(--sunk); border-radius: 4px; }
+.track i.fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.track b.cut { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 1.5px dashed var(--muted); opacity: .55; }
+.track b.cut.g3 { border-left: 2px solid var(--ink); opacity: .7; }
+.rung .sc { font-family: var(--f-mono); font-weight: 600; text-align: right; font-size: 1rem; }
+.rung .sc small { display: block; font-family: var(--f-body); font-weight: 400; font-size: 0.72rem; color: var(--muted); line-height: 1.25; }
+.axis { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 5.4rem; gap: 10px; padding-inline: 8px; font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); }
+.axis .sc-axis { position: relative; height: 16px; }
+.axis .sc-axis span { position: absolute; transform: translateX(-50%); }
+.axis .sc-axis span.g3 { color: var(--ink); font-weight: 600; }
+.foot-note { font-size: 0.82rem; color: var(--muted); }
+
+.ev { display: grid; gap: 12px; }
+.evline { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 6px; }
+.evline.off { opacity: .72; border-style: dashed; }
+.evline .r { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.evline .pts { font-family: var(--f-mono); font-weight: 600; }
+.items { display: grid; gap: 3px; font-size: 0.84rem; }
+.items div { display: grid; grid-template-columns: 2.4rem 7.6rem minmax(0, 1fr) 1.4rem; gap: 6px; align-items: baseline; }
+.items .ok { color: var(--ongrade); font-weight: 700; } .items .no { color: var(--support); font-weight: 700; }
+.total { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-weight: 600; flex-wrap: wrap; }
+
+/* standards */
+.stdlist { display: grid; gap: 4px; }
+.stdrow { display: grid; grid-template-columns: 8.4rem minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+.stdrow:last-child { border-bottom: 0; }
+.stdrow .basis { grid-column: 2 / 3; font-size: 0.8rem; color: var(--muted); }
+.stdgroup { display: grid; gap: 4px; }
+.stdgroup + .stdgroup { margin-top: 10px; }
+.stdgroup h4 { margin: 0; font-size: 0.78rem; font-family: var(--f-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.class-std details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 0; }
+.class-std details + details { margin-top: 8px; }
+.class-std summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 8.4rem minmax(0, 1fr) minmax(120px, 15rem) 5.6rem; gap: 6px 14px; align-items: center; padding: 11px 14px; }
+.class-std summary::-webkit-details-marker { display: none; }
+.class-std summary .when { font-size: 0.8rem; color: var(--muted); text-align: right; }
+.class-std .inside { padding: 0 14px 14px; display: grid; gap: 10px; }
+.stack { display: flex; height: 14px; border-radius: 4px; overflow: hidden; background: var(--sunk); }
+.stack .seg-m { display: block; height: 100%; }
+.stack-note { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); }
+@media (max-width: 720px) {
+  .class-std summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .class-std summary .lbl { grid-column: 1 / -1; }
+  .class-std summary .stackwrap { grid-column: 1 / -1; }
+  .stdrow { grid-template-columns: minmax(0, 1fr) auto; }
+  .stdrow .lbl, .stdrow .basis { grid-column: 1 / -1; }
+}
+
+/* plan */
+.plan { display: grid; gap: 16px; }
+.plan .status { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 11px; font-size: 0.84rem; font-weight: 600; }
+.pill.draft { background: var(--approaching-bg); color: var(--approaching); }
+.pill.ok { background: var(--ongrade-bg); color: var(--ongrade); }
+.block { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 14px; }
+.block ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 3px; }
+.block .k { font-family: var(--f-mono); font-size: 0.74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.family { background: var(--sunk); border-radius: 8px; padding: 14px; display: grid; gap: 10px; }
+.family p { max-width: 68ch; }
+.btn { border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn:disabled { opacity: .55; cursor: default; }
+.check { font-size: 0.86rem; color: var(--ongrade); font-weight: 600; }
+details.ai { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+details.ai summary { cursor: pointer; font-weight: 600; }
+pre { margin: 10px 0 0; padding: 12px; background: var(--sunk); border-radius: 8px; overflow-x: auto; font-family: var(--f-mono); font-size: 0.78rem; line-height: 1.45; }
+
+/* groups */
+.groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+.group { display: grid; gap: 10px; align-content: start; }
+.group .members { display: flex; flex-wrap: wrap; gap: 6px; }
+.group .lv { font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); }
+.group.base { border-color: var(--support); }
+
+/* imports */
+.files { display: grid; gap: 10px; }
+.file { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--surface); }
+.file.pending { border-style: dashed; border-color: var(--accent); }
+.file .fn { font-family: var(--f-mono); font-size: 0.86rem; word-break: break-all; }
+.file .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.84rem; color: var(--muted); }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.86rem; border: 0; background: none; padding: 4px 0; }
+.switch .k { width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; }
+.switch .k::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); transition: left .15s; }
+.switch[aria-checked="true"] .k { background: var(--ongrade); }
+.switch[aria-checked="true"] .k::after { left: 19px; }
+.notice { border-radius: var(--r); padding: 14px 16px; display: grid; gap: 8px; border: 1px solid var(--accent); background: var(--accent-soft); }
+.notice ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 4px; }
+
+/* how it works */
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 10px; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 10px; }
+ol.steps li::before { content: counter(s); font-family: var(--f-mono); font-weight: 600; width: 1.7rem; height: 1.7rem; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 0.85rem; }
+ol.steps li.lock::before { background: var(--ongrade-bg); color: var(--ongrade); }
+table.ref { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table.ref th, table.ref td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.ref th { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+table.ref td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 20px; }
+.rules { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; }
+
+/* intervention formats */
+.formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 8px; }
+.fmt { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; font-size: 0.88rem; }
+.fmt .src { display: flex; justify-content: space-between; gap: 6px; }
+.fmt.rec { border-color: var(--accent); background: var(--accent-soft); }
+.fmt.rec .src { color: var(--accent); }
+.tag.iep { background: var(--accent-soft); color: var(--accent); margin-left: 6px; }
+.tag.tier { font-size: 0.8rem; padding: 2px 8px; }
+.tag.tier.t1 { background: var(--ongrade-bg); color: var(--ongrade); }
+.tag.tier.t2 { background: var(--tier2-bg); color: var(--tier2); }
+.tag.tier.t3 { background: var(--support-bg); color: var(--support); }
+
+/* roadmap */
+.rm-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.rm-unit { display: grid; gap: 0; }
+.rm-unit h3 { margin-bottom: 6px; }
+.lesson { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr) auto; gap: 6px 14px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--line); }
+.lesson:last-child { border-bottom: 0; }
+.lesson .d { font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); }
+.lesson .t { font-weight: 600; }
+.lesson .a { font-size: 0.84rem; color: var(--muted); }
+.lesson .codes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.lesson .codes span { font-family: var(--f-mono); font-size: 0.72rem; background: var(--sunk); border-radius: 4px; padding: 1px 6px; }
+.lesson.skipped .t { text-decoration: line-through; text-decoration-color: var(--support); }
+.lesson .note { font-size: 0.8rem; color: var(--support); }
+.lesson .ctl { display: grid; gap: 4px; justify-items: end; }
+.seg.small button { padding: 3px 10px; font-size: 0.8rem; }
+.seg.small button.on-taught[aria-pressed="true"] { background: var(--ongrade-bg); color: var(--ongrade); }
+.seg.small button.on-not[aria-pressed="true"] { background: var(--support-bg); color: var(--support); }
+.today { display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 0.75rem; color: var(--accent); font-weight: 600; padding: 6px 0; }
+.today::before, .today::after { content: ""; flex: 1; border-top: 2px solid var(--accent); }
+.upl { position: relative; overflow: hidden; }
+.upl input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ESE */
+.ese-card { display: grid; gap: 14px; }
+.ese-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 10px 20px; font-size: 0.88rem; }
+.ese-meta ul { margin: 4px 0 0; padding-left: 1.1rem; }
+.goal { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 10px; }
+.goaltext { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 14px; border-radius: 0 8px 8px 0; font-size: 1rem; line-height: 1.55; max-width: 80ch; }
+.goal .pl { font-size: 0.9rem; max-width: 80ch; }
+.goal ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 3px; font-size: 0.9rem; }
+.privacy { font-size: 0.86rem; border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; color: var(--muted); }
+
+@media (max-width: 560px) {
+  .lesson { grid-template-columns: minmax(0, 1fr); }
+  .lesson .ctl { justify-items: start; }
+  .controls { margin-left: 0; }
+  .dist .row { grid-template-columns: minmax(0, 9rem) 1fr 2rem; }
+  .items div { grid-template-columns: 2rem minmax(0, 1fr) 1.2rem; }
+  .items div .bm { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div><h1>Odin</h1><div class="sub">Project Cerberus · Grade 3 · Room 112 · results as of Oct 9, 2026</div></div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Subject">
+        <button id="subj-reading" data-subj="reading">Reading</button>
+        <button id="subj-math" data-subj="math">Math</button>
+      </div>
+      <div class="seg" role="group" aria-label="Student labels">
+        <button id="names-off" data-names="0">Codes</button>
+        <button id="names-on" data-names="1">Names</button>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="banner"><div class="wrap"><b>Demo with invented students.</b><span>The real Odin runs offline on the Project Cerberus server at school, so no student information goes online. This page shows what it would do.</span></div></div>
+<nav class="tabs" aria-label="Views"><div class="wrap" role="tablist">
+  <button role="tab" id="tab-class" data-tab="class">Class</button>
+  <button role="tab" id="tab-student" data-tab="student">Student</button>
+  <button role="tab" id="tab-standards" data-tab="standards">Standards</button>
+  <button role="tab" id="tab-roadmap" data-tab="roadmap">Roadmap</button>
+  <button role="tab" id="tab-ese" data-tab="ese">ESE / IEP</button>
+  <button role="tab" id="tab-groups" data-tab="groups">Small groups</button>
+  <button role="tab" id="tab-imports" data-tab="imports">Imports</button>
+  <button role="tab" id="tab-how" data-tab="how">How it works</button>
+</div></nav>
+<main class="wrap" id="main"></main>
+
+<script>
+const DATA = {"today":"2026-10-09","standards":{"reading":[{"code":"ELA.3.F.1.3","label":"Phonics and word analysis","rung":"PH"},{"code":"ELA.3.V.1.2","label":"Morphology","rung":"VOC"},{"code":"ELA.3.V.1.3","label":"Context and connotation","rung":"VOC"},{"code":"ELA.3.R.1.1","label":"Literary elements","rung":"LIT"},{"code":"ELA.3.R.1.2","label":"Theme","rung":"LIT"},{"code":"ELA.3.R.1.3","label":"Perspective and point of view","rung":"LIT"},{"code":"ELA.3.R.1.4","label":"Poetry","rung":"LIT"},{"code":"ELA.3.R.2.1","label":"Structure","rung":"INF"},{"code":"ELA.3.R.2.2","label":"Central idea","rung":"INF"},{"code":"ELA.3.R.2.3","label":"Purpose and perspective","rung":"INF"},{"code":"ELA.3.R.2.4","label":"Argument","rung":"INF"},{"code":"ELA.3.R.3.1","label":"Interpreting figurative language","rung":"AG"},{"code":"ELA.3.R.3.2","label":"Paraphrasing and summarizing","rung":"AG"},{"code":"ELA.3.R.3.3","label":"Comparative reading","rung":"AG"}],"math":[{"code":"MA.3.NSO.1.1","label":"Read and write numbers to 10,000","rung":"NS"},{"code":"MA.3.NSO.1.3","label":"Plot, order and compare numbers to 10,000","rung":"NS"},{"code":"MA.3.NSO.2.1","label":"Add and subtract multi-digit numbers","rung":"NS"},{"code":"MA.3.NSO.2.3","label":"Multiply by multiples of 10 and 100","rung":"MD"},{"code":"MA.3.NSO.2.4","label":"Multiplication and division facts 0 to 12","rung":"MD"},{"code":"MA.3.AR.1.1","label":"Distributive property","rung":"MD"},{"code":"MA.3.AR.2.2","label":"True or false equations with multiplication and division","rung":"MD"},{"code":"MA.3.GR.2.1","label":"Area with unit squares","rung":"MD"},{"code":"MA.3.FR.1.1","label":"Unit fractions","rung":"FR"},{"code":"MA.3.FR.2.1","label":"Compare fractions","rung":"FR"},{"code":"MA.3.FR.2.2","label":"Equivalent fractions","rung":"FR"},{"code":"MA.3.M.1.1","label":"Measure with tools","rung":"MGD"},{"code":"MA.3.GR.1.1","label":"Points, lines and rays","rung":"MGD"},{"code":"MA.3.DP.1.2","label":"Interpret data in graphs and tables","rung":"MGD"}]},"students":[{"code":"S-001","name":"Ana R.","grade":3},{"code":"S-002","name":"Mateo G.","grade":3},{"code":"S-003","name":"Sofía L.","grade":3},{"code":"S-004","name":"Liam T.","grade":3,"ese":{"exceptionality":"Specific Learning Disability","review":"2027-02-14","areas":["reading","math"],"services":["Support facilitation in reading, 150 minutes a week","Small-group reading intervention, 30 minutes a day","Support facilitation in math, 60 minutes a week"],"accommodations":["Extended time","Small-group setting","Directions repeated","Frequent breaks"],"probes":{"PA":{"date":"2026-10-06","right":4,"total":10},"PH":{"date":"2026-10-06","right":8,"total":20},"NS":{"date":"2026-10-07","right":5,"total":10}}}},{"code":"S-005","name":"Valentina C.","grade":3},{"code":"S-006","name":"Jayden W.","grade":3},{"code":"S-007","name":"Camila P.","grade":3},{"code":"S-008","name":"Diego F.","grade":3},{"code":"S-009","name":"Zoe K.","grade":3,"ese":{"exceptionality":"Specific Learning Disability","review":"2026-12-03","areas":["math"],"services":["Support facilitation in math, 120 minutes a week"],"accommodations":["Extended time","Manipulatives and number lines","Small-group setting"],"probes":{"NS":{"date":"2026-10-07","right":4,"total":10},"MD":{"date":"2026-10-07","right":9,"total":20}}}},{"code":"S-010","name":"Elijah B.","grade":3},{"code":"S-011","name":"Isabella N.","grade":3},{"code":"S-012","name":"Gabriel S.","grade":3},{"code":"S-013","name":"Mía H.","grade":3},{"code":"S-014","name":"Lucas V.","grade":3,"ese":{"exceptionality":"Language Impaired","review":"2027-04-22","areas":["reading"],"services":["Language therapy, 60 minutes a week","Support facilitation in reading, 90 minutes a week"],"accommodations":["Extended time","Visual supports","Directions clarified"],"probes":{"PH":{"date":"2026-10-06","right":9,"total":20}}}},{"code":"S-015","name":"Aaliyah J.","grade":3},{"code":"S-016","name":"Santiago M.","grade":3},{"code":"S-017","name":"Chloe D.","grade":3},{"code":"S-018","name":"Adrián Q.","grade":3,"ese":{"exceptionality":"Specific Learning Disability","review":"2027-01-27","areas":["reading"],"services":["Support facilitation in reading, 150 minutes a week","Small-group reading intervention, 30 minutes a day"],"accommodations":["Extended time","Small-group setting","Frequent breaks"],"probes":{"PA":{"date":"2026-10-06","right":5,"total":10},"PH":{"date":"2026-10-06","right":7,"total":20}}}}],"files":[{"id":"ir","source":"i-Ready","subject":"reading","name":"iReady_Diagnostic1_Reading_Gr3.csv","date":"2026-09-02","what":"Diagnostic 1 · overall and domain placements","active":true,"rows":{"S-001":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Mid or Above Grade Level","INF":"Early On Grade Level","overall":"Early On Grade Level"},"S-002":{"PA":"Surpassed Level","PH":"2 Grade Levels Below","HFW":"2 Grade Levels Below","VOC":"1 Grade Level Below","LIT":"2 Grade Levels Below","INF":"2 Grade Levels Below","overall":"2 Grade Levels Below"},"S-003":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Early On Grade Level","INF":"2 Grade Levels Below","overall":"1 Grade Level Below"},"S-004":{"PA":"2 Grade Levels Below","PH":"2 Grade Levels Below","HFW":"2 Grade Levels Below","VOC":"2 Grade Levels Below","LIT":"2 Grade Levels Below","INF":"2 Grade Levels Below","overall":"2 Grade Levels Below"},"S-005":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"2 Grade Levels Below","LIT":"1 Grade Level Below","INF":"1 Grade Level Below","overall":"2 Grade Levels Below"},"S-006":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Mid or Above Grade Level","LIT":"Mid or Above Grade Level","INF":"Early On Grade Level","overall":"Mid or Above Grade Level"},"S-007":{"PA":"Surpassed Level","PH":"1 Grade Level Below","HFW":"2 Grade Levels Below","VOC":"1 Grade Level Below","LIT":"1 Grade Level Below","INF":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-008":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Early On Grade Level","INF":"Early On Grade Level","overall":"Early On Grade Level"},"S-009":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"1 Grade Level Below","LIT":"1 Grade Level Below","INF":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-010":{"PA":"Surpassed Level","PH":"2 Grade Levels Below","HFW":"1 Grade Level Below","VOC":"1 Grade Level Below","LIT":"1 Grade Level Below","INF":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-011":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Early On Grade Level","INF":"Early On Grade Level","overall":"Early On Grade Level"},"S-012":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"2 Grade Levels Below","INF":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-013":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Early On Grade Level","INF":"Early On Grade Level","overall":"Early On Grade Level"},"S-014":{"PA":"Early On Grade Level","PH":"2 Grade Levels Below","HFW":"1 Grade Level Below","VOC":"1 Grade Level Below","LIT":"1 Grade Level Below","INF":"2 Grade Levels Below","overall":"2 Grade Levels Below"},"S-015":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Early On Grade Level","INF":"Early On Grade Level","overall":"Early On Grade Level"},"S-016":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"2 Grade Levels Below","LIT":"1 Grade Level Below","INF":"2 Grade Levels Below","overall":"2 Grade Levels Below"},"S-017":{"PA":"Surpassed Level","PH":"Surpassed Level","HFW":"Surpassed Level","VOC":"Early On Grade Level","LIT":"Early On Grade Level","INF":"Early On Grade Level","overall":"Early On Grade Level"},"S-018":{"PA":"2 Grade Levels Below","PH":"2 Grade Levels Below","HFW":"2 Grade Levels Below","VOC":"1 Grade Level Below","LIT":"2 Grade Levels Below","INF":"2 Grade Levels Below","overall":"2 Grade Levels Below"}}},{"id":"im","source":"i-Ready","subject":"math","name":"iReady_Diagnostic1_Math_Gr3.csv","date":"2026-09-04","what":"Diagnostic 1 · overall and domain placements","active":true,"rows":{"S-001":{"NO":"Early On Grade Level","AAT":"Early On Grade Level","MD":"Early On Grade Level","GEO":"Early On Grade Level","overall":"Early On Grade Level"},"S-002":{"NO":"1 Grade Level Below","AAT":"1 Grade Level Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-003":{"NO":"Early On Grade Level","AAT":"Early On Grade Level","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"Early On Grade Level"},"S-004":{"NO":"2 Grade Levels Below","AAT":"2 Grade Levels Below","MD":"2 Grade Levels Below","GEO":"2 Grade Levels Below","overall":"2 Grade Levels Below"},"S-005":{"NO":"Early On Grade Level","AAT":"Early On Grade Level","MD":"1 Grade Level Below","GEO":"Early On Grade Level","overall":"Early On Grade Level"},"S-006":{"NO":"Mid or Above Grade Level","AAT":"Mid or Above Grade Level","MD":"Mid or Above Grade Level","GEO":"Early On Grade Level","overall":"Mid or Above Grade Level"},"S-007":{"NO":"1 Grade Level Below","AAT":"2 Grade Levels Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-008":{"NO":"Early On Grade Level","AAT":"2 Grade Levels Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-009":{"NO":"2 Grade Levels Below","AAT":"2 Grade Levels Below","MD":"1 Grade Level Below","GEO":"2 Grade Levels Below","overall":"2 Grade Levels Below"},"S-010":{"NO":"Early On Grade Level","AAT":"Early On Grade Level","MD":"Early On Grade Level","GEO":"Early On Grade Level","overall":"Early On Grade Level"},"S-011":{"NO":"Early On Grade Level","AAT":"Early On Grade Level","MD":"Early On Grade Level","GEO":"Early On Grade Level","overall":"Early On Grade Level"},"S-012":{"NO":"Early On Grade Level","AAT":"1 Grade Level Below","MD":"2 Grade Levels Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-013":{"NO":"1 Grade Level Below","AAT":"1 Grade Level Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-014":{"NO":"1 Grade Level Below","AAT":"2 Grade Levels Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-015":{"NO":"Early On Grade Level","AAT":"Early On Grade Level","MD":"Early On Grade Level","GEO":"Early On Grade Level","overall":"1 Grade Level Below"},"S-016":{"NO":"1 Grade Level Below","AAT":"1 Grade Level Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"},"S-017":{"NO":"Mid or Above Grade Level","AAT":"Early On Grade Level","MD":"Early On Grade Level","GEO":"Early On Grade Level","overall":"Early On Grade Level"},"S-018":{"NO":"1 Grade Level Below","AAT":"1 Grade Level Below","MD":"1 Grade Level Below","GEO":"1 Grade Level Below","overall":"1 Grade Level Below"}}},{"id":"fe","source":"FAST","subject":"reading","name":"FAST_PM1_Gr3_ELA_Reading.csv","date":"2026-09-10","what":"PM1 · scale score, level, reporting categories","active":true,"rows":{"S-001":{"ss":208,"level":3,"LIT":"Above","INF":"Above","AG":"Above"},"S-002":{"ss":189,"level":2,"LIT":"Below","INF":"Below","AG":"Below"},"S-003":{"ss":193,"level":2,"LIT":"At/Near","INF":"Below","AG":"Below"},"S-004":{"ss":183,"level":1,"LIT":"Below","INF":"Below","AG":"Below"},"S-005":{"ss":184,"level":1,"LIT":"Below","INF":"Below","AG":"Below"},"S-006":{"ss":215,"level":4,"LIT":"Above","INF":"Above","AG":"Above"},"S-007":{"ss":193,"level":2,"LIT":"Below","INF":"Below","AG":"Below"},"S-008":{"ss":203,"level":3,"LIT":"At/Near","INF":"At/Near","AG":"At/Near"},"S-009":{"ss":200,"level":2,"LIT":"At/Near","INF":"At/Near","AG":"At/Near"},"S-010":{"ss":194,"level":2,"LIT":"Below","INF":"At/Near","AG":"Below"},"S-011":{"ss":203,"level":3,"LIT":"At/Near","INF":"At/Near","AG":"Below"},"S-012":{"ss":193,"level":2,"LIT":"Below","INF":"At/Near","AG":"At/Near"},"S-013":{"ss":203,"level":3,"LIT":"At/Near","INF":"At/Near","AG":"At/Near"},"S-014":{"ss":192,"level":2,"LIT":"Below","INF":"Below","AG":"Below"},"S-015":{"ss":212,"level":3,"LIT":"Above","INF":"Above","AG":"Above"},"S-016":{"ss":192,"level":2,"LIT":"At/Near","INF":"Below","AG":"Below"},"S-017":{"ss":211,"level":3,"LIT":"Above","INF":"Above","AG":"Above"},"S-018":{"ss":184,"level":1,"LIT":"Below","INF":"Below","AG":"Below"}}},{"id":"fm","source":"FAST","subject":"math","name":"FAST_PM1_Gr3_Math.csv","date":"2026-09-11","what":"PM1 · scale score, level, reporting categories","active":true,"rows":{"S-001":{"ss":202,"level":3,"NS":"At/Near","MD":"At/Near","FR":"At/Near","MGD":"At/Near"},"S-002":{"ss":189,"level":2,"NS":"At/Near","MD":"At/Near","FR":"Below","MGD":"At/Near"},"S-003":{"ss":202,"level":3,"NS":"Above","MD":"Above","FR":"Above","MGD":"At/Near"},"S-004":{"ss":183,"level":2,"NS":"Below","MD":"Below","FR":"Below","MGD":"Below"},"S-005":{"ss":198,"level":3,"NS":"At/Near","MD":"At/Near","FR":"At/Near","MGD":"At/Near"},"S-006":{"ss":212,"level":4,"NS":"Above","MD":"Above","FR":"Above","MGD":"Above"},"S-007":{"ss":190,"level":2,"NS":"At/Near","MD":"Below","FR":"Below","MGD":"At/Near"},"S-008":{"ss":189,"level":2,"NS":"At/Near","MD":"Below","FR":"Below","MGD":"At/Near"},"S-009":{"ss":182,"level":1,"NS":"Below","MD":"Below","FR":"Below","MGD":"Below"},"S-010":{"ss":207,"level":3,"NS":"Above","MD":"At/Near","FR":"At/Near","MGD":"Above"},"S-011":{"ss":206,"level":3,"NS":"Above","MD":"Above","FR":"At/Near","MGD":"Above"},"S-012":{"ss":193,"level":2,"NS":"At/Near","MD":"At/Near","FR":"At/Near","MGD":"Below"},"S-013":{"ss":199,"level":3,"NS":"At/Near","MD":"At/Near","FR":"At/Near","MGD":"At/Near"},"S-014":{"ss":188,"level":2,"NS":"At/Near","MD":"Below","FR":"Below","MGD":"Below"},"S-015":{"ss":198,"level":3,"NS":"Above","MD":"Above","FR":"At/Near","MGD":"At/Near"},"S-016":{"ss":192,"level":2,"NS":"At/Near","MD":"Below","FR":"Below","MGD":"At/Near"},"S-017":{"ss":205,"level":3,"NS":"Above","MD":"At/Near","FR":"At/Near","MGD":"Above"},"S-018":{"ss":187,"level":2,"NS":"At/Near","MD":"Below","FR":"Below","MGD":"Below"}}},{"id":"pe1","source":"Performance Matters","subject":"reading","name":"PM_Gr3_ELA_Topic1_ItemAnalysis.csv","date":"2026-09-24","what":"Topic Assessment 1 · 16 items by benchmark","active":true,"items":[{"n":1,"code":"ELA.3.R.1.1","label":"Literary Elements","rung":"LIT"},{"n":2,"code":"ELA.3.R.1.1","label":"Literary Elements","rung":"LIT"},{"n":3,"code":"ELA.3.R.1.2","label":"Theme","rung":"LIT"},{"n":4,"code":"ELA.3.R.1.2","label":"Theme","rung":"LIT"},{"n":5,"code":"ELA.3.R.2.1","label":"Structure","rung":"INF"},{"n":6,"code":"ELA.3.R.2.1","label":"Structure","rung":"INF"},{"n":7,"code":"ELA.3.R.2.2","label":"Central Idea","rung":"INF"},{"n":8,"code":"ELA.3.R.2.2","label":"Central Idea","rung":"INF"},{"n":9,"code":"ELA.3.R.3.1","label":"Interpreting Figurative Language","rung":"AG"},{"n":10,"code":"ELA.3.R.3.1","label":"Interpreting Figurative Language","rung":"AG"},{"n":11,"code":"ELA.3.R.3.2","label":"Paraphrasing and Summarizing","rung":"AG"},{"n":12,"code":"ELA.3.R.3.2","label":"Paraphrasing and Summarizing","rung":"AG"},{"n":13,"code":"ELA.3.V.1.2","label":"Morphology","rung":"VOC"},{"n":14,"code":"ELA.3.V.1.2","label":"Morphology","rung":"VOC"},{"n":15,"code":"ELA.3.V.1.3","label":"Context and Connotation","rung":"VOC"},{"n":16,"code":"ELA.3.V.1.3","label":"Context and Connotation","rung":"VOC"}],"rows":{"S-001":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"S-002":[1,0,1,0,0,0,1,0,0,1,0,0,0,0,1,1],"S-003":[0,1,1,1,1,0,0,0,1,1,0,0,0,1,1,1],"S-004":[1,0,0,0,0,0,0,1,0,0,0,1,1,1,0,0],"S-005":[0,1,1,0,1,1,0,0,1,0,0,1,0,0,0,1],"S-006":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"S-007":[0,1,1,0,1,0,0,1,0,0,1,1,1,0,1,0],"S-008":[1,1,1,0,0,1,1,1,1,0,1,1,1,0,1,1],"S-009":[1,0,1,1,0,1,0,1,1,0,1,0,1,1,1,0],"S-010":[1,0,1,0,1,1,0,0,1,0,0,1,1,1,0,1],"S-011":[1,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1],"S-012":[0,1,0,0,1,0,1,1,1,1,0,0,1,0,1,1],"S-013":[1,0,1,1,1,1,1,0,1,0,1,1,0,1,1,1],"S-014":[0,1,1,0,1,1,0,0,1,0,1,0,1,1,0,0],"S-015":[1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1],"S-016":[0,0,1,1,1,1,0,0,0,1,1,0,0,1,1,0],"S-017":[1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1],"S-018":[1,0,1,0,1,1,0,0,0,1,0,0,1,0,0,1]}},{"id":"pm1","source":"Performance Matters","subject":"math","name":"PM_Gr3_Math_Topic1_ItemAnalysis.csv","date":"2026-10-01","what":"Topic Assessment 1 · 12 items by benchmark","active":true,"items":[{"n":1,"code":"MA.3.NSO.1.1","label":"Read and write numbers to 10,000","rung":"NS"},{"n":2,"code":"MA.3.NSO.1.1","label":"Read and write numbers to 10,000","rung":"NS"},{"n":3,"code":"MA.3.NSO.2.1","label":"Add and subtract multi-digit numbers","rung":"NS"},{"n":4,"code":"MA.3.NSO.2.1","label":"Add and subtract multi-digit numbers","rung":"NS"},{"n":5,"code":"MA.3.NSO.2.4","label":"Multiplication and division facts 0 to 12","rung":"MD"},{"n":6,"code":"MA.3.NSO.2.4","label":"Multiplication and division facts 0 to 12","rung":"MD"},{"n":7,"code":"MA.3.NSO.2.3","label":"Multiply by multiples of 10 and 100","rung":"MD"},{"n":8,"code":"MA.3.NSO.2.3","label":"Multiply by multiples of 10 and 100","rung":"MD"},{"n":9,"code":"MA.3.AR.1.1","label":"Distributive property","rung":"MD"},{"n":10,"code":"MA.3.AR.1.1","label":"Distributive property","rung":"MD"},{"n":11,"code":"MA.3.M.1.1","label":"Measure with tools","rung":"MGD"},{"n":12,"code":"MA.3.GR.1.1","label":"Points, lines and rays","rung":"MGD"}],"rows":{"S-001":[1,1,0,1,0,1,1,1,0,1,1,1],"S-002":[1,1,0,1,1,0,1,0,1,0,1,0],"S-003":[1,1,1,1,0,1,1,1,1,1,0,1],"S-004":[1,0,1,0,0,0,1,0,1,0,1,0],"S-005":[0,1,1,1,1,1,1,0,1,1,1,0],"S-006":[1,1,1,1,1,1,1,1,1,1,1,1],"S-007":[1,0,1,1,0,1,0,0,1,0,1,0],"S-008":[1,0,1,1,0,0,1,0,1,0,0,1],"S-009":[1,0,0,0,1,1,0,0,0,0,0,1],"S-010":[1,1,1,1,1,0,1,1,1,1,1,1],"S-011":[1,1,1,1,1,1,0,1,1,1,1,1],"S-012":[0,1,1,1,0,1,1,1,1,0,0,1],"S-013":[1,1,0,1,1,0,1,0,1,1,1,0],"S-014":[0,0,1,1,1,0,1,0,0,1,0,1],"S-015":[1,1,1,1,1,0,1,1,1,1,1,1],"S-016":[1,0,1,1,0,0,1,0,1,1,0,1],"S-017":[1,1,1,1,1,0,1,1,1,1,1,1],"S-018":[0,0,1,1,0,1,1,1,0,0,1,0]}},{"id":"pm2","source":"Performance Matters","subject":"math","name":"PM_Gr3_Math_Topic2_ItemAnalysis.csv","date":"2026-10-08","what":"Topic Assessment 2 · 8 items, fractions and measurement","active":false,"pending":true,"items":[{"n":1,"code":"MA.3.FR.1.1","label":"Unit fractions","rung":"FR"},{"n":2,"code":"MA.3.FR.1.1","label":"Unit fractions","rung":"FR"},{"n":3,"code":"MA.3.FR.1.1","label":"Unit fractions","rung":"FR"},{"n":4,"code":"MA.3.FR.2.1","label":"Compare fractions","rung":"FR"},{"n":5,"code":"MA.3.FR.2.1","label":"Compare fractions","rung":"FR"},{"n":6,"code":"MA.3.M.1.1","label":"Measure with tools","rung":"MGD"},{"n":7,"code":"MA.3.M.1.1","label":"Measure with tools","rung":"MGD"},{"n":8,"code":"MA.3.GR.1.1","label":"Points, lines and rays","rung":"MGD"}],"rows":{"S-001":[0,0,1,1,1,1,1,0],"S-002":[1,0,1,0,0,1,0,1],"S-003":[1,1,1,1,0,1,0,1],"S-004":[0,1,0,0,0,1,0,0],"S-005":[1,0,1,1,0,1,0,1],"S-006":[1,1,1,1,1,1,1,1],"S-007":[0,0,1,0,1,0,1,1],"S-008":[1,0,0,0,1,1,0,1],"S-009":[1,0,1,0,0,0,1,0],"S-010":[1,1,0,1,1,1,1,1],"S-011":[1,0,0,0,1,1,1,1],"S-012":[1,0,1,0,1,1,0,0],"S-013":[0,1,1,0,1,1,0,1],"S-014":[0,0,1,0,1,1,0,1],"S-015":[0,1,0,0,0,1,0,1],"S-016":[1,0,0,1,0,1,1,0],"S-017":[1,1,1,0,1,1,1,1],"S-018":[0,0,1,0,1,1,1,0]}}],"roadmap":{"reading":{"name":"Room 112 Reading Roadmap, Grade 3 (sample)","lessons":[{"id":"R1.0","unit":1,"unitTitle":"Characters and Communities","date":"2026-08-17","title":"Daily phonics routine: syllable types","activity":"10-minute word-building mini-lesson every day","standards":["ELA.3.F.1.3"]},{"id":"R1.1","unit":1,"unitTitle":"Characters and Communities","date":"2026-08-24","title":"How characters grow","activity":"Character-change chart with the class read-aloud","standards":["ELA.3.R.1.1"]},{"id":"R1.2","unit":1,"unitTitle":"Characters and Communities","date":"2026-08-31","title":"Clues in the sentence","activity":"Context-clue detective cards","standards":["ELA.3.V.1.3"]},{"id":"R1.3","unit":1,"unitTitle":"Characters and Communities","date":"2026-09-08","title":"What is the lesson?","activity":"Theme statements backed by two details","standards":["ELA.3.R.1.2"]},{"id":"R1.4","unit":1,"unitTitle":"Characters and Communities","date":"2026-09-08","title":"Word parts","activity":"Prefix and suffix word building","standards":["ELA.3.V.1.2"]},{"id":"R2.1","unit":2,"unitTitle":"Florida Nature Up Close","date":"2026-09-14","title":"Text features","activity":"Nonfiction feature hunt with a manatee article","standards":["ELA.3.R.2.1"]},{"id":"R2.2","unit":2,"unitTitle":"Florida Nature Up Close","date":"2026-09-14","title":"Words that paint pictures","activity":"Figurative-language sort with nature poems","standards":["ELA.3.R.3.1"]},{"id":"R2.3","unit":2,"unitTitle":"Florida Nature Up Close","date":"2026-09-21","title":"Central idea","activity":"Central idea and details organizer with an Everglades text","standards":["ELA.3.R.2.2"]},{"id":"R2.4","unit":2,"unitTitle":"Florida Nature Up Close","date":"2026-09-21","title":"Summing it up","activity":"20-word summaries after each section","standards":["ELA.3.R.3.2"]},{"id":"R2.5","unit":2,"unitTitle":"Florida Nature Up Close","date":"2026-09-28","title":"Cause and effect","activity":"Text-structure frames with a hurricane-season article","standards":["ELA.3.R.2.1"]},{"id":"R2.6","unit":2,"unitTitle":"Florida Nature Up Close","date":"2026-10-05","title":"Unit 2 checkpoint","activity":"Review stations and exit tickets","standards":["ELA.3.R.2.2","ELA.3.R.3.2"]},{"id":"R3.1","unit":3,"unitTitle":"Whose Story Is It?","date":"2026-10-13","title":"Who is telling the story?","activity":"Narrator sort with two versions of a folktale","standards":["ELA.3.R.1.3"]},{"id":"R3.2","unit":3,"unitTitle":"Whose Story Is It?","date":"2026-10-20","title":"Words that paint pictures (rescheduled)","activity":"Figurative-language sort with nature poems","standards":["ELA.3.R.3.1"]},{"id":"R3.3","unit":3,"unitTitle":"Whose Story Is It?","date":"2026-11-02","title":"Poetry: sound and shape","activity":"Poem performance and line-break study","standards":["ELA.3.R.1.4"]},{"id":"R3.4","unit":3,"unitTitle":"Whose Story Is It?","date":"2026-11-16","title":"Same story, two tellings","activity":"Compare two versions with a Venn diagram","standards":["ELA.3.R.3.3"]},{"id":"R4.1","unit":4,"unitTitle":"Making the Case","date":"2027-01-11","title":"Why did the author write this?","activity":"Author's purpose sort","standards":["ELA.3.R.2.3"]},{"id":"R4.2","unit":4,"unitTitle":"Making the Case","date":"2027-02-08","title":"Reasons and evidence","activity":"Opinion piece study with a reasons-and-evidence chart","standards":["ELA.3.R.2.4"]}]},"math":{"name":"Room 112 Math Roadmap, Grade 3 (sample)","lessons":[{"id":"M1.1","unit":1,"unitTitle":"Numbers to 10,000","date":"2026-08-17","title":"Reading and writing big numbers","activity":"Place-value chart and number cards","standards":["MA.3.NSO.1.1"]},{"id":"M1.2","unit":1,"unitTitle":"Numbers to 10,000","date":"2026-08-24","title":"Expanded form","activity":"Base-ten blocks: build it, write it","standards":["MA.3.NSO.1.1"]},{"id":"M1.3","unit":1,"unitTitle":"Numbers to 10,000","date":"2026-08-31","title":"Adding and subtracting with regrouping","activity":"Open number line, then the standard algorithm","standards":["MA.3.NSO.2.1"]},{"id":"M2.1","unit":2,"unitTitle":"Multiplication and Division","date":"2026-09-08","title":"Arrays and facts","activity":"Array cards and fact families","standards":["MA.3.NSO.2.4"]},{"id":"M2.2","unit":2,"unitTitle":"Multiplication and Division","date":"2026-09-14","title":"Measurement week","activity":"Ruler, beaker and thermometer stations","standards":["MA.3.M.1.1"]},{"id":"M2.3","unit":2,"unitTitle":"Multiplication and Division","date":"2026-09-21","title":"Multiplying by 10s and 100s","activity":"Place-value patterns with base-ten blocks","standards":["MA.3.NSO.2.3"]},{"id":"M2.4","unit":2,"unitTitle":"Multiplication and Division","date":"2026-09-21","title":"Breaking facts apart","activity":"Distributive property with split arrays","standards":["MA.3.AR.1.1"]},{"id":"M3.1","unit":3,"unitTitle":"Fractions and Lines","date":"2026-09-28","title":"Unit fractions","activity":"Fold paper strips into equal parts","standards":["MA.3.FR.1.1"]},{"id":"M3.2","unit":3,"unitTitle":"Fractions and Lines","date":"2026-09-28","title":"Points, lines and rays","activity":"Geometry scavenger hunt in the classroom","standards":["MA.3.GR.1.1"]},{"id":"M3.3","unit":3,"unitTitle":"Fractions and Lines","date":"2026-10-05","title":"Comparing fractions","activity":"Fraction strips on a number line","standards":["MA.3.FR.2.1"]},{"id":"M3.4","unit":3,"unitTitle":"Fractions and Lines","date":"2026-10-19","title":"Number lines to 10,000","activity":"Plot and compare on a floor number line","standards":["MA.3.NSO.1.3"]},{"id":"M3.5","unit":3,"unitTitle":"Fractions and Lines","date":"2026-10-26","title":"Breaking facts apart (rescheduled)","activity":"Distributive property with split arrays","standards":["MA.3.AR.1.1"]},{"id":"M3.6","unit":3,"unitTitle":"Fractions and Lines","date":"2026-11-09","title":"True or false?","activity":"Equation sort with multiplication and division","standards":["MA.3.AR.2.2"]},{"id":"M4.1","unit":4,"unitTitle":"Equal Parts and Area","date":"2027-01-19","title":"Equivalent fractions","activity":"Fraction wall matching","standards":["MA.3.FR.2.2"]},{"id":"M4.2","unit":4,"unitTitle":"Equal Parts and Area","date":"2027-02-01","title":"Area with unit squares","activity":"Tile rectangles and count square units","standards":["MA.3.GR.2.1"]},{"id":"M4.3","unit":4,"unitTitle":"Equal Parts and Area","date":"2027-03-08","title":"Reading graphs","activity":"Class survey bar graph and line plot","standards":["MA.3.DP.1.2"]}]}},"overrides":{"R2.2":"nottaught","M2.4":"nottaught"},"overrideNotes":{"R2.2":"School closed for a storm day; moved to Unit 3","M2.4":"Ran out of time; moved after fall break"}};
+// Odin scoring engine (Project Cerberus demo). Plain code, no AI: exact and repeatable.
+// Every result is converted to one grade-level scale: 3.0 = working at grade 3 standards,
+// 3.1 to 3.9 = progress through grade 3, 4.0 = ready for grade 4. Below 1.0 shows as K.
+const GRADE = 3;
+const LADDERS = {
+  reading: [
+    { id: "PA",  level: 1, name: "Phonological awareness", short: "Phon. aw." },
+    { id: "PH",  level: 2, name: "Phonics and decoding", short: "Phonics" },
+    { id: "HFW", level: 3, name: "High-frequency words", short: "HF words" },
+    { id: "VOC", level: 4, name: "Vocabulary", short: "Vocab" },
+    { id: "LIT", level: 5, name: "Reading literature", short: "Literature" },
+    { id: "INF", level: 5, name: "Reading informational text", short: "Info text" },
+    { id: "AG",  level: 6, name: "Reading across genres", short: "Across gen." }
+  ],
+  math: [
+    { id: "NS",  level: 1, name: "Number sense, adding and subtracting", short: "Add/sub" },
+    { id: "MD",  level: 2, name: "Multiplying and dividing", short: "Mult/div" },
+    { id: "FR",  level: 3, name: "Fractions", short: "Fractions" },
+    { id: "MGD", level: 3, name: "Measurement, geometry and data", short: "Meas/geo" }
+  ]
+};
+
+const IREADY_DOMAINS = {
+  reading: { PA: [["PA", "Phonological Awareness"]], PH: [["PH", "Phonics"]], HFW: [["HFW", "High-Frequency Words"]],
+             VOC: [["VOC", "Vocabulary"]], LIT: [["LIT", "Comprehension: Literature"]], INF: [["INF", "Comprehension: Informational Text"]] },
+  math: { NS: [["NO", "Number and Operations"]], MD: [["AAT", "Algebra and Algebraic Thinking"]],
+          MGD: [["MD", "Measurement and Data"], ["GEO", "Geometry"]] }
+};
+const FAST_CATS = {
+  reading: { LIT: "Reading Prose and Poetry", INF: "Reading Informational Text", AG: "Reading Across Genres and Vocabulary" },
+  math: { NS: "Number Sense and Additive Reasoning", MD: "Number Sense and Multiplicative Reasoning",
+          FR: "Fractional Reasoning", MGD: "Geometric Reasoning, Measurement, and Data Analysis and Probability" }
+};
+
+// ---- conversions to grade level (demo values; the school sets the real table) ----
+const IREADY_GL = {
+  "Surpassed Level": 4.0, "Mid or Above Grade Level": 3.6, "Early On Grade Level": 3.1,
+  "1 Grade Level Below": 2.5, "2 Grade Levels Below": 1.5, "3 or More Grade Levels Below": 0.5
+};
+const FAST_CAT_GL = { "Above": 3.8, "At/Near": 3.2, "Below": 2.2 };
+// FAST grade 3 achievement levels (2026-27 fact sheet) and the grade-level span each maps to
+const FAST_CUTS = {
+  reading: [[140, 185, 1.0, 1.9], [186, 200, 2.0, 2.9], [201, 212, 3.0, 3.4], [213, 224, 3.5, 3.9], [225, 260, 4.0, 4.9]],
+  math:    [[140, 182, 1.0, 1.9], [183, 197, 2.0, 2.9], [198, 208, 3.0, 3.4], [209, 224, 3.5, 3.9], [225, 260, 4.0, 4.9]]
+};
+const PM_GL = pct => 1.5 + 2.5 * pct;       // 0% = 1.5, 50% = 2.75, 75% = 3.4, 100% = 4.0
+const MIN_ITEMS = 3;                         // per skill, before Performance Matters counts
+const MASTERY = { pct: 0.75, minItems: 2 };  // per standard
+const BANDS = { support: 2.5, ongrade: 3.0, above: 4.0 };
+
+const r1 = x => Math.round(x * 10) / 10;
+function fastGL(subject, ss) {
+  for (const [lo, hi, a, b] of FAST_CUTS[subject]) if (ss <= hi) return r1(a + (b - a) * Math.max(0, ss - lo) / (hi - lo));
+  return 4.9;
+}
+function fmtGL(g) {
+  if (g == null) return "–";
+  const v = r1(g);
+  return v < 1 ? "K." + Math.round(v * 10) : v.toFixed(1);
+}
+function band(g) {
+  if (g == null) return "none";
+  if (g < BANDS.support) return "support";
+  if (g < BANDS.ongrade) return "approaching";
+  if (g < BANDS.above) return "ongrade";
+  return "above";
+}
+
+// ---- curriculum roadmap: a standard counts as taught only when a lesson covering it is marked taught ----
+function lessonStatus(data, lesson) {
+  return (data.overrides && data.overrides[lesson.id]) || (lesson.date <= data.today ? "taught" : "upcoming");
+}
+function taughtInfo(data, subject) {
+  const info = {};
+  const lessons = ((data.roadmap || {})[subject] || { lessons: [] }).lessons;
+  for (const ls of lessons) {
+    const st = lessonStatus(data, ls);
+    for (const c of ls.standards) {
+      const x = info[c] || (info[c] = { taught: false, lessons: [], skipped: [], next: null, firstTaught: null });
+      x.lessons.push(ls);
+      if (st === "taught") { x.taught = true; if (!x.firstTaught || ls.date < x.firstTaught) x.firstTaught = ls.date; }
+      else if (st === "nottaught") x.skipped.push(ls);
+      else if (!x.next || ls.date < x.next) x.next = ls.date;
+    }
+  }
+  return info;
+}
+// Standards catalog plus any codes an uploaded roadmap brings in
+function catalog(data, subject) {
+  const list = data.standards[subject].map(s => ({ ...s }));
+  const known = new Set(list.map(s => s.code));
+  for (const ls of ((data.roadmap || {})[subject] || { lessons: [] }).lessons)
+    for (const c of ls.standards) if (!known.has(c)) { known.add(c); list.push({ code: c, label: ls.title, rung: null }); }
+  return list;
+}
+
+// Build the evidence for one student, one skill, from the files that are switched on.
+function evidence(data, subject, code, rungId, taught) {
+  taught = taught || taughtInfo(data, subject);
+  const lines = [];
+  const files = data.files.filter(f => f.active && f.subject === subject);
+  for (const f of files) {
+    const row = f.rows[code];
+    if (!row) continue;
+    if (f.source === "i-Ready") {
+      const doms = IREADY_DOMAINS[subject][rungId] || [];
+      if (!doms.length) continue;
+      const parts = doms.map(([k, label]) => ({ label, value: row[k], gl: IREADY_GL[row[k]] }));
+      lines.push({ source: "i-Ready", file: f.name, detail: parts, gl: r1(parts.reduce((a, p) => a + p.gl, 0) / parts.length), counted: true });
+    } else if (f.source === "FAST") {
+      const cat = FAST_CATS[subject][rungId];
+      if (!cat) continue;
+      lines.push({ source: "FAST", file: f.name, detail: [{ label: cat, value: row[rungId] }], gl: FAST_CAT_GL[row[rungId]], counted: true });
+    }
+  }
+  const items = [], untaught = [];
+  for (const f of files.filter(f => f.source === "Performance Matters")) {
+    f.items.forEach((it, k) => {
+      if (it.rung !== rungId || !f.rows[code]) return;
+      const row = { ...it, file: f.name, correct: f.rows[code][k] };
+      (taught[it.code] && taught[it.code].taught ? items : untaught).push(row);
+    });
+  }
+  if (items.length || untaught.length) {
+    const right = items.reduce((a, it) => a + it.correct, 0);
+    const pct = items.length ? right / items.length : 0;
+    lines.push({ source: "Performance Matters", items, untaught, right, total: items.length, pct: Math.round(pct * 100), gl: items.length ? r1(PM_GL(pct)) : null, counted: items.length >= MIN_ITEMS });
+  }
+  const counted = lines.filter(l => l.counted);
+  const gl = counted.length ? r1(counted.reduce((a, l) => a + l.gl, 0) / counted.length) : null;
+  return { lines, gl, band: band(gl) };
+}
+
+// Overall level for a subject: average of the two whole-test results (i-Ready overall placement, FAST scale score).
+function overall(data, subject, code) {
+  const parts = [];
+  for (const f of data.files.filter(f => f.active && f.subject === subject)) {
+    const row = f.rows[code];
+    if (!row) continue;
+    if (f.source === "i-Ready") parts.push({ source: "i-Ready overall", raw: row.overall, gl: IREADY_GL[row.overall] });
+    if (f.source === "FAST") parts.push({ source: "FAST PM1", raw: `${row.ss}, Level ${row.level}`, gl: fastGL(subject, row.ss) });
+  }
+  const gl = parts.length ? r1(parts.reduce((a, p) => a + p.gl, 0) / parts.length) : null;
+  return { gl, band: band(gl), parts };
+}
+
+// Walk the ladder from the bottom. P1 = lowest skill that needs support; P2 = the next one up.
+// If fewer than two need support, approaching skills fill in, lowest first.
+function profile(data, subject, code) {
+  const taught = taughtInfo(data, subject);
+  const rungs = LADDERS[subject].map((r, idx) => ({ ...r, idx, ...evidence(data, subject, code, r.id, taught) }));
+  const order = [...rungs].sort((a, b) => a.level - b.level || (a.gl ?? 99) - (b.gl ?? 99));
+  const picks = [...order.filter(r => r.band === "support"), ...order.filter(r => r.band === "approaching")].slice(0, 2);
+  rungs.forEach(r => { r.tag = null; });
+  if (picks[0]) picks[0].tag = "P1";
+  if (picks[1]) picks[1].tag = "P2";
+  rungs.forEach(r => { if (!r.tag && r.band === "support") r.tag = "Waits"; });
+  return { rungs, p1: picks[0] || null, p2: picks[1] || null, overall: overall(data, subject, code) };
+}
+
+// Standards mastery: Mastered, Needs remediation, Not taught yet, or Taught but not checked yet.
+// "Taught" comes from the roadmap and the teacher's marks, never from a test date.
+function standards(data, subject, code, taught) {
+  taught = taught || taughtInfo(data, subject);
+  const files = data.files.filter(f => f.active && f.subject === subject);
+  return catalog(data, subject).map(st => {
+    const t = taught[st.code] || { taught: false, lessons: [], skipped: [], next: null };
+    const items = [];
+    for (const f of files.filter(f => f.source === "Performance Matters")) {
+      f.items.forEach((it, k) => { if (it.code === st.code && f.rows[code]) items.push({ ...it, file: f.name, correct: f.rows[code][k] }); });
+    }
+    let status, basis;
+    const ir = st.code === "ELA.3.F.1.3" ? files.find(f => f.source === "i-Ready") : null;
+    if (!t.taught) {
+      status = "nottaught";
+      basis = t.skipped.length ? `On the roadmap ${t.skipped[0].date}, marked not taught` + (t.next ? `; rescheduled ${t.next}` : "")
+        : t.next ? `Planned ${t.next}` : "Not on the roadmap";
+      if (items.length) basis += ` · ${items.length} test item${items.length > 1 ? "s" : ""} not counted`;
+    } else if (ir && ir.rows[code]) {
+      const v = ir.rows[code].PH;
+      status = IREADY_GL[v] >= 3.0 ? "mastered" : "remediate";
+      basis = "i-Ready Phonics: " + v;
+    } else if (items.length >= MASTERY.minItems) {
+      const right = items.reduce((a, it) => a + it.correct, 0);
+      status = right / items.length >= MASTERY.pct ? "mastered" : "remediate";
+      basis = `${right} of ${items.length} items right`;
+    } else {
+      status = "nocheck";
+      basis = items.length ? `Only ${items.length} item so far` : "No test item yet";
+    }
+    return { ...st, taught: t.taught, firstTaught: t.firstTaught || null, next: t.next, skipped: t.skipped, lessons: t.lessons, items, status, basis };
+  });
+}
+
+// ---- intervention format: whole class, small group or one-on-one ----
+function recommendFormat(nShare, classSize) {
+  if (nShare >= classSize / 2) return "whole";
+  if (nShare >= 2) return "small";
+  return "one";
+}
+
+// ---- IEP goal drafts: condition, behavior, accuracy criterion, measurement, date ----
+const IEP_TEMPLATES = {
+  PA:  { condition: "10 spoken words with 4 to 5 sounds", behavior: "segment and blend each word orally", target: 90, trials: "4 of 5 weekly probes", measure: "teacher-recorded probes", task: "spoken words segmented and blended correctly" },
+  PH:  { condition: "a list of 20 two-syllable decodable words", behavior: "read each word aloud correctly", target: 90, trials: "4 of 5 weekly probes", measure: "teacher-recorded word-reading probes", task: "two-syllable decodable words read correctly" },
+  HFW: { condition: "the grade 3 high-frequency word list", behavior: "read each word aloud within 3 seconds", target: 95, trials: "4 of 5 weekly probes", measure: "teacher-recorded probes", task: "high-frequency words read within 3 seconds" },
+  VOC: { condition: "10 unfamiliar words in grade 3 sentences", behavior: "explain each word's meaning using word parts or context clues", target: 80, trials: "4 of 5 trials", measure: "teacher-made vocabulary checks", task: "word meanings explained correctly" },
+  LIT: { condition: "a grade 3 literary passage and 5 questions", behavior: "explain how a character changes and state the theme with two supporting details", target: 80, trials: "4 of 5 trials", measure: "teacher-made comprehension checks and Performance Matters items", task: "questions answered correctly" },
+  INF: { condition: "a grade 3 informational passage and 5 questions", behavior: "identify the central idea and two supporting details", target: 80, trials: "4 of 5 trials", measure: "teacher-made comprehension checks and Performance Matters items", task: "questions answered correctly" },
+  AG:  { condition: "a grade 3 passage", behavior: "write a summary of 20 words or fewer that includes the key points", target: 80, trials: "4 of 5 trials", measure: "a summary rubric and Performance Matters items", task: "summaries scored proficient" },
+  NS:  { condition: "10 addition and subtraction problems within 1,000", behavior: "solve each problem using place-value strategies", target: 80, trials: "4 of 5 weekly probes", measure: "teacher-recorded probes", task: "problems solved correctly" },
+  MD:  { condition: "20 multiplication and division facts from 0 to 12", behavior: "answer each fact correctly", target: 90, trials: "4 of 5 weekly probes", measure: "timed fact probes", task: "facts answered correctly" },
+  FR:  { condition: "10 fraction tasks with models or number lines", behavior: "represent, place and compare unit fractions", target: 80, trials: "4 of 5 trials", measure: "teacher-made checks and Performance Matters items", task: "fraction tasks completed correctly" },
+  MGD: { condition: "10 measurement tasks with rulers, beakers and thermometers", behavior: "measure and record each quantity with the correct unit", target: 80, trials: "4 of 5 trials", measure: "teacher-made checks", task: "measurements recorded correctly" }
+};
+const ALIGN = { PA: ["ELA.3.F.1.3"], PH: ["ELA.3.F.1.3"], HFW: ["ELA.3.F.1.3"], VOC: ["ELA.3.V.1.2", "ELA.3.V.1.3"], LIT: ["ELA.3.R.1.1", "ELA.3.R.1.2"],
+  INF: ["ELA.3.R.2.1", "ELA.3.R.2.2"], AG: ["ELA.3.R.3.2"], NS: ["MA.3.NSO.2.1"], MD: ["MA.3.NSO.2.4"], FR: ["MA.3.FR.1.1", "MA.3.FR.2.1"], MGD: ["MA.3.M.1.1"] };
+
+const round5 = x => Math.round(x / 5) * 5;
+function addMonths(iso, m) {
+  const [y, mo, d] = iso.split("-").map(Number);
+  const t = new Date(Date.UTC(y, mo - 1 + m, d));
+  return t.toISOString().slice(0, 10);
+}
+function iepGoal(data, subject, code) {
+  const s = data.students.find(x => x.code === code);
+  if (!s || !s.ese) return null;
+  const p = profile(data, subject, code);
+  if (!p.p1) return { none: true, overall: p.overall };
+  const r = p.p1, tpl = IEP_TEMPLATES[r.id];
+  let baseline = null;
+  const probe = s.ese.probes && s.ese.probes[r.id];
+  if (probe) baseline = { pct: Math.round((probe.right / probe.total) * 100), source: "probe", date: probe.date, right: probe.right, total: probe.total };
+  else {
+    const pm = r.lines.find(l => l.source === "Performance Matters" && l.total);
+    if (pm) baseline = { pct: pm.pct, source: "pm", right: pm.right, total: pm.total, codes: [...new Set(pm.items.map(i => i.code))] };
+  }
+  let target = tpl.target;
+  if (baseline && baseline.pct >= target - 5) target = Math.min(100, round5(baseline.pct + 15));
+  const start = s.ese.review, end = addMonths(s.ese.review, 12);
+  const benchmarks = baseline ? [1, 2].map(k => ({ date: addMonths(start, 4 * k), pct: round5(baseline.pct + ((target - baseline.pct) * k) / 3) })) : [];
+  return { rung: r, p, tpl, target, baseline, start, end, benchmarks, align: ALIGN[r.id] || [] };
+}
+
+if (typeof module !== "undefined") module.exports = { lessonStatus, taughtInfo, catalog, recommendFormat, IEP_TEMPLATES, iepGoal, addMonths, GRADE, LADDERS, IREADY_GL, FAST_CAT_GL, FAST_CUTS, PM_GL, MIN_ITEMS, MASTERY, BANDS, fastGL, fmtGL, band, evidence, overall, profile, standards };
+
+// Offline resource library (demo). In the real build these are the teacher's own saved materials.
+const LIBRARY = {
+  PA: {
+    iv: {"one": "Sound boxes with counters: segment 5 words, then blend them back, 10 minutes", "small": "Oral sound play with whiteboards: add, drop or swap one sound, 3 to 5 students", "whole": "Two-minute phonemic awareness warm-up before every reading block"},
+    en: "hearing and working with the sounds in words", es: "escuchar y manipular los sonidos de las palabras",
+    esName: "conciencia fonológica",
+    goal: "Segment and blend words with 4 to 5 sounds, 9 of 10 correct on a weekly check.",
+    strategies: ["Sound boxes: segment and blend 4 to 5 sound words, 5 minutes a day",
+                 "Oral warm-ups: drop or swap one sound in a word (stamp to tamp)"],
+    homeEn: "Play quick sound games: say a word and ask what it sounds like without its first sound.",
+    homeEs: "Jueguen con los sonidos: digan una palabra y pregunten cómo suena sin el primer sonido."
+  },
+  PH: {
+    iv: {"one": "Word building with letter tiles, then read the same words in a decodable passage", "small": "Syllable-type sort, then a decodable passage read twice, 15 minutes", "whole": "Daily 10-minute syllable-type mini-lesson with choral reading of long words"},
+    en: "sounding out longer words", es: "leer palabras largas parte por parte",
+    esName: "fonética y decodificación",
+    goal: "Read two-syllable decodable words, 18 of 20 correct on a weekly check.",
+    strategies: ["Syllable-type lessons (closed, open, vowel team) with word building",
+                 "Decodable passages with multisyllable words: read once, then reread for accuracy"],
+    homeEn: "Read together for 10 minutes. When a long word appears, cover part of it and read it one chunk at a time.",
+    homeEs: "Lean juntos 10 minutos. Cuando aparezca una palabra larga, tapen una parte y léanla por partes."
+  },
+  HFW: {
+    iv: {"one": "Heart-word mapping on 3 new words, then a quick review of known words", "small": "Sight-word phrase relay with a one-minute timed read", "whole": "Word-wall chant and phrase-reading warm-up"},
+    en: "reading common words quickly", es: "leer con rapidez las palabras de uso frecuente",
+    esName: "palabras de uso frecuente",
+    goal: "Read the grade 3 high-frequency word list with 95% accuracy.",
+    strategies: ["Heart-word mapping: mark the regular and the tricky part of each word",
+                 "One-minute phrase reading with sight-word phrases, graphed weekly"],
+    homeEn: "Practice 5 word cards a night and put the ones read quickly in a done pile.",
+    homeEs: "Practiquen 5 tarjetas de palabras cada noche y separen las que lee rápido en una pila de listas."
+  },
+  VOC: {
+    iv: {"one": "Word-part detective: build and define 5 words from one base word", "small": "Context-clue cards: predict the meaning, then check with a partner", "whole": "Word of the day with a prefix and suffix map"},
+    en: "figuring out what new words mean", es: "descubrir el significado de palabras nuevas",
+    esName: "vocabulario",
+    goal: "Use word parts and context clues to explain new words, 4 of 5 correct on a weekly check.",
+    strategies: ["Word-part lessons: un-, re-, dis-, -ful, -less, -ly, with word building",
+                 "Context-clue think-alouds using sentences from class texts"],
+    homeEn: "When you read or watch something together, stop at one new word and guess its meaning from the sentence.",
+    homeEs: "Cuando lean o vean algo juntos, deténganse en una palabra nueva y adivinen su significado por la oración. Busquen palabras parecidas en español e inglés, como familia y family."
+  },
+  LIT: {
+    iv: {"one": "Reread a short story with the teacher and fill a character-change chart", "small": "Guided reading with theme sentence starters, for example: The character learns that...", "whole": "Interactive read-aloud with think-alouds on character and theme"},
+    en: "understanding characters and themes in stories", es: "comprender los personajes y el mensaje de los cuentos",
+    esName: "lectura de cuentos",
+    goal: "Explain how a character changes and state a theme with two details, 3 of 4 on the class rubric.",
+    strategies: ["Character-change chart: beginning, middle and end, with one detail each",
+                 "Theme statements backed by two details from the text"],
+    homeEn: "After a story or show, ask how the main character changed and what lesson they learned.",
+    homeEs: "Después de un cuento o programa, pregunten cómo cambió el personaje principal y qué lección aprendió."
+  },
+  INF: {
+    iv: {"one": "Highlight and label: central idea in one color, details in another", "small": "Close reading of a short article with a central idea organizer", "whole": "Shared reading of a nonfiction text with a class central-idea anchor chart"},
+    en: "finding the main idea in nonfiction", es: "encontrar la idea principal en textos informativos",
+    esName: "lectura de textos informativos",
+    goal: "State the central idea and two supporting details in 4 of 5 short passages.",
+    strategies: ["Central idea plus two details organizer",
+                 "Text-feature hunts: headings, captions, diagrams and bold words"],
+    homeEn: "Read a short article or a label together and ask what it is mostly about.",
+    homeEs: "Lean juntos un artículo corto o una etiqueta y pregunten de qué se trata principalmente."
+  },
+  AG: {
+    iv: {"one": "Retell aloud in three sentences, then write it as a 20-word summary", "small": "Summary relay: each student adds one key point, then the group trims to 20 words", "whole": "Figurative-language hunt in a mentor text with partner talk"},
+    en: "summarizing and understanding figurative language", es: "resumir y entender el lenguaje figurado",
+    esName: "resumir y comparar textos",
+    goal: "Write a 20-word summary that keeps the key points in 4 of 5 passages.",
+    strategies: ["20-word summaries after each section of a text",
+                 "Figurative-language sort: metaphor, personification, hyperbole"],
+    homeEn: "Ask your child to retell a story or movie in three sentences.",
+    homeEs: "Pidan a su hijo o hija que cuente un cuento o una película en tres oraciones."
+  },
+  NS: {
+    iv: {"one": "Base-ten blocks: build, add and regroup numbers with the teacher", "small": "Open number line practice with 3-digit addition and subtraction", "whole": "Number talk on mental addition and subtraction strategies"},
+    en: "place value and adding and subtracting larger numbers", es: "el valor posicional y sumar y restar números grandes",
+    esName: "sumar y restar",
+    goal: "Add and subtract multi-digit numbers, 9 of 10 correct on a weekly check.",
+    strategies: ["Place-value charts and base-ten blocks to 10,000",
+                 "Open number lines for multi-digit addition and subtraction"],
+    homeEn: "Add up prices at the store and estimate the total before checkout.",
+    homeEs: "Sumen precios en la tienda y estimen el total antes de pagar."
+  },
+  MD: {
+    iv: {"one": "Array cards: build the array, write the fact and its related division fact", "small": "Fact-family games with one target set of facts at a time", "whole": "Daily multiplication fluency routine with skip-counting"},
+    en: "multiplication and division facts", es: "las tablas de multiplicar y dividir",
+    esName: "multiplicar y dividir",
+    goal: "Multiply and divide facts 0 to 12, 9 of 10 correct on a weekly check.",
+    strategies: ["Arrays and area models to build facts 0 to 12",
+                 "Fact families: link each multiplication fact to its division facts"],
+    homeEn: "Practice one fact family a night, like 3 × 4 = 12 and 12 ÷ 3 = 4.",
+    homeEs: "Practiquen una familia de operaciones cada noche, como 3 × 4 = 12 y 12 ÷ 3 = 4."
+  },
+  FR: {
+    iv: {"one": "Fold paper strips into equal parts and name each part", "small": "Fraction strips on a number line: place, compare and explain", "whole": "Fraction of the day: show a model, then write and compare as a class"},
+    en: "understanding fractions", es: "entender las fracciones",
+    esName: "fracciones",
+    goal: "Place and compare fractions with the same numerator or denominator, 4 of 5 correct on a weekly check.",
+    strategies: ["Fraction strips and number lines for unit fractions",
+                 "Compare fractions with the same numerator or the same denominator"],
+    homeEn: "Cut food into equal parts and name each piece: one-fourth, one-third.",
+    homeEs: "Corten la comida en partes iguales y nombren cada pedazo: un cuarto, un tercio."
+  },
+  MGD: {
+    iv: {"one": "Measure classroom objects together and record each with its unit", "small": "Measurement stations: ruler, beaker and thermometer", "whole": "Class survey turned into a bar graph built together"},
+    en: "measuring, shapes and reading graphs", es: "medir, las figuras y leer gráficas",
+    esName: "medición, geometría y datos",
+    goal: "Measure length, liquid volume and temperature with tools, 4 of 5 correct.",
+    strategies: ["Measure real objects with rulers, beakers and thermometers",
+                 "Build and read bar graphs and line plots from class data"],
+    homeEn: "Measure things at home together: a table with a ruler, water in a measuring cup.",
+    homeEs: "Midan cosas en casa: una mesa con una regla, agua en una taza de medir."
+  }
+};
+
+</script>
+<script>
+(function () {
+  const TODAY = "Oct 9, 2026";
+  const RECHECK = { en: "Oct 30, 2026", es: "30 de octubre de 2026" };
+  const P2START = "Oct 23, 2026";
+  const state = { subject: "reading", names: false, tab: "class", code: "S-004", rung: null, lang: "en", approvals: {}, notice: null, rmNotice: null };
+  const SAMPLE_RM = JSON.parse(JSON.stringify(DATA.roadmap));
+  const SAMPLE_OV = JSON.parse(JSON.stringify(DATA.overrides));
+  try { const ov = JSON.parse(localStorage.getItem("odin-demo-overrides") || "null"); if (ov && typeof ov === "object") DATA.overrides = ov; } catch (e) {}
+  const saveOv = () => { try { localStorage.setItem("odin-demo-overrides", JSON.stringify(DATA.overrides)); } catch (e) {} };
+  try { const s = JSON.parse(localStorage.getItem("odin-demo-ui") || "{}"); if (s.subject) state.subject = s.subject; if (typeof s.names === "boolean") state.names = s.names; } catch (e) {}
+  const okHash = ["class", "student", "standards", "roadmap", "ese", "groups", "imports", "how"];
+  if (okHash.includes(location.hash.slice(1))) state.tab = location.hash.slice(1);
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const BAND_LABEL = { support: "Below grade level", approaching: "Just below grade level", ongrade: "At grade level", above: "Above grade level", none: "Not enough evidence" };
+  // Grade level: where a student is working, compared with their own grade (K-12).
+  const glWords = g => g == null ? "Not enough evidence" : g < GRADE - 1 ? "Way below grade level" : g < BANDS.support ? "Below grade level" : g < GRADE ? "Just below grade level" : g < GRADE + 1 ? "At grade level" : "Above grade level";
+  const glShort = g => g == null ? "No data" : g < GRADE - 1 ? "Way below" : g < BANDS.support ? "Below" : g < GRADE ? "Just below" : g < GRADE + 1 ? "At grade" : "Above";
+  // Support tier: how much help a student needs. Separate from grade level. Placeholder rules; the MTSS team decides.
+  const TIER_NAME = { 1: "Core instruction", 2: "Some interventions", 3: "Many supports" };
+  function tierOf(p) {
+    if (p.overall.gl == null) return null;
+    const rated = p.rungs.filter(r => r.gl != null), weak = rated.filter(r => r.band === "support");
+    const way = p.overall.gl < GRADE - 1, many = weak.length >= 3;
+    const nWeak = `${weak.length} of ${rated.length} skills below grade level`;
+    if (way || many) return { n: 3, why: [way ? "working way below grade level overall" : "", many ? nWeak : ""].filter(Boolean).join("; ") };
+    if (weak.length) return { n: 2, why: `interventions needed in ${weak.length === 1 ? "1 area" : weak.length + " areas"} (${nWeak})` };
+    if (p.overall.gl < BANDS.support) return { n: 2, why: "below grade level overall" };
+    return { n: 1, why: p.overall.gl < GRADE ? "just below grade level, no skill below" : "at or above grade level, no skill below" };
+  }
+  const tierN = p => (tierOf(p) || {}).n;
+  const STATUS = { mastered: "Mastered", remediate: "Needs remediation", nocheck: "Taught, not checked yet", nottaught: "Not taught yet" };
+  const SUBJ = { reading: "Reading", math: "Math" };
+  const gl = fmtGL;
+  const student = code => DATA.students.find(s => s.code === code);
+  const who = (code, plain) => {
+    const s = student(code);
+    if (plain) return state.names ? s.name : s.code;
+    const tag = s.ese ? `<span class="tag iep" title="Student with an IEP">IEP</span>` : "";
+    return (state.names ? `<span class="code">${s.code}</span>${esc(s.name)}` : `<span class="code" style="color:var(--ink)">${s.code}</span>`) + tag;
+  };
+  const ladder = () => LADDERS[state.subject];
+  const profiles = () => DATA.students.map(s => ({ s, p: profile(DATA, state.subject, s.code) }));
+  const activeFiles = subj => DATA.files.filter(f => f.active && (!subj || f.subject === subj));
+  const fastFile = () => activeFiles(state.subject).find(f => f.source === "FAST");
+  const ireadyFile = () => activeFiles(state.subject).find(f => f.source === "i-Ready");
+  const saveUi = () => { try { localStorage.setItem("odin-demo-ui", JSON.stringify({ subject: state.subject, names: state.names })); } catch (e) {} };
+  const shortPlace = p => ({ "Mid or Above Grade Level": "Mid/Above", "Early On Grade Level": "Early On", "1 Grade Level Below": "1 below",
+    "2 Grade Levels Below": "2 below", "3 or More Grade Levels Below": "3+ below", "Surpassed Level": "Surpassed" }[p] || p);
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const fmtLong = d => { const [y, m, dd] = d.split("-").map(Number); return `${MONTHS[m - 1]} ${dd}, ${y}`; };
+  const FORMAT = { one: "One-on-one", small: "Small group", whole: "Whole class" };
+  function formatBlock(rungId, rec, reason) {
+    const iv = LIBRARY[rungId] && LIBRARY[rungId].iv;
+    if (!iv) return "";
+    return `<div class="formats">${["one", "small", "whole"].map(k => `<div class="fmt ${k === rec ? "rec" : ""}"><span class="src"><span>${FORMAT[k]}</span>${k === rec ? "<span>suggested</span>" : ""}</span><span>${esc(iv[k])}</span></div>`).join("")}</div>
+      ${reason ? `<p class="small muted">${reason}</p>` : ""}`;
+  }
+  function shareReason(n, total) {
+    const f = recommendFormat(n, total);
+    return { f, why: f === "whole" ? `${n} of ${total} students share this need, so teach it to the whole class.`
+      : f === "small" ? `${n} students share this need, so a small group fits.` : `No classmate shares this need right now, so one-on-one fits.` };
+  }
+  const fmtDate = d => { const [y, m, dd] = d.split("-").map(Number); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m - 1] + " " + dd + ", " + y; };
+  const scaleKey = () => `<div class="scalekey"><span class="muted">Grade-level scale:</span><span><b>3.0</b> working at grade 3 standards</span><span><b>3.1 to 3.9</b> progress through grade 3</span><span><b>4.0</b> ready for grade 4</span><span><b>2.x</b> grade 2 level</span></div>`;
+  const legend = () => `<div class="legend"><span><span class="sw b-support"></span>Below or way below grade level (under ${BANDS.support.toFixed(1)})</span><span><span class="sw b-approaching"></span>Just below grade level (${BANDS.support.toFixed(1)} to 2.9)</span><span><span class="sw b-ongrade"></span>At grade level (3.0 to 3.9)</span><span><span class="sw b-above"></span>Above grade level (4.0+)</span></div>`;
+
+  function setTab(t) { state.tab = t; render(); try { history.replaceState(null, "", "#" + t); } catch (e) {} window.scrollTo({ top: 0 }); }
+  function openStudent(code) { state.code = code; state.rung = null; setTab("student"); }
+
+  // ---------- CLASS ----------
+  function viewClass() {
+    const all = profiles();
+    const L = ladder();
+    const ff = fastFile(), ir = ireadyFile();
+    const onGrade = all.filter(x => x.p.overall.gl != null && x.p.overall.gl >= 3.0).length;
+    const avg = all.reduce((a, x) => a + (x.p.overall.gl || 0), 0) / all.length;
+    const lvl1 = (state.subject === "reading" && ff) ? DATA.students.filter(s => ff.rows[s.code].level === 1) : [];
+    const baseMax = state.subject === "reading" ? 3 : 1;
+    const baseCount = all.filter(x => x.p.p1 && x.p.p1.level <= baseMax && x.p.p1.band === "support").length;
+    const files = activeFiles(state.subject);
+    const counts = L.map(r => ({ r, n: all.filter(x => x.p.p1 && x.p.p1.id === r.id).length }));
+    const noneN = all.filter(x => !x.p.p1).length;
+    const maxN = Math.max(1, ...counts.map(c => c.n), noneN);
+    const sorted = [...all].sort((a, b) => {
+      const ai = a.p.p1 ? a.p.p1.idx : 99, bi = b.p.p1 ? b.p.p1.idx : 99;
+      return ai - bi || (a.p.p1?.gl ?? 99) - (b.p.p1?.gl ?? 99) || a.s.code.localeCompare(b.s.code);
+    });
+    return `<section class="view" aria-labelledby="tab-class">
+      <div class="head"><h2>${SUBJ[state.subject]}: where the class needs help first</h2>
+        <span class="muted small">${files.length} files combined · ${[...new Set(files.map(f => f.source))].join(", ")}</span></div>
+      ${scaleKey()}
+      <div class="stats">
+        <div class="stat"><span class="n">${gl(avg)}</span><span class="l">class average overall ${SUBJ[state.subject].toLowerCase()} level</span></div>
+        <div class="stat"><span class="n">${onGrade} of ${DATA.students.length}</span><span class="l">students at or above grade level overall (3.0+)</span></div>
+        <div class="stat"><span class="n" style="display:flex;gap:8px">${[1, 2, 3].map(n => `<span class="tag tier t${n}" style="font:inherit;padding:0 12px;border-radius:8px" title="Tier ${n}">${all.filter(x => tierN(x.p) === n).length}</span>`).join("")}</span><span class="l">students in support Tier 1 · Tier 2 · Tier 3, suggested from the data for the MTSS team</span></div>
+        <div class="stat ${baseCount ? "flag" : ""}"><span class="n">${baseCount}</span><span class="l">students whose Priority 1 is at the base of the ladder (${state.subject === "reading" ? "rungs 1 to 3: sounds, decoding, sight words" : "rung 1: number sense"})</span></div>
+        ${state.subject === "reading" ? `<div class="stat ${lvl1.length ? "flag" : ""}"><span class="n">${lvl1.length}</span><span class="l">at Level 1 on FAST ELA PM1. Promotion to grade 4 needs Level 2 or higher on PM3, with good-cause exemptions.</span></div>`
+          : `<div class="stat"><span class="n">${noneN}</span><span class="l">students with every skill at grade level, ready for enrichment</span></div>`}
+      </div>
+      <div class="panel" style="display:grid;gap:14px">
+        <div class="head"><h3>Where Priority 1 falls, foundation first</h3><span class="muted small">Number of students</span></div>
+        <div class="dist">
+          ${counts.map(c => `<div class="row ${c.r.level <= baseMax ? "base" : ""}"><span><span class="lvl">${c.r.level}</span>${esc(c.r.name)}</span><span class="bar"><i style="width:${(c.n / maxN) * 100}%"></i></span><span class="cnt">${c.n}</span></div>`).join("")}
+          <div class="row"><span class="muted"><span class="lvl">–</span>No priority needed</span><span class="bar"><i style="width:${(noneN / maxN) * 100}%;opacity:.35"></i></span><span class="cnt">${noneN}</span></div>
+        </div>
+      </div>
+      <div style="display:grid;gap:10px">
+        <div class="head"><h3>Every student, every skill, in grade levels</h3>${legend()}</div>
+        <div class="scroller"><table class="heat">
+          <thead><tr><th class="who">Student</th><th class="ovr">Overall</th><th class="tier" title="Support tier">Tier</th>${L.map(r => `<th><span class="lv">rung ${r.level}</span>${esc(r.short)}</th>`).join("")}<th>FAST PM1</th><th>i-Ready</th></tr></thead>
+          <tbody>${sorted.map(({ s, p }) => `<tr tabindex="0" data-open="${s.code}" aria-label="Open ${esc(who(s.code, true))}">
+            <td class="who">${who(s.code)}</td>
+            <td class="cell ovr"><span class="c b-${p.overall.band}">${gl(p.overall.gl)}</span></td><td class="meta tier">${tierN(p) ? `<span class="tag tier t${tierN(p)}">Tier ${tierN(p)}</span>` : "–"}</td>
+            ${p.rungs.map(r => `<td class="cell"><span class="c b-${r.band} ${r.tag === "P1" ? "p1" : r.tag === "P2" ? "p2" : ""}" title="${esc(r.name)}: ${gl(r.gl)}">${gl(r.gl)}${r.tag === "P1" || r.tag === "P2" ? `<span class="t">${r.tag}</span>` : ""}</span></td>`).join("")}
+            <td class="meta mono">${ff ? `${ff.rows[s.code].ss} · L${ff.rows[s.code].level}` : "–"}</td>
+            <td class="meta">${ir ? shortPlace(ir.rows[s.code].overall) : "–"}</td></tr>`).join("")}</tbody>
+        </table></div>
+        <p class="foot-note">Every number is a grade level. The last two columns show the original FAST and i-Ready results each level was converted from. Sorted by where each student's Priority 1 sits on the ladder; tap a row to open that student.</p>
+      </div>
+    </section>`;
+  }
+
+  // ---------- STUDENT ----------
+  function planFor(p) {
+    const pool = b => p.rungs.filter(r => r.band === b && !r.tag).sort((a, z) => z.gl - a.gl);
+    const top = [...pool("above"), ...pool("ongrade")].slice(0, 2);
+    return { p1: p.p1, p2: p.p2, strengths: top.length ? top : pool("approaching").slice(0, 2), L: LIBRARY };
+  }
+  function evidenceSummary(r) {
+    return r.lines.filter(l => l.counted).map(l => {
+      if (l.source === "Performance Matters") return `Performance Matters ${l.right} of ${l.total} items (${gl(l.gl)})`;
+      if (l.source === "FAST") return `FAST ${l.detail[0].value} (${gl(l.gl)})`;
+      return `i-Ready ${l.detail.map(d => shortPlace(d.value)).join(" / ")} (${gl(l.gl)})`;
+    }).join(" · ");
+  }
+  function familyNote(plan, p, code, lang) {
+    const name = who(code, true);
+    const join = (arr, word) => arr.length < 2 ? arr.join("") : arr.slice(0, -1).join(", ") + " " + word + " " + arr[arr.length - 1];
+    const ov = gl(p.overall.gl);
+    if (lang === "es") {
+      const subj = state.subject === "reading" ? "lectura" : "matemáticas";
+      const lvl = `El nivel general de ${subj} de ${name} es ${ov}. En esta escala, 3.0 significa que trabaja con los estándares de tercer grado y 4.0 significa nivel de cuarto grado.`;
+      const st = join(plan.strengths.map(r => plan.L[r.id].esName), "y");
+      const open = plan.strengths.length ? `Va bien en ${st}.` : `Está avanzando paso a paso.`;
+      if (!plan.p1) return `${lvl} Va bien en todas las destrezas que medimos. Vamos a darle trabajo de mayor reto y volveremos a revisar su progreso el ${RECHECK.es}.`;
+      return `${lvl} ${open} En las próximas tres semanas nos vamos a enfocar en ${plan.L[plan.p1.id].es}. En casa: ${plan.L[plan.p1.id].homeEs} Volveremos a revisar su progreso el ${RECHECK.es}.`;
+    }
+    const lvl = `${name}'s overall ${state.subject} level is ${ov}. On this scale, 3.0 means working at grade 3 standards and 4.0 means ready for grade 4.`;
+    const st = join(plan.strengths.map(r => r.name.toLowerCase()), "and");
+    const open = plan.strengths.length ? `Strong areas: ${st}.` : `Progress is building step by step.`;
+    if (!plan.p1) return `${lvl} Every skill we measured is at grade level. We will add challenge work and check progress again on ${RECHECK.en}.`;
+    return `${lvl} ${open} For the next three weeks our focus is ${plan.L[plan.p1.id].en}. At home: ${plan.L[plan.p1.id].homeEn} We will check progress again on ${RECHECK.en}.`;
+  }
+  function reteach(stds, rung) { return stds.filter(s => s.rung === rung && s.status === "remediate"); }
+  function aiPayload(p, code, stds) {
+    const ev = r => r ? ({ skill: r.name, ladder_rung: r.level, grade_level: r.gl, band: glWords(r.gl),
+      standards_to_reteach: reteach(stds, r.id).map(s => s.code),
+      evidence: r.lines.filter(l => l.counted).map(l => l.source === "Performance Matters"
+        ? { source: l.source, items_right: l.right, items_total: l.total, grade_level: l.gl }
+        : { source: l.source, result: l.detail.map(d => d.value).join(" / "), grade_level: l.gl }) }) : null;
+    return JSON.stringify({
+      student: code, grade: 3, subject: state.subject, overall_grade_level: p.overall.gl,
+      priority_1: ev(p.p1), priority_2: ev(p.p2),
+      strengths: p.rungs.filter(r => r.band === "ongrade" || r.band === "above").map(r => r.name),
+      library_matches: p.p1 ? LIBRARY[p.p1.id].strategies : []
+    }, null, 2);
+  }
+  function numberFacts(p, plan) {
+    let n = 1;
+    [p.p1, p.p2].forEach(r => { if (!r) return; n += 1 + r.lines.filter(l => l.counted).length; });
+    return n + plan.strengths.length;
+  }
+  function planText(p, code, plan, stds) {
+    const out = [`Action plan · ${SUBJ[state.subject]} · ${who(code, true)} · Grade 3`, `Overall level: ${gl(p.overall.gl)} (${glWords(p.overall.gl).toLowerCase()})`, `Suggested support tier: ${tierN(p) ? "Tier " + tierN(p) : "not enough evidence"}`];
+    if (plan.p1) {
+      const rt = reteach(stds, plan.p1.id);
+      out.push("", `Priority 1: ${plan.p1.name}, level ${gl(plan.p1.gl)}`, `Evidence: ${evidenceSummary(plan.p1)}`,
+        ...(rt.length ? [`Standards to reteach: ${rt.map(s => s.code + " " + s.label).join("; ")}`] : []),
+        `Goal: ${LIBRARY[plan.p1.id].goal}`, ...LIBRARY[plan.p1.id].strategies.map(x => "- " + x), `Recheck: ${RECHECK.en}`);
+    } else out.push("", `Every skill is at grade level. Plan enrichment and recheck on ${RECHECK.en}.`);
+    if (plan.p2) out.push("", `Priority 2: ${plan.p2.name}, level ${gl(plan.p2.gl)}, starting about ${P2START}`, `- ${LIBRARY[plan.p2.id].strategies[0]}`);
+    out.push("", `Strengths: ${plan.strengths.length ? plan.strengths.map(r => `${r.name} (${gl(r.gl)})`).join(", ") : "none yet outside the priorities"}`, "", `Family note: ${familyNote(plan, p, code, state.lang)}`);
+    return out.join("\n");
+  }
+
+  function stdRow(s, withBasis) {
+    const basis = s.status === "nottaught" ? s.basis.replace(/\d{4}-\d{2}-\d{2}/g, m => fmtDate(m)) : s.basis + (s.firstTaught ? " · taught " + fmtDate(s.firstTaught) : "");
+    return `<div class="stdrow"><span class="mono small">${s.code}</span><span class="lbl">${esc(s.label)}</span><span class="st ${s.status}">${STATUS[s.status]}</span>${withBasis ? `<span class="basis">${esc(basis)}</span>` : ""}</div>`;
+  }
+
+  function viewStudent() {
+    const code = state.code;
+    const s = student(code);
+    const p = profile(DATA, state.subject, code);
+    const stds = standards(DATA, state.subject, code);
+    const sel = p.rungs.find(r => r.id === state.rung) || p.p1 || p.rungs[p.rungs.length - 1];
+    state.rung = sel.id;
+    const plan = planFor(p);
+    const key = code + ":" + state.subject;
+    const approved = state.approvals[key];
+    const rungsTopDown = [...p.rungs].reverse();
+    const facts = numberFacts(p, plan);
+    const order = ["remediate", "nocheck", "mastered", "nottaught"];
+    const taught = stds.filter(x => x.taught);
+    const mastered = taught.filter(x => x.status === "mastered").length;
+    const x = g => `${(Math.min(g, 5) / 5) * 100}%`;
+    const rt1 = plan.p1 ? reteach(stds, plan.p1.id) : [];
+    return `<section class="view" aria-labelledby="tab-student">
+      <div class="head">
+        <div class="picker">
+          <label class="small muted" for="pick">Student</label>
+          <select id="pick">${DATA.students.map(st => `<option value="${st.code}" ${st.code === code ? "selected" : ""}>${st.code}${state.names ? " · " + esc(st.name) : ""}</option>`).join("")}</select>
+          <button class="iconbtn" id="prev" aria-label="Previous student">←</button><button class="iconbtn" id="next" aria-label="Next student">→</button>
+        </div>
+        <span class="muted small">Grade 3 · ${SUBJ[state.subject]}</span>
+      </div>
+      <div class="panel overall">
+        <div class="big b-${p.overall.band}">${gl(p.overall.gl)}<small>${glWords(p.overall.gl)}</small></div>
+        <div style="display:grid;gap:8px;min-width:0">
+          <h2>${state.names ? esc(s.name) + ` <span class="code">${code}</span>` : code}: overall ${state.subject} level</h2>
+          ${s.ese ? `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="tag iep" style="margin:0">IEP</span><span class="small muted">${esc(s.ese.exceptionality)} · annual review ${fmtDate(s.ese.review)}</span><button class="btn ghost" data-tab="ese" style="padding:4px 12px;font-size:0.85rem">See IEP goal draft</button></div>` : ""}
+          ${(t => t ? `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline"><span class="tag tier t${t.n}">Tier ${t.n} · ${TIER_NAME[t.n]}</span><span class="small muted">Suggested support level: ${t.why}</span></div>` : "")(tierOf(p))}
+          <div class="parts">${p.overall.parts.map(pt => `<div><span class="src">${esc(pt.source)}</span><span>${esc(pt.raw)}</span><span class="mono">→ ${gl(pt.gl)}</span></div>`).join("")}
+            <div class="muted small">Overall is the average of the two whole-test results. Skill levels below add the detail.</div></div>
+        </div>
+      </div>
+      <div class="split">
+        <div class="panel" style="display:grid;gap:12px">
+          <div class="head"><h3>Skill ladder</h3><span class="muted small">Foundation at the bottom</span></div>
+          <div class="ladder" role="group" aria-label="Skill ladder">
+            ${rungsTopDown.map(r => `<button class="rung" data-rung="${r.id}" aria-pressed="${r.id === sel.id}">
+              <span class="lvl">${r.level}</span>
+              <span class="body"><span class="nm">${esc(r.name)} ${r.tag ? `<span class="tag ${r.tag === "P1" ? "p1" : r.tag === "P2" ? "p2" : "wait"}">${r.tag === "Waits" ? "waits" : r.tag}</span>` : ""}</span>
+                <span class="track"><i class="fill b-${r.band}" style="width:${r.gl == null ? 0 : x(r.gl)}"></i><b class="cut" style="left:${x(BANDS.support)}"></b><b class="cut g3" style="left:${x(3)}"></b><b class="cut" style="left:${x(4)}"></b></span></span>
+              <span class="sc">${gl(r.gl)}<small>${glShort(r.gl)}</small></span></button>`).join("")}
+          </div>
+          <div class="axis" aria-hidden="true"><span></span><span class="sc-axis">${["K", "1", "2", "3", "4", "5"].map((t, i) => `<span class="${i === 3 ? "g3" : ""}" style="left:${i * 20}%">${t}</span>`).join("")}</span><span></span></div>
+          <p class="foot-note">Bars show grade level from kindergarten to grade 5; the solid line is grade 3. Priority 1 is the lowest skill below grade level; Priority 2 is the next one up. Weak skills higher up wait.</p>
+        </div>
+        <div class="panel ev" aria-live="polite">
+          <div class="head"><h3>Behind the level: ${esc(sel.name)}</h3></div>
+          ${sel.lines.length ? sel.lines.map(evLine).join("") : `<p class="muted">No test in the loaded files measures this skill.</p>`}
+          <div class="total b-${sel.band}"><span>Skill level${sel.lines.filter(l => l.counted).length > 1 ? `, average of ${sel.lines.filter(l => l.counted).length} sources` : ""}</span><span class="mono">${gl(sel.gl)} · ${glWords(sel.gl)}</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="display:grid;gap:12px">
+        <div class="head"><h3>Standards mastery · ${SUBJ[state.subject]}</h3><span class="muted small">${mastered} of ${taught.length} taught standards mastered · ${stds.length - taught.length} not taught yet</span></div>
+        <div>${order.map(st => { const rows = stds.filter(z => z.status === st); return rows.length ? `<div class="stdgroup"><h4>${STATUS[st]} · ${rows.length}</h4><div class="stdlist">${rows.map(z => stdRow(z, true)).join("")}</div></div>` : ""; }).join("")}</div>
+        <p class="foot-note">Mastered means at least ${Math.round(MASTERY.pct * 100)}% right on ${MASTERY.minItems} or more items for that benchmark. Not taught yet comes from the roadmap and the teacher's marks, so those standards never count against a student, even when a test included them.</p>
+      </div>
+
+      <div class="panel plan">
+        <div class="status">
+          <div style="display:grid;gap:4px"><h3>Action plan · ${SUBJ[state.subject]}</h3>
+            <span class="muted small">Drafted by the local AI from the numbers above. In this demo the draft comes from a fixed template.</span></div>
+          ${approved ? `<span class="pill ok">Approved by teacher · ${approved}</span>` : `<span class="pill draft">Draft · needs teacher approval</span>`}
+        </div>
+        ${plan.p1 ? `
+        <div class="block"><span class="k">Priority 1 · start now</span>
+          <h3>${esc(plan.p1.name)} <span class="muted mono small">level ${gl(plan.p1.gl)} · ${glWords(plan.p1.gl).toLowerCase()}</span></h3>
+          <p class="small muted">Evidence: ${esc(evidenceSummary(plan.p1))}</p>
+          ${rt1.length ? `<p class="small"><b>Standards to reteach:</b> ${rt1.map(z => `<span class="mono">${z.code}</span> ${esc(z.label)}`).join(" · ")}</p>` : ""}
+          <p><b>Goal:</b> ${esc(LIBRARY[plan.p1.id].goal)}</p>
+          <ul>${LIBRARY[plan.p1.id].strategies.map(z => `<li>${esc(z)}</li>`).join("")}</ul>
+          <p class="small"><b>Recheck:</b> ${RECHECK.en}, three weeks from today.</p>
+        </div>
+        <div class="block"><span class="k">Intervention options · ${esc(plan.p1.name)}</span>
+          ${(() => { const n = profiles().filter(x => x.p.p1 && x.p.p1.id === plan.p1.id).length; const r = shareReason(n, DATA.students.length); return formatBlock(plan.p1.id, r.f, r.why + (s.ese ? " Check the IEP service model for where this happens." : "")); })()}
+        </div>` : `<div class="block"><span class="k">Priority 1</span><p>Every skill is at grade level. Plan enrichment and recheck on ${RECHECK.en}.</p></div>`}
+        ${plan.p2 ? `
+        <div class="block"><span class="k">Priority 2 · add once Priority 1 is under way, about ${P2START}</span>
+          <h3>${esc(plan.p2.name)} <span class="muted mono small">level ${gl(plan.p2.gl)} · ${glWords(plan.p2.gl).toLowerCase()}</span></h3>
+          <p class="small muted">Evidence: ${esc(evidenceSummary(plan.p2))}</p>
+          <ul><li>${esc(LIBRARY[plan.p2.id].strategies[0])}</li></ul>
+        </div>` : ""}
+        <div class="block"><span class="k">Strengths to build on</span>
+          <p>${plan.strengths.length ? plan.strengths.map(r => `${esc(r.name)} <span class="mono muted small">${gl(r.gl)}</span>`).join(" · ") : `<span class="muted">No skill outside the priorities is at grade level yet.</span>`}</p></div>
+        <div class="block"><span class="k">Note for the family</span>
+          <div class="family">
+            <div class="seg" role="group" aria-label="Family note language" style="justify-self:start">
+              <button id="lang-en" data-lang="en" aria-pressed="${state.lang === "en"}">English</button>
+              <button id="lang-es" data-lang="es" aria-pressed="${state.lang === "es"}">Español</button></div>
+            <p lang="${state.lang}">${esc(familyNote(plan, p, code, state.lang))}</p>
+            ${state.names ? "" : `<p class="small muted">Names go back in only on the printed copy, from the name key on the Project Cerberus server.</p>`}
+          </div></div>
+        <div class="block">
+          <p class="check">Number check passed: all ${facts} numbers in this plan match the database.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">
+            <button class="btn" id="approve" ${approved ? "disabled" : ""}>${approved ? "Approved" : "Approve plan"}</button>
+            ${approved ? `<button class="btn ghost" id="unapprove">Return to draft</button>` : ""}
+            <button class="btn ghost" id="copy">Copy plan text</button>
+          </div>
+        </div>
+        <details class="ai"><summary>What the local AI receives for this student</summary>
+          <p class="small muted" style="margin-top:8px">Codes and computed grade levels only. No name, no birthday, no ID number. The model writes words; it does not do the math.</p>
+          <pre>${esc(aiPayload(p, code, stds))}</pre></details>
+      </div>
+    </section>`;
+  }
+  function evLine(l) {
+    if (l.source === "Performance Matters") {
+      return `<div class="evline ${l.counted ? "" : "off"}">
+        <div class="r"><span class="src">Performance Matters · item analysis</span><span class="pts">${l.right} of ${l.total} = ${l.pct}% → ${gl(l.gl)}</span></div>
+        <div class="items">${l.items.map(it => `<div><span class="mono muted">#${it.n}</span><span class="mono small">${it.code}</span><span class="bm">${esc(it.label)}</span><span class="${it.correct ? "ok" : "no"}" aria-label="${it.correct ? "correct" : "incorrect"}">${it.correct ? "✓" : "✗"}</span></div>`).join("")}</div>
+        <span class="muted small">${[...new Set(l.items.map(i => i.file))].join(" + ")}</span>
+        ${l.counted ? "" : `<span class="small" style="color:var(--approaching);font-weight:600">Only ${l.total} item${l.total === 1 ? "" : "s"}, fewer than ${MIN_ITEMS}, so this line is not counted yet.</span>`}
+      </div>`;
+    }
+    const isI = l.source === "i-Ready";
+    return `<div class="evline">
+      <div class="r"><span class="src">${isI ? "i-Ready · Diagnostic 1" : "FAST · PM1 reporting category"}</span><span class="pts">→ ${gl(l.gl)}</span></div>
+      ${l.detail.map(d => `<div class="r small"><span>${esc(d.label)}</span><b>${esc(isI ? d.value : d.value + " the standard")}${isI ? ` <span class="mono muted">${gl(d.gl)}</span>` : ""}</b></div>`).join("")}
+      ${isI && l.detail.length > 1 ? `<span class="muted small">Two domains, averaged into one i-Ready line.</span>` : ""}
+    </div>`;
+  }
+
+  // ---------- STANDARDS (class) ----------
+  function viewStandards() {
+    const per = DATA.students.map(s => ({ s, st: standards(DATA, state.subject, s.code) }));
+    const list = catalog(DATA, state.subject).map((std, i) => {
+      const rows = per.map(x => ({ s: x.s, r: x.st[i] }));
+      const c = k => rows.filter(x => x.r.status === k);
+      return { std, r0: rows[0].r, taught: rows[0].r.taught, m: c("mastered"), rm: c("remediate"), nc: c("nocheck") };
+    });
+    const taught = list.filter(x => x.taught).sort((a, b) => b.rm.length - a.rm.length || a.std.code.localeCompare(b.std.code));
+    const later = list.filter(x => !x.taught).sort((a, b) => (b.r0.skipped.length - a.r0.skipped.length) || (a.r0.next || "9999").localeCompare(b.r0.next || "9999"));
+    const checked = taught.reduce((a, x) => a + x.m.length + x.rm.length, 0);
+    const mast = taught.reduce((a, x) => a + x.m.length, 0);
+    const n = DATA.students.length;
+    const chip = x => `<button class="chip" data-open="${x.s.code}">${who(x.s.code)}</button>`;
+    const whyLater = x => x.r0.basis.replace(/ · \d+ test items? not counted/, "").replace(/\d{4}-\d{2}-\d{2}/g, m => fmtDate(m));
+    return `<section class="view" aria-labelledby="tab-standards">
+      <div class="head"><h2>${SUBJ[state.subject]} standards mastery</h2><span class="muted small">B.E.S.T. benchmarks · pacing as of ${TODAY}</span></div>
+      <div class="stats">
+        <div class="stat"><span class="n">${taught.length} of ${list.length}</span><span class="l">benchmarks taught so far, from the roadmap and the teacher's marks</span></div>
+        <div class="stat"><span class="n">${checked ? Math.round((mast / checked) * 100) + "%" : "–"}</span><span class="l">of checked student results on taught benchmarks are mastered</span></div>
+        <div class="stat ${taught[0] && taught[0].rm.length >= n / 2 ? "flag" : ""}"><span class="n">${taught.filter(x => x.rm.length >= n / 2).length}</span><span class="l">taught benchmarks where half the class or more needs remediation: reteach to the whole class</span></div>
+        <div class="stat"><span class="n">${taught.filter(x => x.nc.length).length}</span><span class="l">taught benchmarks with no check yet: plan a quick assessment</span></div>
+      </div>
+      <div class="legend"><span><span class="sw b-ongrade"></span>Mastered</span><span><span class="sw b-support"></span>Needs remediation</span><span><span class="sw b-none"></span>Taught, not checked yet</span></div>
+      <div class="class-std">
+        <h3 style="margin-bottom:10px">Taught so far · most remediation first</h3>
+        ${taught.map(x => `<details>
+          <summary><span class="mono small">${x.std.code}</span><span class="lbl">${esc(x.std.label)}</span>
+            <span class="stackwrap" style="display:grid;gap:3px"><span class="stack" role="img" aria-label="${x.m.length} mastered, ${x.rm.length} need remediation, ${x.nc.length} not checked">
+              <i class="seg-m mastered" style="width:${(x.m.length / n) * 100}%"></i><i class="seg-m support" style="width:${(x.rm.length / n) * 100}%"></i><i class="seg-m nocheck" style="width:${(x.nc.length / n) * 100}%"></i></span>
+              <span class="stack-note">${x.nc.length === n ? "not checked yet" : `${x.m.length} mastered · ${x.rm.length} remediate${x.nc.length ? ` · ${x.nc.length} unchecked` : ""}`}</span></span>
+            <span class="when">taught ${fmtDate(x.r0.firstTaught).replace(", 2026", "")}</span></summary>
+          <div class="inside">
+            ${x.std.rung && (x.rm.length || x.nc.length < n) ? (() => { const r = shareReason(x.rm.length, n); return x.rm.length ? `<div style="display:grid;gap:6px"><p class="small"><b>Reteach options</b></p>${formatBlock(x.std.rung, r.f, r.why)}</div>` : ""; })() : ""}
+            ${x.rm.length ? `<div><p class="small" style="margin-bottom:6px"><b>Needs remediation (${x.rm.length})</b></p><div style="display:flex;flex-wrap:wrap;gap:6px">${x.rm.map(chip).join("")}</div></div>` : ""}
+            ${x.m.length ? `<div><p class="small" style="margin-bottom:6px"><b>Mastered (${x.m.length})</b></p><div style="display:flex;flex-wrap:wrap;gap:6px">${x.m.map(chip).join("")}</div></div>` : ""}
+            ${x.nc.length ? `<p class="small muted">No result yet for ${x.nc.length} student${x.nc.length > 1 ? "s" : ""}. ${x.nc[0].r.basis}.</p>` : ""}
+          </div></details>`).join("")}
+      </div>
+      <div class="panel" style="display:grid;gap:8px">
+        <h3>Not taught yet · ${later.length}</h3>
+        <p class="small muted">These never count against a student, even when a test already asked about them. A standard switches to taught when a roadmap lesson covering it is marked taught.</p>
+        <div class="stdlist">${later.map(x => `<div class="stdrow"><span class="mono small">${x.std.code}</span><span class="lbl">${esc(x.std.label)}</span><span class="st ${x.r0.skipped.length ? "remediate" : "nottaught"}">${x.r0.skipped.length ? "Skipped" : "Not taught yet"}</span><span class="basis">${esc(whyLater(x))}${x.r0.items.length ? ` · test items set aside for every student` : ""}</span></div>`).join("")}</div>
+      </div>
+    </section>`;
+  }
+
+  // ---------- ROADMAP ----------
+  const CSV_COLS = ["subject", "unit", "unit_title", "date", "lesson", "activity", "standards"];
+  function roadmapCsv(subj) {
+    const q = v => /[",\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : v;
+    return [CSV_COLS.join(","), ...DATA.roadmap[subj].lessons.map(l => [subj, l.unit, l.unitTitle, l.date, l.title, l.activity || "", l.standards.join(";")].map(q).join(","))].join("\n");
+  }
+  function parseCSV(text) {
+    const rows = []; let row = [], f = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+      else if (c === '"') q = true;
+      else if (c === ",") { row.push(f); f = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(f); rows.push(row); row = []; f = ""; }
+      else f += c;
+    }
+    if (f.length || row.length) { row.push(f); rows.push(row); }
+    return rows.filter(r => r.some(x => x.trim() !== ""));
+  }
+  function toIso(v) {
+    v = (v || "").trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}` : null;
+  }
+  function importRoadmap(text, fileName) {
+    const rows = parseCSV(text);
+    if (rows.length < 2) return { error: "The file has no lesson rows." };
+    const norm = h => h.trim().toLowerCase().replace(/[^a-z]/g, "");
+    const head = rows[0].map(norm);
+    const find = (...names) => head.findIndex(h => names.includes(h));
+    const ix = { subject: find("subject"), unit: find("unit", "unitnumber"), unitTitle: find("unittitle", "unitname"), date: find("date", "planneddate", "week"),
+      lesson: find("lesson", "title", "lessontitle"), activity: find("activity", "activities"), standards: find("standards", "standard", "benchmarks", "benchmark") };
+    const missing = ["date", "lesson", "standards"].filter(k => ix[k] < 0);
+    if (missing.length) return { error: `Missing column${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}. The first row needs headers such as ${CSV_COLS.join(", ")}.` };
+    const out = { reading: [], math: [] }, bad = [];
+    rows.slice(1).forEach((r, k) => {
+      const get = i => (i >= 0 ? (r[i] || "").trim() : "");
+      const date = toIso(get(ix.date)), title = get(ix.lesson);
+      const stds = get(ix.standards).split(/[;|\s]+/).map(x => x.trim()).filter(Boolean);
+      const sv = get(ix.subject).toLowerCase();
+      const subj = ix.subject < 0 || !sv ? state.subject : /math/.test(sv) ? "math" : /read|ela|lang/.test(sv) ? "reading" : null;
+      if (!date || !title || !stds.length || !subj) { bad.push(k + 2); return; }
+      const unit = Number(get(ix.unit)) || get(ix.unit) || 1;
+      out[subj].push({ id: `X${subj[0]}${k + 1}`, unit, unitTitle: get(ix.unitTitle) || `Unit ${unit}`, date, title, activity: get(ix.activity), standards: stds });
+    });
+    const loaded = Object.entries(out).filter(([, ls]) => ls.length);
+    if (!loaded.length) return { error: `No usable rows. Check rows ${bad.slice(0, 8).join(", ")}: each needs a date, a lesson title and at least one standard code.` };
+    const known = new Set([...DATA.standards.reading, ...DATA.standards.math].map(s => s.code));
+    let added = 0;
+    loaded.forEach(([subj, ls]) => {
+      ls.sort((a, b) => a.date.localeCompare(b.date));
+      DATA.roadmap[subj] = { name: fileName, lessons: ls };
+      ls.forEach(l => l.standards.forEach(c => { if (!known.has(c)) { known.add(c); added++; } }));
+    });
+    return { loaded: loaded.map(([s, ls]) => `${ls.length} ${s} lessons`).join(" and "), bad, added, subj: loaded[0][0] };
+  }
+  function classStatuses(subj) { const o = {}; DATA.students.forEach(s => { standards(DATA, subj, s.code).forEach(z => { (o[z.code] = o[z.code] || { label: z.label, st: {} }).st[s.code] = z.status; }); }); return o; }
+  function setLesson(id, value) {
+    const subj = state.subject;
+    const before = classStatuses(subj);
+    if (DATA.overrides[id] === value) delete DATA.overrides[id]; else DATA.overrides[id] = value;
+    saveOv();
+    const after = classStatuses(subj);
+    const lines = [];
+    Object.entries(after).forEach(([code, a]) => {
+      const b = before[code];
+      if (!b) return;
+      const changed = Object.keys(a.st).filter(k => a.st[k] !== b.st[k]);
+      if (!changed.length) return;
+      const cnt = k => Object.values(a.st).filter(v => v === k).length;
+      const nowTaught = a.st[Object.keys(a.st)[0]] !== "nottaught";
+      lines.push(nowTaught ? `<b>${code}</b> ${esc(a.label)} now counts as taught: ${cnt("mastered")} mastered, ${cnt("remediate")} need remediation${cnt("nocheck") ? `, ${cnt("nocheck")} not checked yet` : ""}.`
+        : `<b>${code}</b> ${esc(a.label)} is now not taught: results for all ${DATA.students.length} students are set aside.`);
+    });
+    const ls = DATA.roadmap[subj].lessons.find(l => l.id === id);
+    state.rmNotice = { title: `${ls.title}: ${DATA.overrides[id] ? (DATA.overrides[id] === "taught" ? "marked taught" : "marked not taught") : "back to the roadmap date"}.`, lines: lines.length ? lines : ["Another lesson already covers the same standard, so no student results changed."] };
+    render();
+  }
+  function viewRoadmap() {
+    const rm = DATA.roadmap[state.subject];
+    const ls = [...rm.lessons].sort((a, b) => a.date.localeCompare(b.date));
+    const stat = l => lessonStatus(DATA, l);
+    const past = ls.filter(l => l.date <= DATA.today);
+    const taughtN = ls.filter(l => stat(l) === "taught").length, notN = ls.filter(l => stat(l) === "nottaught").length, upN = ls.filter(l => stat(l) === "upcoming").length;
+    const units = [...new Set(ls.map(l => l.unit))];
+    const cat = catalog(DATA, state.subject), info = taughtInfo(DATA, state.subject);
+    const stTaught = cat.filter(c => info[c.code] && info[c.code].taught).length;
+    const n = state.rmNotice;
+    let todayShown = false;
+    const lessonRow = l => {
+      const st = stat(l), ov = DATA.overrides[l.id], future = l.date > DATA.today;
+      let pre = "";
+      if (!todayShown && future) { todayShown = true; pre = `<div class="today">TODAY · ${TODAY.toUpperCase()}</div>`; }
+      const note = ov === "nottaught" ? (DATA.overrideNotes[l.id] || "Marked not taught by the teacher") : ov === "taught" && future ? "Marked taught early by the teacher" : "";
+      return pre + `<div class="lesson ${st === "nottaught" ? "skipped" : ""}">
+        <span class="d">${fmtDate(l.date).replace(/, \d{4}/, "")}</span>
+        <div style="min-width:0"><div class="t">${esc(l.title)}</div>${l.activity ? `<div class="a">${esc(l.activity)}</div>` : ""}
+          <div class="codes">${l.standards.map(c => `<span>${esc(c)}</span>`).join("")}</div>${note ? `<div class="note">${esc(note)}</div>` : ""}</div>
+        <div class="ctl"><div class="seg small" role="group" aria-label="Was ${esc(l.title)} taught?">
+          <button class="on-taught" data-lesson="${l.id}" data-set="taught" aria-pressed="${st === "taught"}">Taught</button>
+          <button class="on-not" data-lesson="${l.id}" data-set="nottaught" aria-pressed="${st === "nottaught"}">Not taught</button></div>
+          <span class="small muted">${st === "upcoming" ? "Upcoming" : ov ? "Teacher mark" : "By roadmap date"}</span></div>
+      </div>`;
+    };
+    return `<section class="view" aria-labelledby="tab-roadmap">
+      <div class="head"><h2>${SUBJ[state.subject]} curriculum roadmap</h2><span class="muted small">${esc(rm.name)}</span></div>
+      <p class="lead">The roadmap says what is planned. Your marks say what actually happened. A standard counts as taught only when a lesson covering it is marked taught, so a skipped lesson never counts against a student.</p>
+      <div class="rm-tools">
+        <span class="btn upl">Upload roadmap (CSV)<input type="file" id="rm-file" accept=".csv,text/csv,text/plain" aria-label="Upload roadmap CSV"></span>
+        <button class="btn ghost" id="rm-restore">Restore sample roadmap</button>
+        <button class="btn ghost" id="rm-copy">Copy this roadmap as CSV</button>
+      </div>
+      ${n ? `<div class="notice" role="status"><b>${esc(n.title)}</b>${n.lines && n.lines.length ? `<ul>${n.lines.map(z => `<li>${z}</li>`).join("")}</ul>` : ""}${n.foot ? `<span class="small muted">${n.foot}</span>` : ""}</div>` : ""}
+      <div class="stats">
+        <div class="stat"><span class="n">${taughtN}</span><span class="l">lessons taught</span></div>
+        <div class="stat ${notN ? "flag" : ""}"><span class="n">${notN}</span><span class="l">lessons marked not taught</span></div>
+        <div class="stat"><span class="n">${upN}</span><span class="l">lessons still ahead</span></div>
+        <div class="stat"><span class="n">${stTaught} of ${cat.length}</span><span class="l">standards taught so far</span></div>
+      </div>
+      ${units.map(u => { const ul = ls.filter(l => l.unit === u); return `<div class="panel rm-unit"><h3>Unit ${esc(u)} · ${esc(ul[0].unitTitle)}</h3>${ul.map(lessonRow).join("")}</div>`; }).join("")}
+      ${!todayShown ? `<div class="today">TODAY · ${TODAY.toUpperCase()}</div>` : ""}
+      <details class="ai"><summary>CSV format for your own roadmap</summary>
+        <p class="small muted" style="margin-top:8px">One row per lesson. Columns: ${CSV_COLS.join(", ")}. Dates as YYYY-MM-DD or M/D/YYYY. Separate several standards with a semicolon. The file is read inside this page; nothing is uploaded to a server.</p>
+        <pre>${esc(roadmapCsv(state.subject).split("\n").slice(0, 6).join("\n"))}\n…</pre></details>
+    </section>`;
+  }
+
+  // ---------- ESE / IEP ----------
+  function goalParts(g, code, subj) {
+    const name = who(code, true), tpl = g.tpl, r = g.rung, p = g.p;
+    const ff = DATA.files.find(f => f.active && f.subject === subj && f.source === "FAST");
+    const ir = DATA.files.find(f => f.active && f.subject === subj && f.source === "i-Ready");
+    const tests = [ir ? `i-Ready Diagnostic 1: ${ir.rows[code].overall}` : "", ff ? `FAST PM1: ${ff.rows[code].ss}, Level ${ff.rows[code].level}` : ""].filter(Boolean).join("; ");
+    const b = g.baseline;
+    const base = !b ? `No item-level baseline yet: give a 10-item probe on this skill before the IEP meeting.`
+      : b.source === "probe" ? `On a teacher probe on ${fmtLong(b.date)}, ${name} had ${b.right} of ${b.total} ${tpl.task} (${b.pct}% accuracy).`
+      : `On Performance Matters items for ${b.codes.join(" and ")}, ${name} answered ${b.right} of ${b.total} correctly (${b.pct}% accuracy).`;
+    const present = `${name}'s overall ${subj} level is ${gl(p.overall.gl)}, ${glWords(p.overall.gl).toLowerCase()}${tests ? ` (${tests})` : ""}. The lowest weak skill on the ladder is ${r.name.toLowerCase()}, at grade level ${gl(r.gl)}. ${base} This affects ${name}'s progress in grade 3 ${subj} instruction in the general education classroom.`;
+    const goal = `By ${fmtLong(g.end)}, given ${tpl.condition}, ${name} will ${tpl.behavior} with ${g.target}% accuracy in ${tpl.trials}, as measured by ${tpl.measure}.`;
+    const bms = g.benchmarks.map(x => `By ${fmtLong(x.date)}, ${name} will ${tpl.behavior} with ${x.pct}% accuracy in ${tpl.trials}.`);
+    return { present, goal, bms };
+  }
+  function viewEse() {
+    const list = DATA.students.filter(s => s.ese);
+    const cat = { reading: catalog(DATA, "reading"), math: catalog(DATA, "math") };
+    return `<section class="view" aria-labelledby="tab-ese">
+      <div class="head"><h2>ESE students and IEP goal drafts</h2><span class="muted small">${list.length} students with an IEP</span></div>
+      <p class="lead">Each goal is a draft for the IEP team, written from current data in the academic goal format: when and under what condition, what the student will do, with what accuracy, and how it is measured. Odin redrafts them with the newest data before each meeting.</p>
+      <p class="privacy">IEP details stay on the Project Cerberus server like everything else. The local AI receives the goal area, levels and baseline only, never the exceptionality or the student's name.</p>
+      ${list.map(s => {
+        const e = s.ese;
+        return `<div class="panel ese-card">
+          <div class="head"><h3>${who(s.code)} <span class="muted small" style="font-weight:400">${esc(e.exceptionality)}</span></h3><span class="pill draft">Draft for the IEP team · annual review ${fmtDate(e.review)}</span></div>
+          <div class="ese-meta">
+            <div><span class="k src">Services</span><ul>${e.services.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+            <div><span class="k src">Classroom accommodations</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${e.accommodations.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>
+          </div>
+          ${["reading", "math"].map(subj => {
+            if (!e.areas.includes(subj)) return `<div class="goal"><p class="small muted"><b>${SUBJ[subj]}</b> is not an IEP goal area for this student. The classroom action plan covers it.</p></div>`;
+            const g = iepGoal(DATA, subj, s.code);
+            if (g.none) return `<div class="goal"><span class="k src">${SUBJ[subj]} goal</span><p class="small">Every ${subj} skill is at grade level (overall ${gl(g.overall.gl)}). Discuss with the team whether this goal area is still needed.</p></div>`;
+            const parts = goalParts(g, s.code, subj);
+            const shares = DATA.students.filter(x => { const pp = profile(DATA, subj, x.code); return pp.p1 && pp.p1.id === g.rung.id; }).length;
+            const rec = shareReason(shares, DATA.students.length);
+            const align = g.align.map(c => { const z = cat[subj].find(q => q.code === c); return `<span class="mono">${c}</span> ${z ? esc(z.label) : ""}`; }).join(" · ");
+            return `<div class="goal">
+              <div class="head"><span class="k src">${SUBJ[subj]} goal · priority 1: ${esc(g.rung.name)} (level ${gl(g.rung.gl)})</span>
+                <button class="btn ghost" data-copygoal="${s.code}|${subj}" style="padding:4px 12px;font-size:0.84rem">Copy goal</button></div>
+              <p class="pl"><b>Present level.</b> ${esc(parts.present)}</p>
+              <p class="goaltext"><b>Annual goal.</b> ${esc(parts.goal)}</p>
+              ${parts.bms.length ? `<div><p class="small" style="margin-bottom:4px"><b>Short-term benchmarks</b></p><ul>${parts.bms.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : `<p class="small" style="color:var(--approaching);font-weight:600">Benchmarks will be set once a baseline probe is recorded.</p>`}
+              <p class="small"><b>Aligned to:</b> ${align}</p>
+              <p class="small"><b>Progress monitoring:</b> ${esc(g.tpl.trials)}, ${esc(g.tpl.measure)}, graphed weekly and reported to the family each grading period.</p>
+              <div style="display:grid;gap:6px"><p class="small"><b>Intervention options</b></p>${formatBlock(g.rung.id, rec.f === "whole" ? "small" : rec.f, rec.why + " Deliver it as the IEP services describe.")}</div>
+            </div>`;
+          }).join("")}
+        </div>`;
+      }).join("")}
+    </section>`;
+  }
+
+  // ---------- GROUPS ----------
+  function viewGroups() {
+    const all = profiles();
+    const L = ladder();
+    const baseMax = state.subject === "reading" ? 3 : 1;
+    const groups = L.map(r => ({ r, members: all.filter(x => x.p.p1 && x.p.p1.id === r.id), also: all.filter(x => x.p.p2 && x.p.p2.id === r.id) })).filter(g => g.members.length);
+    const none = all.filter(x => !x.p.p1);
+    const chip = x => `<button class="chip" data-open="${x.s.code}">${who(x.s.code)} <span class="mono muted small">${x.p.p1 ? gl(x.p.p1.gl) : gl(x.p.overall.gl)}</span></button>`;
+    return `<section class="view" aria-labelledby="tab-groups">
+      <div class="head"><h2>${SUBJ[state.subject]} small groups by Priority 1</h2></div>
+      <p class="lead">Students who share a Priority 1 can be taught together. The number beside each student is their grade level in that skill. Groups rebuild themselves each time a new file is imported.</p>
+      <div class="groups">
+        ${groups.map(g => `<div class="panel group ${g.r.level <= baseMax ? "base" : ""}">
+          <span class="lv">rung ${g.r.level}${g.r.level <= baseMax ? " · foundation" : ""}</span>
+          <h3>${esc(g.r.name)} · ${g.members.length} student${g.members.length > 1 ? "s" : ""}</h3>
+          <div class="members">${g.members.map(chip).join("")}</div>
+          <p class="small"><b>${g.members.length >= DATA.students.length / 2 ? "Whole class" : g.members.length >= 2 ? "Small group" : "One-on-one"}:</b> ${esc(LIBRARY[g.r.id].iv[recommendFormat(g.members.length, DATA.students.length)])}</p>
+          ${g.also.length ? `<p class="small muted">Could join later (Priority 2): ${g.also.map(x => who(x.s.code, true)).join(", ")}</p>` : ""}
+        </div>`).join("")}
+        ${none.length ? `<div class="panel group"><span class="lv">no priority needed</span><h3>Enrichment · ${none.length} student${none.length > 1 ? "s" : ""}</h3>
+          <div class="members">${none.map(chip).join("")}</div><p class="small muted">Every measured skill is at grade level; the number shown is the overall level.</p></div>` : ""}
+      </div>
+    </section>`;
+  }
+
+  // ---------- IMPORTS ----------
+  function viewImports() {
+    const n = state.notice;
+    return `<section class="view" aria-labelledby="tab-imports">
+      <div class="head"><h2>Imports</h2></div>
+      <p class="lead">Each export lands in one local database, so results entered on different days merge on their own. Switch a file off to see the results without it; nothing is deleted.</p>
+      ${n ? `<div class="notice" role="status"><b>${esc(n.title)}</b>${n.lines.length ? `<ul>${n.lines.map(z => `<li>${z}</li>`).join("")}</ul>` : ""}${n.foot ? `<span class="small muted">${n.foot}</span>` : ""}</div>` : ""}
+      <div class="files">
+        ${DATA.files.map(f => `<div class="file ${f.pending ? "pending" : ""}">
+          <div style="display:grid;gap:4px;min-width:0">
+            <span class="fn">${esc(f.name)}</span>
+            <span class="meta"><span class="src">${esc(f.source)}</span><span>${SUBJ[f.subject]}</span><span>${esc(f.what)}</span><span>${f.pending ? "New file, not imported yet" : "Imported " + fmtDate(f.date)}</span></span>
+          </div>
+          ${f.pending ? `<button class="btn" data-import="${f.id}">Import</button>`
+            : `<button class="switch" role="switch" aria-checked="${f.active}" data-toggle="${f.id}" aria-label="Include ${esc(f.name)}"><span class="k"></span>${f.active ? "Included" : "Off"}</button>`}
+          ${f.imported ? `<div style="grid-column:1/-1"><button class="btn ghost" data-import="${f.id}">Import this file again</button></div>` : ""}
+        </div>`).join("")}
+      </div>
+      <p class="foot-note">Odin reads these exports from i-Ready, the Florida Reporting System and Performance Matters, replaces names with codes, converts every result to a grade level, and asks you to confirm a preview before saving.</p>
+    </section>`;
+  }
+  function snapshot(subj) { const o = {}; DATA.students.forEach(s => { o[s.code] = { p: profile(DATA, subj, s.code), st: standards(DATA, subj, s.code) }; }); return o; }
+  function diff(before, after) {
+    const out = [];
+    let stdChecked = 0;
+    DATA.students.forEach(s => {
+      const a = before[s.code].p, b = after[s.code].p;
+      const nm = `<b>${esc(who(s.code, true))}</b>`;
+      if ((a.p1?.id || null) !== (b.p1?.id || null)) out.push(`${nm}: Priority 1 moved from ${a.p1 ? esc(a.p1.name) : "none"} to ${b.p1 ? esc(b.p1.name) + " (" + gl(b.p1.gl) + ")" : "none"}.`);
+      else if ((a.p2?.id || null) !== (b.p2?.id || null)) out.push(`${nm}: Priority 2 changed from ${a.p2 ? esc(a.p2.name) : "none"} to ${b.p2 ? esc(b.p2.name) : "none"}.`);
+      b.rungs.forEach((r, i) => { const o = a.rungs[i];
+        if (o.band !== r.band) out.push(`${nm}: ${esc(r.name)} went from ${glWords(o.gl).toLowerCase()} (${gl(o.gl)}) to ${glWords(r.gl).toLowerCase()} (${gl(r.gl)}).`); });
+      after[s.code].st.forEach((z, i) => { if (before[s.code].st[i].status !== z.status) stdChecked++; });
+    });
+    return { out, stdChecked };
+  }
+  function doImport(id) {
+    const f = DATA.files.find(z => z.id === id);
+    if (f.imported) {
+      state.notice = { title: `${f.name} is already in the database. Nothing was added.`, lines: [], foot: "The tool matches student, test and date, so a repeated file never counts twice." };
+      return render();
+    }
+    const before = snapshot(f.subject);
+    f.active = true; f.pending = false; f.imported = true;
+    const d = diff(before, snapshot(f.subject));
+    state.notice = { title: `Imported ${f.name}: ${f.items ? f.items.length + " items" : ""} for ${Object.keys(f.rows).length} students. ${d.out.length} skill change${d.out.length === 1 ? "" : "s"} and ${d.stdChecked} new standards results:`, lines: d.out,
+      foot: `Fractions now has item-level evidence, measurement reaches the ${MIN_ITEMS}-item minimum, and the fraction and geometry standards move from "taught, not checked yet" to mastered or needs remediation. See the Standards tab.` };
+    if (state.subject !== f.subject) { state.subject = f.subject; saveUi(); }
+    render();
+  }
+  function doToggle(id) {
+    const f = DATA.files.find(z => z.id === id);
+    const before = snapshot(f.subject);
+    f.active = !f.active;
+    const d = diff(before, snapshot(f.subject));
+    state.notice = { title: `${f.active ? "Included" : "Switched off"} ${f.name}. ${d.out.length} skill change${d.out.length === 1 ? "" : "s"} and ${d.stdChecked} standards results changed in ${SUBJ[f.subject].toLowerCase()}:`, lines: d.out, foot: d.out.length ? "" : "No priorities or skill levels changed band." };
+    render();
+  }
+
+  // ---------- HOW ----------
+  function viewHow() {
+    const cut = s => FAST_CUTS[s].map((c, i) => `<tr><td>Level ${i + 1}: ${c[0]} to ${c[1]}</td><td class="n">${c[2].toFixed(1)} to ${c[3].toFixed(1)}</td></tr>`).join("");
+    return `<section class="view" aria-labelledby="tab-how">
+      <div class="panel" style="display:grid;gap:14px">
+        <h2>What Odin does on Project Cerberus, step by step</h2>
+        <ol class="steps">
+          <li><span><b>Import exports</b> from i-Ready, FAST (Florida Reporting System) and Performance Matters: CSV, Excel or PDF.</span></li>
+          <li class="lock"><span><b>Replace names with codes</b> like S-004. The name key stays in a separate encrypted file.</span></li>
+          <li class="lock"><span><b>Save to a local database</b> that grows with every test and never syncs to the cloud.</span></li>
+          <li class="lock"><span><b>Load the curriculum roadmap</b> and let the teacher mark each lesson taught or not taught.</span></li>
+          <li class="lock"><span><b>Score with plain code:</b> convert every result to a grade level, count standards as taught only from the teacher's marks, and walk the skill ladder.</span></li>
+          <li class="lock"><span><b>Draft plans with a local AI model</b> that sees codes and grade levels only, with no internet connection.</span></li>
+          <li class="lock"><span><b>Teacher reviews and approves</b> every plan before it reaches a student or family.</span></li>
+          <li><span><b>Print or export</b>, and only then do names come back, from the name key.</span></li>
+        </ol>
+        <p class="foot-note">Green steps happen entirely on the Project Cerberus server, with Odin's internet access blocked.</p>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>One scale for every report</h3>
+        ${scaleKey()}
+        <p class="small" style="max-width:72ch"><b>Grade level</b> says where a student is working, from kindergarten to grade 12, compared with their own grade: at grade level, just below (less than half a grade), below (half a grade to a grade) or way below (more than a grade).</p>
+        <p class="small" style="max-width:72ch"><b>Support tiers</b> are separate: they say how much help a student needs. <span class="tag tier t1">Tier 1</span> at or just below grade level, core instruction. <span class="tag tier t2">Tier 2</span> needs interventions in some areas (one or more skills below grade level). <span class="tag tier t3">Tier 3</span> needs many supports and/or is working way below grade level (more than a grade below overall, or 3 or more skills below grade level). Odin suggests a tier from the data; the school's MTSS team decides.</p>
+        <p class="small muted" style="max-width:72ch">Teachers and families see the same kind of number everywhere: overall, per skill, in the class grid and in the family note. A skill level is the average of its sources after conversion. Overall is the average of the two whole-test results, i-Ready overall placement and the FAST scale score.</p>
+      </div>
+      <div class="cols">
+        <div class="panel" style="display:grid;gap:10px">
+          <h3>i-Ready and FAST categories</h3>
+          <table class="ref"><thead><tr><th>Result</th><th>Grade level</th></tr></thead><tbody>
+            ${Object.entries(IREADY_GL).map(([k, v]) => `<tr><td>i-Ready: ${esc(k)}</td><td class="n">${gl(v)}</td></tr>`).join("")}
+            ${Object.entries(FAST_CAT_GL).map(([k, v]) => `<tr><td>FAST category: ${esc(k)} the standard</td><td class="n">${gl(v)}</td></tr>`).join("")}
+            <tr><td>Performance Matters: percent right on a skill's items, ${MIN_ITEMS} or more items</td><td class="n">0% = 1.5, 50% = 2.8, 100% = 4.0</td></tr>
+          </tbody></table>
+        </div>
+        <div class="panel" style="display:grid;gap:10px">
+          <h3>FAST grade 3 scale scores</h3>
+          <table class="ref"><thead><tr><th>Reading achievement level</th><th>Grade level</th></tr></thead><tbody>${cut("reading")}</tbody></table>
+          <table class="ref"><thead><tr><th>Math achievement level</th><th>Grade level</th></tr></thead><tbody>${cut("math")}</tbody></table>
+          <p class="small muted">Level 3 is on grade level, so it maps to 3.0 to 3.4. PM1 and PM2 test the whole year's content, so lower levels early in the year are expected.</p>
+        </div>
+      </div>
+      <div class="cols">
+        <div class="panel" style="display:grid;gap:10px">
+          <h3>How priorities are set</h3>
+          <ol class="rules">
+            <li>Each subject has a ladder of skills, foundation first. Reading runs from sounds to decoding to sight words, then vocabulary, then comprehension.</li>
+            <li>Priority 1 is the lowest skill below grade level (under ${BANDS.support.toFixed(1)}). Priority 2 is the next one up.</li>
+            <li>Two skills on the same rung are ordered by the lower level.</li>
+            <li>If fewer than two skills are below grade level, skills just below grade level (${BANDS.support.toFixed(1)} to 2.9) fill in.</li>
+            <li>Weak skills above Priority 2 are marked "waits" and rechecked later.</li>
+          </ol>
+        </div>
+        <div class="panel" style="display:grid;gap:10px">
+          <h3>How standards mastery is set</h3>
+          <table class="ref"><tbody>
+            <tr><td><span class="st nottaught">Not taught yet</span></td><td>No roadmap lesson covering it is marked taught, including lessons the teacher marked not taught. Never counts against a student; its test items are set aside.</td></tr>
+            <tr><td><span class="st nocheck">Taught, not checked yet</span></td><td>Taught, but fewer than ${MASTERY.minItems} items on that benchmark so far.</td></tr>
+            <tr><td><span class="st mastered">Mastered</span></td><td>${Math.round(MASTERY.pct * 100)}% or more right on ${MASTERY.minItems}+ items.</td></tr>
+            <tr><td><span class="st remediate">Needs remediation</span></td><td>Taught and checked, below ${Math.round(MASTERY.pct * 100)}%.</td></tr>
+          </tbody></table>
+          <p class="small muted">Phonics and word analysis (ELA.3.F.1.3) uses the i-Ready Phonics placement: grade 3 level or above counts as mastered.</p>
+        </div>
+      </div>
+      <div class="cols">
+        <div class="panel" style="display:grid;gap:10px">
+          <h3>IEP goal format</h3>
+          <p class="small"><b>By</b> [date one year after the annual review], <b>given</b> [condition], [student] <b>will</b> [observable behavior] <b>with</b> [__% accuracy] <b>in</b> [__ of __ trials], <b>as measured by</b> [tool].</p>
+          <p class="small muted">The baseline comes from the newest teacher probe or Performance Matters items on that skill. Two short-term benchmarks step from the baseline to the target at four and eight months.</p>
+        </div>
+        <div class="panel" style="display:grid;gap:10px">
+          <h3>One-on-one, small group or whole class</h3>
+          <ol class="rules"><li>Half the class or more shares the need: whole class.</li><li>Two or more students share it: small group.</li><li>Only one student: one-on-one.</li></ol>
+          <p class="small muted">All three options are shown every time, so the teacher can choose.</p>
+        </div>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>This online demo compared with Odin on Project Cerberus</h3>
+        <div class="scroller" style="border:0"><table class="ref"><thead><tr><th></th><th>This demo</th><th>Odin on Project Cerberus</th></tr></thead><tbody>
+          <tr><td><b>Students</b></td><td>18 invented Grade 3 students</td><td>Your class, from real exports</td></tr>
+          <tr><td><b>Where it runs</b></td><td>This web page</td><td>The Project Cerberus server at school, internet blocked for Odin</td></tr>
+          <tr><td><b>Conversions and cut points</b></td><td>Placeholder values shown above</td><td>Set by your school or district</td></tr>
+          <tr><td><b>Curriculum roadmap</b></td><td>Invented sample, or a CSV you upload; teacher marks stay in this browser</td><td>Your roadmap or curriculum map, saved with the teacher's marks on the Project Cerberus server</td></tr>
+          <tr><td><b>IEP information</b></td><td>4 invented students, drafted goals</td><td>Entered by the ESE teacher; goals reviewed and decided by the IEP team</td></tr>
+          <tr><td><b>Plan drafts</b></td><td>Fixed template</td><td>Local AI model (for example Qwen3.8-27B on an RTX 3090)</td></tr>
+          <tr><td><b>Approval</b></td><td>Resets when the page reloads</td><td>Saved with the teacher's edits and the date</td></tr>
+        </tbody></table></div>
+        <p class="small muted">Score ranges, reporting categories and benchmarks follow the Florida Department of Education's 2026–27 FAST fact sheet and test blueprints. Sources: <a href="https://www.fldoe.org/file/20102/2627FASTGrd310FS.pdf" target="_blank" rel="noopener">FAST 3–10 fact sheet</a>, <a href="https://www.fldoe.org/core/fileparse.php/20102/urlt/TDS-FAST-Math.pdf" target="_blank" rel="noopener">FAST math blueprint</a>, <a href="https://fldoe.org/core/fileparse.php/7539/urlt/UsingBESTToolsBuildFAST-Results-HO.pdf" target="_blank" rel="noopener">FAST ELA blueprint</a>.</p>
+      </div>
+    </section>`;
+  }
+
+  // ---------- RENDER ----------
+  function render() {
+    document.querySelectorAll("[data-subj]").forEach(b => b.setAttribute("aria-pressed", b.dataset.subj === state.subject));
+    document.querySelectorAll("[data-names]").forEach(b => b.setAttribute("aria-pressed", (b.dataset.names === "1") === state.names));
+    document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === state.tab));
+    const v = { class: viewClass, student: viewStudent, standards: viewStandards, roadmap: viewRoadmap, ese: viewEse, groups: viewGroups, imports: viewImports, how: viewHow }[state.tab];
+    $("#main").innerHTML = v();
+  }
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("button, tr[data-open]");
+    if (!t) return;
+    if (t.dataset.subj) { state.subject = t.dataset.subj; state.rung = null; saveUi(); render(); }
+    else if (t.dataset.names) { state.names = t.dataset.names === "1"; saveUi(); render(); }
+    else if (t.dataset.tab) { if (t.dataset.tab !== "imports") state.notice = null; if (t.dataset.tab !== "roadmap") state.rmNotice = null; setTab(t.dataset.tab); }
+    else if (t.dataset.lesson) setLesson(t.dataset.lesson, t.dataset.set);
+    else if (t.id === "rm-restore") { DATA.roadmap = JSON.parse(JSON.stringify(SAMPLE_RM)); DATA.overrides = JSON.parse(JSON.stringify(SAMPLE_OV)); saveOv(); state.rmNotice = { title: "Sample roadmaps and the teacher's sample marks are back.", lines: [] }; render(); }
+    else if (t.id === "rm-copy") {
+      const txt = roadmapCsv(state.subject);
+      const done = ok => { t.textContent = ok ? "Copied" : "Copy failed: use the format below"; setTimeout(() => { t.textContent = "Copy this roadmap as CSV"; }, 1800); };
+      try { navigator.clipboard.writeText(txt).then(() => done(true), () => done(false)); } catch (err) { done(false); }
+    }
+    else if (t.dataset.copygoal) {
+      const [code, subj] = t.dataset.copygoal.split("|");
+      const g = iepGoal(DATA, subj, code), parts = goalParts(g, code, subj);
+      const txt = [`Present level: ${parts.present}`, "", `Annual goal: ${parts.goal}`, ...(parts.bms.length ? ["", "Short-term benchmarks:", ...parts.bms.map(x => "- " + x)] : [])].join("\n");
+      const done = ok => { t.textContent = ok ? "Copied" : "Select the text to copy"; setTimeout(() => { t.textContent = "Copy goal"; }, 1800); };
+      try { navigator.clipboard.writeText(txt).then(() => done(true), () => done(false)); } catch (err) { done(false); }
+    }
+    else if (t.dataset.open) openStudent(t.dataset.open);
+    else if (t.dataset.rung) { state.rung = t.dataset.rung; render(); }
+    else if (t.dataset.lang) { state.lang = t.dataset.lang; render(); }
+    else if (t.dataset.import) doImport(t.dataset.import);
+    else if (t.dataset.toggle) doToggle(t.dataset.toggle);
+    else if (t.id === "prev" || t.id === "next") {
+      const i = DATA.students.findIndex(z => z.code === state.code);
+      const n = DATA.students.length;
+      state.code = DATA.students[(i + (t.id === "next" ? 1 : n - 1)) % n].code; state.rung = null; render();
+    }
+    else if (t.id === "approve") { state.approvals[state.code + ":" + state.subject] = TODAY; render(); }
+    else if (t.id === "unapprove") { delete state.approvals[state.code + ":" + state.subject]; render(); }
+    else if (t.id === "copy") {
+      const p = profile(DATA, state.subject, state.code);
+      const txt = planText(p, state.code, planFor(p), standards(DATA, state.subject, state.code));
+      const done = ok => { t.textContent = ok ? "Copied" : "Select the text to copy"; setTimeout(() => { t.textContent = "Copy plan text"; }, 1800); };
+      try { navigator.clipboard.writeText(txt).then(() => done(true), () => done(false)); } catch (err) { done(false); }
+    }
+  });
+  document.addEventListener("keydown", e => {
+    const tr = e.target.closest && e.target.closest("tr[data-open]");
+    if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openStudent(tr.dataset.open); }
+  });
+  document.addEventListener("change", e => {
+    if (e.target.id === "pick") { state.code = e.target.value; state.rung = null; render(); }
+    if (e.target.id === "rm-file" && e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const fail = msg => { state.rmNotice = { title: `Could not read ${file.name}.`, lines: [esc(msg)] }; render(); };
+      file.text().then(txt => {
+        const res = importRoadmap(txt, file.name);
+        if (res.error) return fail(res.error);
+        state.subject = res.subj; saveUi();
+        state.rmNotice = { title: `Loaded ${res.loaded} from ${file.name}.`, lines: [
+          ...(res.bad.length ? [`Skipped row${res.bad.length > 1 ? "s" : ""} ${res.bad.slice(0, 10).join(", ")}: missing a date, title or standard.`] : []),
+          ...(res.added ? [`${res.added} standard code${res.added > 1 ? "s" : ""} not in the demo list were added.`] : []),
+          "Lessons dated on or before today count as taught until you mark them otherwise. In this demo the file lasts until the page reloads."] };
+        render();
+      }, () => fail("The browser could not open the file."));
+    }
+  });
+  render();
+})();
+</script>
+
+</body></html>
