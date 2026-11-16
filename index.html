@@ -7,6 +7,11 @@
 <meta name="description" content="Demo of Odin, the Secure Student Analyzer for Project Cerberus. Every student on this page is invented.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23E3E8F8'/%3E%3Crect x='6' y='8' width='20' height='4' rx='2' fill='%232E4BB5' opacity='.45'/%3E%3Crect x='6' y='14' width='15' height='4' rx='2' fill='%232E4BB5' opacity='.7'/%3E%3Crect x='6' y='20' width='10' height='4' rx='2' fill='%232E4BB5'/%3E%3C/svg%3E">
+<!--app--><link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2E4BB5">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Odin"><meta name="apple-mobile-web-app-status-bar-style" content="default"><!--/app-->
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap">
@@ -692,6 +697,48 @@ fieldset.cs legend { padding: 0; margin-bottom: 6px; }
 #fl .flgo { background: var(--ongrade); border-color: var(--ongrade); }
 #fl .pin.big { font-size: 2rem; width: 6em; text-align: center; }
 @media print { .flprint { font-size: 15pt; } }
+
+/* ===== Odin 0.6: phones, tablets and the installed app ===== */
+.menubtn, .subm, #bnav, #more, #cover { display: none; }
+.appbox { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.appbox p { max-width: 34ch; }
+#cover { position: fixed; inset: 0; z-index: 200; background: var(--bg); place-items: center; }
+#cover .cv { display: grid; justify-items: center; gap: 10px; font-family: var(--f-display); font-size: 1.4rem; }
+#cover .mark { width: 44px; gap: 6px; }
+#cover .mark i { height: 8px; border-radius: 4px; }
+body.covered #cover { display: grid; }
+@media (max-width: 700px) {
+  .top { position: relative; z-index: 30; }
+  .top .wrap { flex-wrap: nowrap; padding-block: 8px; gap: 10px; }
+  .brand { min-width: 0; }
+  .brand h1 { font-size: 1.15rem; white-space: nowrap; }
+  .brand .sub { display: none; }
+  .subm { display: block; font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .menubtn { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 7px 12px; font-weight: 600; cursor: pointer; min-height: 40px; }
+  .top .controls { display: none; }
+  body.menu-open .top .controls { display: flex; flex-direction: column; align-items: stretch; gap: 12px; position: absolute; left: 0; right: 0; top: 100%; background: var(--surface); border-bottom: 1px solid var(--line); padding: 14px 16px 18px; box-shadow: 0 10px 24px rgba(0, 0, 0, .14); }
+  body.menu-open .top .controls .seg { align-self: flex-start; }
+  body.menu-open .top .controls .signin { display: grid; gap: 4px; }
+  body.menu-open .top .controls select { width: 100%; }
+  .banner .wrap { padding-block: 6px; font-size: 0.8rem; }
+  .banner .wrap > span { display: none; }
+  nav.tabs { display: none; }
+  main { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  #bnav { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  #bnav button { border: 0; background: none; color: var(--muted); display: grid; justify-items: center; gap: 2px; padding: 8px 2px 7px; min-height: 56px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
+  #bnav button[aria-current="page"] { color: var(--accent); }
+  #bnav button[aria-current="page"] svg { stroke-width: 2.3; }
+  body.more-open #more { display: block; position: fixed; left: 0; right: 0; bottom: calc(57px + env(safe-area-inset-bottom, 0px)); z-index: 39; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -10px 24px rgba(0, 0, 0, .14); padding: 8px 12px; }
+  #more .sheetin { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #more button { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 12px 10px; text-align: left; font-weight: 600; cursor: pointer; }
+  #more button[aria-current="page"] { border-color: var(--accent); color: var(--accent); }
+  .weekbar .wk { min-width: 0; flex: 1 1 10rem; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stat .n { font-size: 1.45rem; }
+  table.ref th, table.ref td { padding: 6px 8px; }
+  .panel { padding: 14px; }
+}
+@media print { .menubtn, #bnav, #more, #cover { display: none !important; } }
 </style>
 
 <header class="top">
@@ -1204,7 +1251,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.5.0-alpha";
+const ODIN_VERSION = "0.6.0-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -3569,7 +3616,9 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   CLASSES.forEach(c => { if (savedOv[c.id] && typeof savedOv[c.id] === "object") c.overrides = savedOv[c.id]; });
   const saveOv = () => { if (SERVER) return; const o = {}; CLASSES.forEach(c => { o[c.id] = c.overrides; }); LS.set("odin-k5-overrides", o); };
   const savedUi = LS.get("odin-k5-ui", {});
-  ["role", "classId", "subject", "names", "adminTab", "adminGrade", "cmpMeasure", "cmp"].forEach(k => { if (savedUi[k] !== undefined) state[k] = savedUi[k]; });
+  // On a phone or in the installed app, Odin always opens with student codes, not names (0.6).
+  const PHONE = (() => { try { return matchMedia("(max-width: 700px)").matches || matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch (e) { return false; } })();
+  ["role", "classId", "subject", "names", "adminTab", "adminGrade", "cmpMeasure", "cmp"].forEach(k => { if (savedUi[k] !== undefined && !(k === "names" && PHONE)) state[k] = savedUi[k]; });
   const saveUi = () => LS.set("odin-k5-ui", { role: state.role, classId: state.classId, subject: state.subject, names: state.names,
     adminTab: state.adminTab, adminGrade: state.adminGrade, cmp: state.cmp, cmpMeasure: state.cmpMeasure });
   const classById = id => CLASSES.find(c => c.id === id);
@@ -4813,6 +4862,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
+      <div style="display:grid;gap:6px"><h3>New in 0.6: Odin on phones and tablets</h3><p class="small" style="max-width:80ch">Odin installs from the browser as an app on Android phones, iPhones, iPads and computers, with no app store: on iPhone, Safari's <b>Share › Add to Home Screen</b>; on Android, Chrome's <b>Install app</b>. On a phone, a bar at the bottom holds Class, Student, Focus, Practice and Fluency, and <b>Menu</b> holds the class, subject and codes or names. Teachers review students; students take practice sheets and fluency readings in the locked student mode. For teachers' own phones: a sign-in page, codes (not names) each time Odin opens, a cover over the screen when the app goes to the background, and signing out after 30 minutes without use. No student information is kept on the phone, and the app works only on the school network.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.5: fluency practice with the microphone</h3><p class="small" style="max-width:80ch">Fluency tab: each student reads a short passage at their level, full of high-frequency words. A one-minute pre-read on Monday and post-read on Friday are scored like DIBELS 8 oral reading fluency: words correct per minute, errors and accuracy, with the word said for the student after a 3-second pause. In between, students practice the whole passage to beat their best, guided by a voice that says a word they stop on or misread, waits for them to say it back, and cheers them on. Badges for new bests, speed and smooth reading. Speech is recognized on the computer itself (Chrome's on-device speech), never online, and no recording is made. Without it, the teacher scores the reading by tapping words.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.4: individual practice sheets and scanning</h3><p class="small" style="max-width:80ch">Practice tab: each student with a focus skill gets their own pre-check, a Learn it page with practice 1 (with hints), practice 2 (on their own, with two review questions on the secondary need) and a post-check, every week. Questions are at the student's working level and lean toward the benchmarks they missed. Students take them on paper or on a device in student mode, which only the teacher's exit code can close. Printed sheets carry four corner squares and a sheet code, so a stack fed through a scanner is read and scored right in this browser; unclear marks come up for a quick check. Pre- and post-check scores go straight into the weekly focus and progress.</p></div>
       <div class="cols">
@@ -5397,6 +5447,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   const CAN_DOWNLOAD = true;   // the online artifact copy sets this to false: its viewer has no plain downloads
   const CAN_PRINT = true;      // the online artifact copy sets this to false: its viewer cannot open the print dialog
   const CAN_MIC = true;        // the online artifact copy sets this to false: fluency there uses the sample reader only
+  const CAN_INSTALL = true;    // the online artifact copy sets this to false: it can't be installed as an app
   const CMP_COLS = ["level", "name", "test", "subject", "grade", "measure", "value"];
   function viewCompareData() {
     const lv = cmpLevels(), n = state.cmpNotice;
@@ -5453,6 +5504,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       : ADMIN_TABS.map(([k, label]) => `<button role="tab" id="atab-${k}" data-atab="${k}" aria-selected="${state.adminTab === k}">${label}</button>`);
     $("#tabs").innerHTML = (state.role === "admin" && inClass ? `<span class="viewing">Viewing ${esc(DATA.teacher)}'s class</span>` : "") + tabs.join("");
     $("#banner-role").textContent = state.role === "teacher" ? "Teacher view: one class, the way its teacher sees it." : "Administrator view: every class, each grade and outside averages.";
+    phoneChrome(inClass);
   }
 
   // ---------- RENDER ----------
@@ -6707,6 +6759,95 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   }
   // test hook (no student data): the reading screen's state, for the automated tests
   window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, helped: FL.helped ? [...FL.helped] : [] }) });
+
+  // =====================================================================================================
+  // Odin 0.6: Odin as an app on phones and tablets. Installable from the browser (no app store), a phone layout
+  // with a bottom bar, and phone safety: codes by default, a cover when the app goes to the background, and
+  // signing out after a time without use. Nothing about students is stored on the device.
+  // =====================================================================================================
+  const STANDALONE = (() => { try { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch (e) { return false; } })();
+  const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const APP = { prompt: null, last: Date.now(), ping: Date.now(), more: false };
+  const SIGNIN = SERVER && !!(SCHOOL && SCHOOL.signin);
+  const IDLE_MS = SIGNIN ? Math.max(0.05, Number(SCHOOL.idleMinutes) || 30) * 60000 : 0;
+  const PHONE_MAIN = { class: ["Class", "M4 5h16M4 12h16M4 19h10"], student: ["Student", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"],
+    weekly: ["Focus", "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"], practice: ["Practice", "M7 3.5h10v17H7zM10 8h4M10 12h4M10 16h2"],
+    fluency: ["Fluency", "M12 3.5a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0v-5a3 3 0 0 0-3-3zM6 11.5a6 6 0 0 0 12 0M12 17.5v3"],
+    school: ["School", "M4 20V9l8-5 8 5v11M9.5 20v-6h5v6"], grades: ["Grades", "M5 19V11M12 19V5M19 19v-9"], compare: ["Compare", "M4 7h11M4 12h16M4 17h7"], how: ["Help", "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9.8 9.5a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.5v.4M12 16.6v.1"] };
+  const phIcon = d => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+
+  function phoneSetup() {
+    if (phoneSetup.done) return; phoneSetup.done = true;
+    const wrap = document.querySelector("header.top .wrap"), brand = document.querySelector(".brand > div:last-child");
+    if (brand && !document.getElementById("subm")) { const s = document.createElement("div"); s.id = "subm"; s.className = "subm"; brand.appendChild(s); }
+    if (wrap && !document.getElementById("menubtn")) {
+      const b = document.createElement("button"); b.id = "menubtn"; b.className = "menubtn"; b.setAttribute("aria-expanded", "false"); b.setAttribute("aria-controls", "controls");
+      b.innerHTML = `${phIcon("M4 7h16M4 12h16M4 17h16")}<span>Menu</span>`; wrap.insertBefore(b, document.getElementById("controls"));
+    }
+    ["bnav", "more", "cover"].forEach(id => { if (!document.getElementById(id)) { const el = document.createElement(id === "bnav" ? "nav" : "div"); el.id = id; document.body.appendChild(el); } });
+    document.getElementById("bnav").setAttribute("aria-label", "Views");
+    document.getElementById("cover").innerHTML = `<div class="cv"><div class="mark" aria-hidden="true"><i></i><i></i><i></i></div><b>Odin</b></div>`;
+  }
+  // Called by renderChrome on every render: the short subtitle, the bottom bar, the More sheet and the app box in the menu.
+  function phoneChrome(inClass) {
+    phoneSetup();
+    const sm = document.getElementById("subm");
+    if (sm) sm.textContent = inClass ? `Room ${DATA.room} · ${state.subject === "math" ? "Math" : "Reading"}` : "Administration";
+    const list = inClass ? CLASS_TABS : ADMIN_TABS, cur = inClass ? state.tab : state.adminTab, attr = inClass ? "data-tab" : "data-atab";
+    const main = inClass ? ["class", "student", "weekly", "practice", "fluency"] : list.map(t => t[0]);
+    const rest = list.filter(t => !main.includes(t[0]));
+    const btn = k => { const [label, d] = PHONE_MAIN[k] || [list.find(t => t[0] === k)[1], "M5 12h14"]; return `<button ${attr}="${k}" ${cur === k ? 'aria-current="page"' : ""}>${phIcon(d)}<span>${label}</span></button>`; };
+    document.getElementById("bnav").innerHTML = main.map(btn).join("") + (rest.length ? `<button data-phone="more" aria-expanded="${APP.more}" ${rest.some(t => t[0] === cur) ? 'aria-current="page"' : ""}>${phIcon("M5 12h.01M12 12h.01M19 12h.01")}<span>More</span></button>` : "");
+    const more = document.getElementById("more");
+    more.innerHTML = rest.length ? `<div class="sheetin" role="menu" aria-label="More views">${rest.map(([k, l]) => `<button role="menuitem" ${attr}="${k}" ${cur === k ? 'aria-current="page"' : ""}>${esc(l)}</button>`).join("")}</div>` : "";
+    document.body.classList.toggle("more-open", APP.more && !!rest.length);
+    const box = document.createElement("div"); box.className = "appbox";
+    const how = STANDALONE ? "" : IOS ? "On iPhone or iPad: in Safari, tap <b>Share</b>, then <b>Add to Home Screen</b>." : /Android/.test(navigator.userAgent) ? "On Android: in Chrome, tap <b>⋮</b>, then <b>Install app</b> or <b>Add to Home screen</b>." : "";
+    box.innerHTML = (APP.prompt ? `<button class="btn ghost sm" data-phone="install">Install Odin</button>` : how && CAN_INSTALL ? `<p class="small muted">${how}</p>` : "")
+      + (SIGNIN ? `<button class="btn ghost sm" data-phone="signout">Sign out</button>` : "");
+    if (box.innerHTML) document.getElementById("controls").appendChild(box);
+    const mb = document.getElementById("menubtn"); if (mb) mb.setAttribute("aria-expanded", document.body.classList.contains("menu-open"));
+  }
+  function phoneClose() { document.body.classList.remove("menu-open", "more-open"); APP.more = false; const mb = document.getElementById("menubtn"); if (mb) mb.setAttribute("aria-expanded", "false"); }
+  document.addEventListener("click", e => {
+    const t = e.target.closest("button");
+    if (t && t.id === "menubtn") { const open = !document.body.classList.contains("menu-open"); phoneClose(); document.body.classList.toggle("menu-open", open); t.setAttribute("aria-expanded", open); return; }
+    if (t && t.dataset.phone === "more") { const open = !APP.more; phoneClose(); APP.more = open; document.body.classList.toggle("more-open", open); t.setAttribute("aria-expanded", open); return; }
+    if (t && t.dataset.phone === "install" && APP.prompt) { APP.prompt.prompt(); APP.prompt.userChoice.finally(() => { APP.prompt = null; render(); }); return; }
+    if (t && t.dataset.phone === "signout") return appSignOut();
+    if (t && (t.dataset.tab || t.dataset.atab)) return phoneClose();   // choosing a view closes the menu and the More sheet
+    if (!e.target.closest("#controls, #more, #menubtn")) phoneClose();
+  }, true);
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); APP.prompt = e; if (!FL.on && !SM.on) render(); });
+  if (CAN_INSTALL && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+
+  // ---------- phone safety ----------
+  // A cover over everything while the app is in the background, so the app switcher shows no student information.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { document.body.classList.add("covered"); return; }
+    if (SIGNIN && Date.now() - APP.last > IDLE_MS) return appSignOut();
+    document.body.classList.remove("covered");
+  });
+  window.addEventListener("pagehide", () => document.body.classList.add("covered"));
+  window.addEventListener("pageshow", () => { if (!document.hidden) document.body.classList.remove("covered"); });
+  // Signed in on the server: using Odin keeps the session open (a light check-in every few minutes);
+  // after the idle time with no taps or keys, Odin signs out and the screen goes back to the sign-in page.
+  if (SIGNIN) {
+    ["pointerdown", "keydown", "touchstart", "wheel"].forEach(ev => document.addEventListener(ev, () => {
+      const now = Date.now(); APP.last = now;
+      if (now - APP.ping > Math.min(240000, IDLE_MS / 3)) { APP.ping = now; fetch("api/health", { credentials: "same-origin" }).catch(() => {}); }
+    }, { passive: true, capture: true }));
+    setInterval(() => { if (Date.now() - APP.last > IDLE_MS) appSignOut(); }, Math.min(20000, Math.max(1000, IDLE_MS / 4)));
+  }
+  function appSignOut() {
+    document.body.classList.add("covered");
+    try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    fetch("api/signout", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}" })
+      .catch(() => {}).finally(() => location.replace("./"));
+  }
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { app: () => ({ standalone: STANDALONE, signin: SIGNIN, idleMs: IDLE_MS, phone: PHONE, names: state.names, installPrompt: !!APP.prompt }) });
 
   loadComparison();
   render();
