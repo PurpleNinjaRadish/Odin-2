@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.7.0-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.8.0-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -22,6 +22,20 @@ On a phone, the bar at the bottom holds Class, Student, Focus, Practice and Flue
 
 **Each device keeps its own changes.** Marks, checks and readings you make in the demo stay in that browser on that device. Nothing is shared between devices, and nothing is sent anywhere. To start over on a device, clear this site's data in the browser's settings.
 
+## Odin Student: the students' app
+
+**Open it: [purpleninjaradish.github.io/Odin-2/student.html](https://purpleninjaradish.github.io/Odin-2/student.html)**, or scan:
+
+![QR code for Odin Student](qr-student.png)
+
+Odin Student is what a student sees: only their own work. In the demo there's no sign-in: pick a class and an invented student (Room 112 has the most to try).
+
+- **My practice:** this week's pre-check, practice 1 and 2, and post-check, one after the other. In Room 112 it's Friday, so the post-checks are ready.
+- **Reading out loud:** the first reading, practice and the final reading, with the voice that helps. The microphone works in Google Chrome on a computer, or in the Odin app for Android below.
+- **My badges and best scores**, and **My progress:** a chart of the student's own reading.
+
+Students never see support tiers, levels or other students. It installs as its own app with a teal icon (iPhone: Safari › Share › Add to Home Screen; Android: Chrome › Install app). Work done in Odin Student shows in the teacher view on the same device. At school, students sign in with a class code and picture password, a QR card, or the teacher unlocks the device.
+
 ## Odin app for Android (test)
 
 On Android, the **Odin app** adds the microphone to fluency practice. When a student stops on a word or misreads it, the voice says the word and asks the student to say it. Odin listens, waits for the answer, and goes on. It uses Android's own **on-device** speech recognition, so the voice never leaves the phone, and nothing is recorded.
@@ -31,7 +45,7 @@ On Android, the **Odin app** adds the microphone to fluency practice. When a stu
 ![QR code for the Odin app for Android](qr-android.png)
 
 1. Open the download. Android asks to allow installing apps from this source (the browser or Files): allow it, then **Install**. If Google Play Protect warns about an unknown app, choose **More details**, then **Install anyway**: it is a test build, signed with a test key, not from the Play Store.
-2. Open **Odin** and choose **Try the demo (invented students)**.
+2. Open **Odin**. Under **Who uses this device?** choose **A teacher** or **Students** (Odin Student), then **Try the demo (invented students)**.
 3. Open **Fluency**. The status line says whether this device can recognize speech on the device. If it offers **Set up speech on this device**, press it once (a one-time download from Google).
 4. Press **Test the microphone**, allow the microphone, and say a sentence.
 5. On a student's row, press **Open**, then **Practice on this device** and **Start practice**. Read the passage aloud. Stop on a word, or misread one, to hear the voice help and wait for you to say it.
@@ -52,6 +66,7 @@ The microphone needs **Android 12 or newer** with Google's speech services. On o
 | `index.html` | The demo page, with the invented students built in |
 | `manifest.webmanifest`, `icons/`, `sw.js`, `offline.html` | What lets the demo install as an app. The service worker stores only the offline page and an icon |
 | `qr-code.png` | The QR code above |
+| `student.html`, `student.webmanifest`, `qr-student.png` | Odin Student, the students' app, and its QR code |
 | `odin-android.apk`, `qr-android.png` | The Odin app for Android (test build) and its QR code |
 | `.github/workflows/static.yml` | Publishes the repository to GitHub Pages on every push to `main` |
 | `server.py`, `Dockerfile`, `.dockerignore` | From an earlier hosted demo (version 0.2). The page above doesn't use them |

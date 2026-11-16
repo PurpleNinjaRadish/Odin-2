@@ -739,6 +739,88 @@ body.covered #cover { display: grid; }
   .panel { padding: 14px; }
 }
 @media print { .menubtn, #bnav, #more, #cover { display: none !important; } }
+/* ---------- Odin 0.8: Odin Student, the students' own app ---------- */
+body.student-app header.top, body.student-app .banner, body.student-app nav.tabs, body.student-app #bnav, body.student-app #more { display: none !important; }
+body.student-app main.wrap { padding-top: 0; padding-bottom: 32px; max-width: 1040px; }
+.st-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: calc(12px + env(safe-area-inset-top, 0px)) 0 12px; margin-bottom: 18px; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; background: var(--bg); }
+.st-brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.st-brand > div:last-child { display: grid; line-height: 1.25; }
+.st-brand b { font-family: var(--f-display); font-size: 1.2rem; font-weight: 650; }
+.st-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.st-hi { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+.st-hello { display: grid; gap: 2px; margin-bottom: 16px; }
+.st-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); align-items: start; }
+.st-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; display: grid; gap: 10px; min-width: 0; }
+.st-card.st-wide { grid-column: 1 / -1; }
+.st-card h3 { font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+.st-card h3 svg { color: var(--accent); flex: none; }
+.st-sub { display: grid; }
+.st-sub + .st-sub { margin-top: 10px; }
+.st-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); min-height: 52px; }
+.st-sub .smkind + .st-row, .st-passage + .st-row { border-top: 0; }
+.st-row .what { flex: 1; min-width: 0; display: grid; }
+.st-row .btn.sm { padding: 8px 16px; font-size: 0.95rem; }
+.st-done { color: var(--ongrade); font-weight: 600; white-space: nowrap; text-align: right; }
+.st-lock { color: var(--muted); font-size: 0.85rem; text-align: right; }
+.st-passage { display: grid; }
+.st-mic { background: var(--sunk); border-radius: 10px; padding: 10px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.st-best { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.st-best > div { background: var(--accent-soft); border-radius: 12px; padding: 10px; display: grid; gap: 2px; text-align: center; }
+.st-best b { font-family: var(--f-display); font-size: 1.5rem; color: var(--accent); }
+.st-best span { font-size: 0.78rem; color: var(--muted); line-height: 1.25; }
+.st-pick { display: grid; gap: 12px; }
+.st-classpick select { margin-left: 6px; }
+.st-people { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+.st-person { display: grid; justify-items: center; gap: 4px; padding: 14px 8px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); cursor: pointer; text-align: center; }
+.st-person:hover { border-color: var(--accent); }
+.st-av { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-display); font-size: 1.45rem; font-weight: 650; background: var(--accent-soft); color: var(--accent); }
+.st-exit { margin-bottom: 14px; }
+.st-qr svg { border-radius: 8px; }
+.st-code { font-size: 1.3rem; letter-spacing: 0.08em; margin: 0 8px; }
+.st-methods { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+.st-methods label { display: flex; gap: 10px; align-items: flex-start; }
+.st-methods input { margin-top: 4px; }
+/* the printed sign-in cards: 2 across, about the size of an index card */
+.st-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.st-cardp { border: 1.5px dashed #9AA6B2; border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; background: #fff; color: #000; break-inside: avoid; }
+.st-cardh { display: flex; justify-content: space-between; gap: 8px; font-size: 0.8rem; border-bottom: 1px solid #ccc; padding-bottom: 6px; }
+.st-cardh b { font-family: var(--f-display); font-size: 0.95rem; }
+.st-cardn { font-family: var(--f-display); font-size: 1.35rem; }
+.st-cardn .mono { font-size: 0.85rem; color: #555; margin-left: 6px; }
+.st-cardrow { display: flex; gap: 8px; align-items: baseline; }
+.st-cardrow b { font-size: 1.15rem; letter-spacing: 0.08em; }
+.st-cardpics { display: flex; gap: 10px; }
+.st-cardpics span { display: grid; justify-items: center; border: 1px solid #ccc; border-radius: 10px; padding: 4px 10px; min-width: 64px; }
+.st-cardpics i { font-style: normal; font-size: 0.7rem; color: #555; }
+.st-cardpics em { font-style: normal; font-size: 2rem; line-height: 1.15; }
+.st-cardpics small { font-size: 0.75rem; }
+.st-cardqr { display: flex; gap: 10px; align-items: center; }
+@media print {
+  .st-cards { grid-template-columns: repeat(2, 1fr); gap: 6mm; }
+  .st-cardp { border-color: #888; }
+  body.student-app .st-top { position: static; }
+}
+/* the sign-in screens (before the app starts, on the school's server) */
+.si { display: grid; gap: 16px; max-width: 640px; }
+.si-big { display: grid; gap: 10px; }
+.si-big .btn { font-size: 1.1rem; padding: 14px 20px; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.si-in { font-family: var(--f-mono); font-size: 1.5rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: min(100%, 320px); }
+.si-pics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 460px; }
+.si-pic { display: grid; justify-items: center; gap: 2px; padding: 10px 0 8px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.si-pic em { font-style: normal; font-size: clamp(2rem, 9vw, 2.6rem); line-height: 1.1; }
+.si-pic small { font-size: 0.78rem; color: var(--muted); }
+.si-pic:active { background: var(--accent-soft); }
+.si-dots { display: flex; gap: 12px; }
+.si-dots i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--accent); }
+.si-dots i.on { background: var(--accent); }
+.si-msg { color: var(--support); font-weight: 600; }
+.si video { width: min(100%, 360px); border-radius: 14px; background: #000; }
+.si .btn.big, .st-pick .btn.big { font-size: 1.15rem; padding: 12px 26px; }
+a.btn { text-decoration: none; display: inline-block; }
+/* Odin Student is teal, like its icon, so students and teachers can tell the two apps apart */
+body.student-app { --accent: #1C6E66; --accent-soft: #D9EEEA; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body.student-app { --accent: #63C7B9; --accent-soft: #13312D; --accent-ink: #0E141A; } }
+:root[data-theme="dark"] body.student-app { --accent: #63C7B9; --accent-soft: #13312D; --accent-ink: #0E141A; }
 </style>
 
 <header class="top">
@@ -870,6 +952,2321 @@ const SCHOOL = {"school":"Demo Elementary","today":"2026-10-09","classes":[{"id"
     on: f => appFns.push(f)
   };
 })();
+
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+// =====================================================================================================
+// Odin 0.8: shared by Odin Student's sign-in and the teacher's sign-in cards. No student data here.
+// =====================================================================================================
+// The 12 pictures of a picture password: things a young student can name. A password is 3 of them, in order.
+const ST_PICS = [["🐶", "dog"], ["🐱", "cat"], ["🐟", "fish"], ["🌳", "tree"], ["🌞", "sun"], ["🌙", "moon"],
+  ["⭐", "star"], ["🍎", "apple"], ["🚗", "car"], ["⚽", "ball"], ["🌸", "flower"], ["🏠", "house"]];
+// A QR code as an SVG drawing (qrcode-generator by Kazuhiko Arase, MIT license, in vendor/qrcode.js). Text must be plain ASCII.
+function qrSVG(text, size, label) {
+  const q = qrcode(0, "M"); q.addData(String(text)); q.make();
+  const n = q.getModuleCount(), m = 4; let d = "";
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
+  const lab = String(label || "QR code").replace(/[&<>"]/g, "");
+  return `<svg class="qr" viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" width="${size}" height="${size}" role="img" aria-label="${lab}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+// A card code is shown in two halves (K7QMX-2XRT9) so it is easy to type.
+const stCardShow = c => String(c).replace(/^(.{5})(.+)$/, "$1-$2");
 
 // Odin scoring engine (Project Cerberus demo). Plain code, no AI: exact and repeatable.
 // Every result is converted to one grade-level scale, relative to each class's grade G (kindergarten = 0):
@@ -1365,7 +3762,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.7.0-alpha";
+const ODIN_VERSION = "0.8.0-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -3707,8 +6104,15 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   };
   // ---------- server mode: the Odin backend keeps marks, imports, approvals and comparison files ----------
   const SERVER = typeof ODIN_SERVER !== "undefined" && ODIN_SERVER === true;
+  // Odin Student (0.8): the students' own app. The page is the same; it shows one student's own work only.
+  let STUDENT_APP = typeof ODIN_STUDENT_APP !== "undefined" && ODIN_STUDENT_APP === true;
+  // A student's saves go to the student routes, which save for the signed-in student only. The server works out
+  // the week's check from a pre- or post-check sheet itself, so the page doesn't send it.
+  const apiPath = path => !(STUDENT_APP && SERVER) ? path : ({ "api/sheet/result": "api/student/sheet/result", "api/fluency/run": "api/student/fluency/run", "api/check": null })[path] || "api/student/none";
   function sync(path, body) {
     if (!SERVER) return Promise.resolve(true);
+    path = apiPath(path);
+    if (path === null) return Promise.resolve(true);
     return fetch(path, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
       .then(r => r.ok ? true : r.json().catch(() => ({})).then(e => { throw new Error(e.error || "the server answered " + r.status); }))
       .catch(err => { state.saveError = String(err.message || err); render(); return false; });
@@ -3749,7 +6153,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     if (!DATA.students.some(s => s.code === state.code)) { state.code = DATA.students[0].code; state.rung = null; }
   }
   const onClassView = () => state.role === "teacher" || !!state.adminClass;
-  const CLASS_TABS = [["class", "Class"], ["student", "Student"], ["progress", "Progress"], ["weekly", "Weekly focus"], ["practice", "Practice"], ["fluency", "Fluency"], ["standards", "Standards"], ["roadmap", "Roadmap"], ["ese", "ESE / IEP"], ["interests", "Interests"], ["reports", "Reports"], ["imports", "Imports"], ["how", "How it works"]]
+  const CLASS_TABS = [["class", "Class"], ["student", "Student"], ["progress", "Progress"], ["weekly", "Weekly focus"], ["practice", "Practice"], ["fluency", "Fluency"], ["studentapp", "Student app"], ["standards", "Standards"], ["roadmap", "Roadmap"], ["ese", "ESE / IEP"], ["interests", "Interests"], ["reports", "Reports"], ["imports", "Imports"], ["how", "How it works"]]
     .filter(t => FEATURE_INTERESTS || t[0] !== "interests");   // the interest inventory is a roadmap option, off in this version
   const ADMIN_TABS = [["school", "School"], ["grades", "Grade levels"], ["compare", "Comparison data"], ["how", "How it works"]];
   const hashTab = location.hash.slice(1);
@@ -4978,6 +7382,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
+      <div style="display:grid;gap:6px"><h3>New in 0.8: Odin Student, the students' own app</h3><p class="small" style="max-width:80ch">Students open Odin Student (<span class="mono">student.html</span>) on a tablet, phone or computer and see only their own work: this week's practice sheets and checks, in order, reading out loud with the voice, their badges and best scores, and a chart of their own progress. They never see support tiers, levels, other students or IEP details. In the demo you pick an invented student; at school a student signs in with the class code and a picture password, a QR card, or the teacher unlocks the device with an exit code. A student's session opens only that student's own data. Set it up and print sign-in cards on the <b>Student app</b> tab.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.7: the Odin app for Android, with the microphone</h3><p class="small" style="max-width:80ch">An Android app (Android 12 or newer for the microphone) opens Odin from the school's server and adds Android's own on-device speech recognition. Fluency practice now works on Android phones and tablets the way it does in Chrome on a computer: the voice says a word the student stops on or misreads, listens while the student says it back, cheers and goes on. The student's voice never leaves the device and nothing is recorded; the app turns the microphone on only for Odin's own address. The app also blocks screenshots of student information, keeps the back button from leaving the locked student mode, and prints through Android. iPhones and iPads still use the teacher's scoring.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.6: Odin on phones and tablets</h3><p class="small" style="max-width:80ch">Odin installs from the browser as an app on Android phones, iPhones, iPads and computers, with no app store: on iPhone, Safari's <b>Share › Add to Home Screen</b>; on Android, Chrome's <b>Install app</b>. On a phone, a bar at the bottom holds Class, Student, Focus, Practice and Fluency, and <b>Menu</b> holds the class, subject and codes or names. Teachers review students; students take practice sheets and fluency readings in the locked student mode. For teachers' own phones: a sign-in page, codes (not names) each time Odin opens, a cover over the screen when the app goes to the background, and signing out after 30 minutes without use. No student information is kept on the phone, and the app works only on the school network.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.5: fluency practice with the microphone</h3><p class="small" style="max-width:80ch">Fluency tab: each student reads a short passage at their level, full of high-frequency words. A one-minute pre-read on Monday and post-read on Friday are scored like DIBELS 8 oral reading fluency: words correct per minute, errors and accuracy, with the word said for the student after a 3-second pause. In between, students practice the whole passage to beat their best, guided by a voice that says a word they stop on or misread, waits for them to say it back, and cheers them on. Badges for new bests, speed and smooth reading. Speech is recognized on the computer itself (Chrome's on-device speech), never online, and no recording is made. Without it, the teacher scores the reading by tapping words.</p></div>
@@ -5627,6 +8032,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   // ---------- RENDER ----------
   function render() {
     MEMO = new Map();
+    if (STUDENT_APP) return renderStudentApp();
     if (state.role === "teacher") useClass(state.classId);
     else if (state.adminClass) useClass(state.adminClass);
     else if (state.adminTab === "how") useClass((CLASSES.find(c => c.grade === state.adminGrade) || CLASSES[0]).id);
@@ -5637,7 +8043,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     else if (onClassView() && state.printCheck) html = viewPrintCheck();
     else if (onClassView() && state.printInv) html = viewPrintInventory();
     else if (onClassView() && state.printLetter) html = viewPrintLetter();
-    else if (onClassView()) html = ({ class: viewClass, student: viewStudent, progress: viewProgress, weekly: viewWeekly, practice: viewPractice, fluency: viewFluency, standards: viewStandards, roadmap: viewRoadmap, ese: viewEse, groups: viewWeekly, interests: viewInterests, reports: viewReports, imports: viewImports, how: () => viewHow() }[state.tab] || viewClass)();
+    else if (onClassView()) html = ({ class: viewClass, student: viewStudent, progress: viewProgress, weekly: viewWeekly, practice: viewPractice, fluency: viewFluency, studentapp: viewStudentApp, standards: viewStandards, roadmap: viewRoadmap, ese: viewEse, groups: viewWeekly, interests: viewInterests, reports: viewReports, imports: viewImports, how: () => viewHow() }[state.tab] || viewClass)();
     else html = { school: viewSchool, grades: viewGrades, compare: viewCompareData,
       how: () => viewHow(`<div class="panel" style="display:grid;gap:10px"><h2>Administrator view</h2><p class="small" style="max-width:72ch">Administrators see every class, each grade side by side and the school against district, county and state averages. Teachers see only their own class. In this demo a switch at the top changes the view; on Project Cerberus each person signs in and sees only what their role allows.</p><p class="small muted" style="max-width:72ch">The tables below are shown for ${gradeWord(DATA.grade)}; open any grade's class to see its own conversions.</p></div>`) }[state.adminTab]();
     $("#main").innerHTML = (state.saveError ? `<div class="notice" role="alert" style="margin-bottom:14px"><b>A change was not saved: ${esc(state.saveError)}.</b><span class="small muted">Reload the page to see what the server has.</span></div>` : "") + html;
@@ -5763,6 +8169,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   const p100 = (r, t) => (t ? Math.round((100 * r) / t) : 0);
   const sheetLabel = rec => (rec.kind === "practice" ? `Practice ${rec.part}` : SH_KIND[rec.kind]);
   function postJSON(path, body) {
+    path = apiPath(path);
     return fetch(path, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
       .then(r => r.json().catch(() => ({})).then(j => { if (!r.ok) throw new Error(j.error || "the server answered " + r.status); return j; }));
   }
@@ -6106,7 +8513,9 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     const el = smEl(), sp = SM.sp, s = SM.cls.students.find(x => x.code === SM.rec.code) || { code: SM.rec.code, name: SM.rec.code }, nm = state.names ? s.name.split(" ")[0] : s.code;
     const practice = SM.rec.kind === "practice", it = sp.items[SM.i];
     let body = "";
-    if (SM.exitAsk) body = `<div class="smcard"><h2>Teacher</h2><p>Type the exit code.</p><input id="sm-pin" class="pin big" inputmode="numeric" maxlength="4" value="${esc(SM.pinIn)}" aria-label="Exit code" autocomplete="off">
+    if (SM.exitAsk && STUDENT_APP) body = `<div class="smcard"><h2>Stop now?</h2><p>Your answers on this sheet won't be saved, and you can start it again later.</p>
+        <div class="smrow"><button class="btn big" data-sm="back">Keep going</button><button class="btn ghost" data-sm="discard">Stop</button></div></div>`;
+    else if (SM.exitAsk) body = `<div class="smcard"><h2>Teacher</h2><p>Type the exit code.</p><input id="sm-pin" class="pin big" inputmode="numeric" maxlength="4" value="${esc(SM.pinIn)}" aria-label="Exit code" autocomplete="off">
         ${SM.pinBad ? `<p style="color:var(--support)">That code isn't right.</p>` : ""}
         ${SM.pinOk && SM.step !== "done" ? `<p>${SM.ans.filter(a => a != null).length} of ${sp.total} answered.</p><div class="smrow"><button class="btn" data-sm="savepart">Save these answers</button><button class="btn ghost" data-sm="discard">Leave without saving</button><button class="btn ghost" data-sm="back">Keep going</button></div>`
           : SM.pinOk ? "" : `<div class="smrow"><button class="btn" data-sm="pin">Unlock</button><button class="btn ghost" data-sm="back">Back</button></div>`}</div>`;
@@ -6132,8 +8541,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
           </div></div>`;
     } else if (SM.step === "review") { const left = SM.ans.map((a, k) => (a == null ? k : -1)).filter(k => k >= 0);
       body = `<div class="smcard"><h2>${left.length ? `You skipped ${left.length} question${left.length === 1 ? "" : "s"}.` : "All answered!"}</h2>${left.length ? `<div class="smrow">${left.map(k => `<button class="btn ghost" data-sm="goto" data-k="${k}">Question ${k + 1}</button>`).join("")}</div>` : ""}<div class="smrow"><button class="btn big" data-sm="finish">I'm done</button>${left.length ? "" : `<button class="btn ghost" data-sm="goto" data-k="0">Check my answers</button>`}</div></div>`; }
-    else if (SM.step === "done") body = `<div class="smcard"><h2>All done, ${esc(nm)}!</h2>${practice ? `<p class="smbig">${SM.score.right} of ${SM.score.total} right on the first try.</p>` : `<p class="smbig">Great work.</p>`}<p>Please give the device back to your teacher.</p></div>`;
-    el.innerHTML = `<div class="smtop"><span>${esc(sp.title)}</span><button class="btn ghost sm" data-sm="teacher">Teacher</button></div><div class="smbody">${body}</div>`;
+    else if (SM.step === "done") body = `<div class="smcard"><h2>All done, ${esc(nm)}!</h2>${practice ? `<p class="smbig">${SM.score.right} of ${SM.score.total} right on the first try.</p>` : `<p class="smbig">Great work.</p>`}${STUDENT_APP ? `<button class="btn big" data-sm="discard">Back to my page</button>` : "<p>Please give the device back to your teacher.</p>"}</div>`;
+    el.innerHTML = `<div class="smtop"><span>${esc(sp.title)}</span><button class="btn ghost sm" data-sm="teacher">${STUDENT_APP ? "Stop" : "Teacher"}</button></div><div class="smbody">${body}</div>`;
     const pin = document.getElementById("sm-pin"); if (pin) pin.focus();
   }
   function smFinish(partial) {
@@ -6143,6 +8552,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   }
   function smClick(t) {
     const a = t.dataset.sm, sp = SM.sp, it = sp.items[SM.i], practice = SM.rec.kind === "practice";
+    if (a === "teacher" && STUDENT_APP && (SM.step === "done" || SM.step === "hello")) { smClose(); return; }
     if (a === "teacher") { SM.exitAsk = true; SM.pinIn = ""; SM.pinBad = false; SM.pinOk = false; }
     else if (a === "back") { SM.exitAsk = false; SM.pinOk = false; }
     else if (a === "pin") { const v = (document.getElementById("sm-pin") || { value: "" }).value.trim(); if (v === SM.pin) { if (SM.step === "done" || SM.step === "hello") { smClose(); return; } SM.pinOk = true; SM.pinBad = false; } else { SM.pinBad = true; SM.pinIn = ""; } }
@@ -6258,7 +8668,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   // only in Google Chrome; elsewhere the teacher presses "Check this browser".
   const flIsChrome = () => { try { return !!(navigator.userAgentData && navigator.userAgentData.brands.some(b => b.brand === "Google Chrome")); } catch (e) { return false; } };
   async function flCheckSpeech(auto) {
-    const set = s => { FLS.status = s; if (state.tab === "fluency" && !FL.on) render(); };
+    const set = s => { FLS.status = s; if ((state.tab === "fluency" || STUDENT_APP) && !FL.on && !SM.on) render(); };
     if (!CAN_MIC) return set("preview");
     if (!window.isSecureContext) return set("insecure");
     const SR = flSR();
@@ -6598,7 +9008,9 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     const el = flEl(), s = FL.cls.students.find(x => x.code === FL.code) || { code: FL.code, name: FL.code }, nm = state.names ? s.name.split(" ")[0] : s.code;
     const P = FL.passage, practice = !FL.timed, sample = FL.mode === "sample";
     let body = "";
-    if (FL.exitAsk) body = `<div class="smcard"><h2>Teacher</h2><p>Type the exit code.</p><input id="fl-pin" class="pin big" inputmode="numeric" maxlength="4" value="${esc(FL.pinIn)}" aria-label="Exit code" autocomplete="off">
+    if (FL.exitAsk && STUDENT_APP) body = `<div class="smcard"><h2>Stop reading?</h2><p>This reading won't be saved.</p>
+        <div class="smrow"><button class="btn big" data-flx="back">Keep reading</button><button class="btn ghost" data-flx="leave">Stop</button></div></div>`;
+    else if (FL.exitAsk) body = `<div class="smcard"><h2>Teacher</h2><p>Type the exit code.</p><input id="fl-pin" class="pin big" inputmode="numeric" maxlength="4" value="${esc(FL.pinIn)}" aria-label="Exit code" autocomplete="off">
         ${FL.pinBad ? `<p style="color:var(--support)">That code isn't right.</p>` : ""}
         ${FL.pinOk ? `<div class="smrow">${FL.step !== "done" && FL.ptr > 0 && !sample ? `<button class="btn" data-flx="savepart">Save what was read</button>` : ""}<button class="btn ghost" data-flx="leave">${FL.step === "done" || sample ? "Close" : "Leave without saving"}</button><button class="btn ghost" data-flx="back">Keep going</button></div>`
           : `<div class="smrow"><button class="btn" data-flx="pin">Unlock</button><button class="btn ghost" data-flx="back">Back</button></div>`}</div>`;
@@ -6610,7 +9022,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     else if (FL.step === "check") body = `<div class="smcard"><p class="smkind">Microphone check</p><h2>Say: “I am ready to read!”</h2>
         <p class="flmic ${FL.checkTries ? "warn" : ""}">${FL.checkTries ? "I can't hear you yet. Speak a little louder, close to the computer." : "Listening…"}</p>
         <div class="smrow">${FL.checkTries ? `<button class="btn" data-flx="go">Try again</button>` : ""}</div></div>`;
-    else if (FL.step === "error") body = `<div class="smcard"><h2>Let's get your teacher.</h2><p>${esc(FL.err || "Something went wrong.")}</p><p class="muted">Tap <b>Teacher</b> at the top.</p></div>`;
+    else if (FL.step === "error") body = `<div class="smcard"><h2>Let's get your teacher.</h2><p>${esc(FL.err || "Something went wrong.")}</p>${STUDENT_APP ? `<button class="btn big" data-flx="leave">Back to my page</button>` : `<p class="muted">Tap <b>Teacher</b> at the top.</p>`}</div>`;
     else if (FL.step === "done") {
       const r = FL.result, nb = practice && FL.best != null && r.finished && r.wcpm > FL.best, fast = practice && FL.fastest != null && r.finished && r.secs < FL.fastest;
       body = `<div class="smcard wide fldone">${practice ? `<h2>${r.finished ? "You did it!" : "Good reading!"}${nb ? " New best!" : ""}</h2>
@@ -6628,7 +9040,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         ${FL.step === "paused" ? `<div class="smrow"><button class="btn big flgo" data-flx="resume">I'm ready</button></div>` : ""}
       </div>`;
     }
-    el.innerHTML = `<div class="smtop"><span>${esc(P.title)} · ${esc(FL_KIND[FL.kind])}${sample ? " · sample" : ""}</span><button class="btn ghost sm" data-flx="teacher">Teacher</button></div>
+    el.innerHTML = `<div class="smtop"><span>${esc(P.title)} · ${esc(FL_KIND[FL.kind])}${sample ? " · sample" : ""}</span><button class="btn ghost sm" data-flx="teacher">${STUDENT_APP ? "Stop" : "Teacher"}</button></div>
       <div class="smbody">${body}<div id="fl-say" class="flsay" role="status" aria-live="polite"></div></div>`;
     flPaint(); flPaintCaption(); flPaintClock();
     const pin = document.getElementById("fl-pin"); if (pin) pin.focus();
@@ -6640,7 +9052,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   }
   function flClick(t) {
     const a = t.dataset.flx;
-    if (a === "teacher" && FL.mode === "sample") return flClose();
+    if (a === "teacher" && (FL.mode === "sample" || (STUDENT_APP && ["hello", "done", "bye", "error"].includes(FL.step)))) return flClose();
+    if (a === "finish" && STUDENT_APP) return flClose();
     if (a === "teacher") { FL.exitAsk = true; FL.pinIn = ""; FL.pinBad = false; FL.pinOk = false; }
     else if (a === "back") { FL.exitAsk = false; FL.pinOk = false; }
     else if (a === "pin") { const v = (document.getElementById("fl-pin") || { value: "" }).value.trim(); if (v === FL.pin) { if (FL.step === "bye" || FL.step === "hello") return flClose(); FL.pinOk = true; FL.pinBad = false; } else { FL.pinBad = true; FL.pinIn = ""; } }
@@ -6896,7 +9309,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       ${runs.map(r => `<tr><td>${shortDate(r.date)}</td><td>${esc(FL_KIND[r.kind])}</td><td>${esc((FL_BY_ID[r.passage] || { title: r.passage }).title)}</td><td class="n">${r.wcpm}</td><td class="n">${r.acc}%</td><td>${r.mode === "teacher" ? "by the teacher" : "speech recognition on the school computer"}</td></tr>`).join("")}</tbody></table></div></div>`;
   }
   // test hook (no student data): the reading screen's state, for the automated tests
-  window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, helped: FL.helped ? [...FL.helped] : [] }) });
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, passage: FL.passage ? FL.passage.id : null, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, helped: FL.helped ? [...FL.helped] : [] }) });
 
   // =====================================================================================================
   // Odin 0.6: Odin as an app on phones and tablets. Installable from the browser (no app store), a phone layout
@@ -6976,7 +9389,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   if (DROID) {
     DROID.on(ev => { if (ev === "hidden") appShown(true); else if (ev === "shown") appShown(false); });
     window.__odinBack = () => {
-      if (FL.on || SM.on) return "stay";
+      if (FL.on || SM.on || STUDENT_APP) return "stay";   // Odin Student: the back button never leaves the student's app
       if (document.body.classList.contains("menu-open") || document.body.classList.contains("more-open")) { phoneClose(); return "stay"; }
       return "";
     };
@@ -6993,12 +9406,264 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     setInterval(() => { if (Date.now() - APP.last > IDLE_MS) appSignOut(); }, Math.min(20000, Math.max(1000, IDLE_MS / 4)));
   }
   function appSignOut() {
+    if (STUDENT_APP) return stSignOut();
     document.body.classList.add("covered");
     try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
     fetch("api/signout", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}" })
       .catch(() => {}).finally(() => location.replace("./"));
   }
   window.__odinDebug = Object.assign(window.__odinDebug || {}, { app: () => ({ standalone: STANDALONE, signin: SIGNIN, idleMs: IDLE_MS, phone: PHONE, names: state.names, installPrompt: !!APP.prompt }) });
+
+  // =====================================================================================================
+  // Odin 0.8: Odin Student, the students' own app. One student sees only their own work: this week's practice
+  // sheets and checks, fluency practice with the voice, their badges and best scores, and their own progress.
+  // No support tiers, no levels and no other students. On the school's server a student signs in first (the class
+  // code and a picture password, a QR card, or the teacher unlocks the device: see boot_student.js), and the server
+  // sends only that student's data. In the demo there is no sign-in: you pick an invented student.
+  // The teacher's side is the Student app tab: how to open it and, on the server, the class code and sign-in cards.
+  // =====================================================================================================
+  const STU = { code: null, classId: null, toggled: false, namesBefore: false, exitAsk: false, exitIn: "", exitMsg: "",
+    pickClass: (LS.get("odin-student-ui", {}) || {}).classId || "3-112" };
+  if (STUDENT_APP && SERVER) { STU.classId = CLASSES[0].id; STU.code = CLASSES[0].students[0].code; }
+  if (STUDENT_APP) { state.names = true; document.title = SERVER ? "Odin Student" : "Odin Student demo"; }
+  Object.assign(state, { saNotice: null, saCards: null });
+
+  // ---------- the student's own page ----------
+  function renderStudentApp() {
+    phoneSetup();
+    document.body.classList.add("student-app");
+    if (STU.code && classById(STU.classId)) { useClass(STU.classId); state.code = STU.code; }
+    else STU.code = null;
+    const err = state.saveError ? `<div class="notice" role="alert" style="margin-bottom:14px"><b>Your work was not saved: ${esc(state.saveError)}.</b><span class="small muted">Ask your teacher.</span></div>` : "";
+    $("#main").innerHTML = err + (STU.code ? stHomeHTML() : stPickHTML());
+    if (STU.code && FLS.status === "checking" && !FLS.started) { FLS.started = true; flCheckSpeech(true); }
+    const pin = document.getElementById("st-exit"); if (pin) pin.focus();
+  }
+  const stName = () => { const s = DATA.students.find(x => x.code === STU.code); return s ? String(s.name).split(" ")[0] : STU.code; };
+  function stTop(sub, actions) {
+    return `<div class="st-top"><div class="st-brand"><div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div><b>Odin Student</b>${sub ? `<span class="small muted">${sub}</span>` : ""}</div></div><div class="st-actions">${actions}</div></div>`;
+  }
+
+  // The demo: pick an invented student. At school, a student signs in instead.
+  function stPickHTML() {
+    const c = classById(STU.pickClass) || classById("3-112") || CLASSES[0];
+    const opts = GRADES.map(g => `<optgroup label="${gradeLabel(g)}">${CLASSES.filter(x => x.grade === g).map(x => `<option value="${x.id}" ${x.id === c.id ? "selected" : ""}>${esc(x.teacher)} · Room ${esc(x.room)}</option>`).join("")}</optgroup>`).join("");
+    return stTop("Demo with invented students", STU.toggled ? `<button class="btn ghost sm" data-st="teacherview">Teacher view</button>` : `<a class="btn ghost sm" href="./">Teacher view</a>`) +
+      `<section class="st-pick" aria-labelledby="st-who">
+        <h2 class="st-hi" id="st-who">Who's working today?</h2>
+        <p class="small muted" style="max-width:62ch">Every student here is invented. Tap one to see their app. At school there's no picking: a student signs in with the class code and a picture password, scans their QR card, or the teacher unlocks the device for them.</p>
+        <label class="small st-classpick">Class <select id="st-class" aria-label="Class">${opts}</select></label>
+        <div class="st-people">${c.students.map(s => `<button class="st-person" data-st="pick" data-class="${c.id}" data-code="${s.code}"><span class="st-av" aria-hidden="true">${esc(String(s.name).charAt(0))}</span><b>${esc(s.name)}</b><span class="small muted mono">${s.code}</span></button>`).join("")}</div>
+      </section>`;
+  }
+
+  function stHomeHTML() {
+    const code = STU.code, wk = mondayOf(ISO_TODAY);
+    const out = SERVER ? (SCHOOL.locked ? `<button class="btn ghost sm" data-st="exit">Teacher</button>` : `<button class="btn ghost sm" data-st="signout">Sign out</button>`)
+      : `<button class="btn ghost sm" data-st="switch">Switch student</button>`;
+    return stTop(`${esc(gradeLabel(DATA.grade))} · Room ${esc(DATA.room)}${SERVER ? "" : " · demo"}`, out) +
+      (STU.exitAsk ? stExitHTML() : "") +
+      `<div class="st-hello"><h2 class="st-hi">Hi, ${esc(stName())}!</h2><p class="muted">This week: ${esc(weekLabel(wk))}</p></div>
+      <div class="st-grid">
+        <section class="st-card" aria-labelledby="st-h-sheets"><h3 id="st-h-sheets">${flIcon("book", 22)} My practice</h3>${stSheetsHTML(code, wk)}</section>
+        <section class="st-card" aria-labelledby="st-h-read"><h3 id="st-h-read">${flIcon("wave", 22)} Reading out loud</h3>${stReadingHTML(code, wk)}</section>
+        <section class="st-card" aria-labelledby="st-h-badges"><h3 id="st-h-badges">${flIcon("star", 22)} My badges and best scores</h3>${stBadgesHTML(code, wk)}</section>
+        <section class="st-card st-wide" aria-labelledby="st-h-prog"><h3 id="st-h-prog">${flIcon("target", 22)} My progress</h3>${stProgressHTML(code)}</section>
+      </div>`;
+  }
+  // A device the teacher locked to this student: only the teacher's exit code signs out.
+  function stExitHTML() {
+    return `<div class="notice st-exit" role="dialog" aria-label="Teacher exit code"><b>Teacher: type the exit code to sign this student out.</b>
+      <div class="p4bar"><input id="st-exit" class="pin" inputmode="numeric" maxlength="4" autocomplete="off" value="${esc(STU.exitIn)}" aria-label="Exit code">
+      <button class="btn" data-st="exitgo">Sign out</button><button class="btn ghost" data-st="exitno">Cancel</button></div>
+      ${STU.exitMsg ? `<span class="small" style="color:var(--support)">${esc(STU.exitMsg)}</span>` : ""}</div>`;
+  }
+
+  // This week's sheets: the pre-check, practice 1 and 2, then the post-check. Each is done once here.
+  function stSheetsHTML(code, wk) {
+    const list = DATA.sheets.filter(x => x.code === code && x.week === wk);
+    if (!list.length) return `<p class="small muted">No practice sheets this week. When your teacher makes them, they show up here.</p>`;
+    return ["reading", "math"].filter(sj => list.some(x => x.subject === sj)).map(sj => {
+      const mine = list.filter(x => x.subject === sj);
+      const rows = SHEET_SLOTS.map(([k, p]) => slotOf(mine, k, p)).filter(Boolean);
+      return `<div class="st-sub"><p class="smkind">${SUBJ[sj]} · ${esc(shSkillName(sj, mine[0].skill))}</p>${rows.map(x => stSheetRow(x, mine)).join("")}</div>`;
+    }).join("");
+  }
+  function stSheetRow(x, mine) {
+    const done = x.status === "done", before = SHEET_SLOTS.findIndex(([k, p]) => k === x.kind && (x.part || 0) === p);
+    const waitFor = SHEET_SLOTS.slice(0, before).map(([k, p]) => slotOf(mine, k, p)).filter(y => y && y.status !== "done").pop();
+    const what = x.kind === "pre" ? "What you know before practice" : x.kind === "post" ? "Show what you learned" : x.part === 1 ? "A short lesson, then practice with hints" : "Practice on your own";
+    const right = done ? (x.kind === "practice" ? `<span class="st-done">✓ ${x.right} of ${x.total}</span>` : `<span class="st-done">✓ Done</span>`)
+      : waitFor ? `<span class="st-lock">After ${esc(sheetLabel(waitFor).toLowerCase())}</span>`
+      : `<button class="btn sm" data-st="sheet" data-id="${x.id}">Start</button>`;
+    return `<div class="st-row"><span class="what"><b>${esc(sheetLabel(x))}</b><span class="small muted">${what}</span></span>${right}</div>`;
+  }
+
+  // Fluency: the first reading (1 minute), practice (as often as they like), then the final reading (1 minute).
+  function stReadingHTML(code, wk) {
+    const P = flPassageFor(DATA, code, wk).passage, sum = flWeekSummary(DATA, code, wk);
+    const ready = CAN_MIC && flReady(), practiced = sum.practice.filter(r => r.finished).length;
+    const btn = (kind, label) => `<button class="btn sm" data-st="read" data-kind="${kind}" ${ready ? "" : "disabled"}>${label}</button>`;
+    const row = (title, what, right) => `<div class="st-row"><span class="what"><b>${title}</b><span class="small muted">${what}</span></span>${right}</div>`;
+    const status = ready ? "" : `<div class="st-mic small">${stMicText()}</div>`;
+    return `<p class="st-passage"><b>${esc(P.title)}</b><span class="small muted">${flPassageWords(P.id).length} words</span></p>
+      ${row("First reading", "One minute, your first time with the story", sum.pre ? `<span class="st-done">✓ ${sum.pre.wcpm} words a minute</span>` : btn("pre", "Start"))}
+      ${row("Practice", sum.best != null ? `${practiced} time${practiced === 1 ? "" : "s"} · your best: ${sum.best} words a minute` : "Read the whole story. Try to beat your best!",
+        !sum.pre ? `<span class="st-lock">After your first reading</span>` : btn("practice", practiced ? "Read again" : "Start"))}
+      ${row("Final reading", "One minute, at the end of the week", sum.post ? `<span class="st-done">✓ ${sum.post.wcpm} words a minute</span>`
+        : !practiced ? `<span class="st-lock">After you practice</span>` : btn("post", "Start"))}
+      ${status}`;
+  }
+  function stMicText() {
+    const s = FLS.status, sample = `<button class="btn ghost sm" data-st="sample">See how it works</button>`;
+    if (!CAN_MIC || s === "preview") return `The microphone is off in this online preview. ${sample}`;
+    if (s === "checking") return "Checking the microphone…";
+    if (s === "manual") return `<button class="btn ghost sm" data-st="check">Check this device</button> Odin listens in Google Chrome or the Odin app for Android.`;
+    if (s === "downloadable") return `This device needs its speech pack first. <button class="btn ghost sm" data-st="install">Set it up</button>`;
+    if (s === "downloading") return `Getting the speech pack… <button class="btn ghost sm" data-st="check">Check again</button>`;
+    return `This device can't listen to your reading yet. Ask your teacher. ${sample}`;
+  }
+
+  // Badges, and the best scores: on this week's story and ever.
+  function stBadgesHTML(code, wk) {
+    const runs = flRunsOf(DATA, code), got = flBadges(runs, DATA.grade), sum = flWeekSummary(DATA, code, wk);
+    const ever = runs.filter(r => r.kind !== "practice" || r.finished).reduce((m, r) => Math.max(m, r.wcpm || 0), 0);
+    const n = FL_BADGES.filter(b => got[b.id]).length;
+    return `<div class="st-best">
+        <div><b>${sum.best != null ? sum.best : "–"}</b><span>best words a minute this week</span></div>
+        <div><b>${sum.fastest != null ? flTime(sum.fastest) : "–"}</b><span>fastest time this week</span></div>
+        <div><b>${ever || "–"}</b><span>best words a minute ever</span></div></div>
+      <p class="small muted">${n ? `${n} of ${FL_BADGES.length} badges` : "Read to earn your first badge!"}</p>
+      <div class="flbadges">${FL_BADGES.map(b => `<span class="flbadge ${got[b.id] ? "" : "off"}" title="${esc(b.desc)}">${flIcon(b.icon, 20)}<b>${esc(b.name)}</b>${got[b.id] && got[b.id].n > 1 ? `<small>×${got[b.id].n}</small>` : ""}</span>`).join("")}</div>`;
+  }
+
+  // Their own progress: words a minute week by week, and each week's check before and after practice. No levels or tiers.
+  function stProgressHTML(code) {
+    const checks = {};
+    DATA.sheets.filter(x => x.code === code && x.kind !== "practice" && x.status === "done").forEach(x => {
+      const k = x.week + x.subject, e = checks[k] || (checks[k] = { week: x.week, subject: x.subject, skill: x.skill }); e[x.kind] = x; });
+    const rows = Object.values(checks).sort((a, b) => b.week.localeCompare(a.week) || a.subject.localeCompare(b.subject)).slice(0, 8);
+    return `<div class="flchart">${flChart(DATA, code)}</div>
+      ${rows.length ? `<div class="scroller"><table class="ref"><caption class="small muted" style="text-align:left">My checks: before and after practice</caption>
+        <thead><tr><th>Week</th><th>Skill</th><th>Before</th><th>After</th></tr></thead><tbody>
+        ${rows.map(r => `<tr><td>${esc(weekLabel(r.week))}</td><td>${SUBJ[r.subject]} · ${esc(shSkillName(r.subject, r.skill))}</td><td class="n">${r.pre ? p100(r.pre.right, r.pre.total) + "%" : "–"}</td><td class="n">${r.post ? `<b>${p100(r.post.right, r.post.total)}%</b>` : "–"}</td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="small muted">Your checks show up here after you do them.</p>`}`;
+  }
+
+  // ---------- going in and out (the demo can switch from the teacher view in the same page) ----------
+  function enterStudentApp() {
+    STUDENT_APP = true; STU.toggled = true; STU.code = null; STU.namesBefore = state.names; state.names = true;
+    STU.pickClass = state.classId; window.scrollTo(0, 0); render();
+  }
+  function leaveStudentApp() {
+    STUDENT_APP = false; STU.code = null; state.names = STU.namesBefore; document.body.classList.remove("student-app");
+    window.scrollTo(0, 0); render();
+  }
+  function stSignOut() {
+    document.body.classList.add("covered");
+    fetch("api/student/signout", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}" })
+      .catch(() => {}).finally(() => location.replace("student.html"));
+  }
+  document.addEventListener("click", e => {
+    if (!STUDENT_APP || SM.on || FL.on) return;
+    const t = e.target.closest("[data-st]"); if (!t) return;
+    const a = t.dataset.st;
+    if (a === "pick") { STU.classId = t.dataset.class; STU.code = t.dataset.code; state.saveError = null; window.scrollTo(0, 0); render(); }
+    else if (a === "switch") { STU.code = null; render(); }
+    else if (a === "teacherview") leaveStudentApp();
+    else if (a === "signout") stSignOut();
+    else if (a === "exit") { STU.exitAsk = true; STU.exitIn = ""; STU.exitMsg = ""; render(); }
+    else if (a === "exitno") { STU.exitAsk = false; render(); }
+    else if (a === "exitgo") {
+      const v = ((document.getElementById("st-exit") || { value: "" }).value || "").trim();
+      fetch("api/student/signout", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ exit: v }) })
+        .then(r => r.json().catch(() => ({})).then(j => { if (r.ok) { document.body.classList.add("covered"); location.replace("student.html"); } else { STU.exitIn = ""; STU.exitMsg = j.error || "That code isn't right."; render(); } }))
+        .catch(() => { STU.exitMsg = "Odin can't reach the server."; render(); });
+    }
+    else if (a === "sheet") { const id = Number(t.dataset.id), f = sheetFind(id); if (f && f.rec.code === STU.code && f.rec.status !== "done") smStart(id, null); }
+    else if (a === "read") { const k = t.dataset.kind; if (["pre", "practice", "post"].includes(k) && flReady()) flOpen(DATA, STU.code, k, "voice", null); }
+    else if (a === "sample") flOpen(DATA, STU.code, "practice", "sample", null);
+    else if (a === "check") flCheckSpeech(false);
+    else if (a === "install") flInstall();
+  });
+  document.addEventListener("change", e => {
+    if (STUDENT_APP && e.target.id === "st-class") { STU.pickClass = e.target.value; LS.set("odin-student-ui", { classId: STU.pickClass }); render(); }
+  });
+  document.addEventListener("keydown", e => {
+    if (STUDENT_APP && STU.exitAsk && e.key === "Enter" && e.target.id === "st-exit") { e.preventDefault(); const b = document.querySelector('[data-st="exitgo"]'); if (b) b.click(); }
+  });
+  document.addEventListener("input", e => { if (e.target.id === "st-exit") STU.exitIn = e.target.value.replace(/\D/g, ""); });
+
+  // ---------- the teacher's side: the Student app tab ----------
+  const SA_METHODS = [["picture", "Class code and picture password", "Each student taps their name, then their three pictures. Good for shared tablets and young students."],
+    ["card", "QR card", "Each student scans their own card with the device's camera, or types the code printed on it."],
+    ["teacher", "The teacher unlocks the device", "You sign in on the student's device, pick the student and set a 4-digit exit code. Only that code signs the student out."]];
+  const saAddress = () => { try { return new URL("student.html", location.href).href.split("#")[0]; } catch (e) { return "student.html"; } };
+  function viewStudentApp() {
+    if (state.saCards) return viewPrintCards();
+    const open = CAN_INSTALL ? `<a class="btn" href="student.html">Open Odin Student</a>` : `<button class="btn" data-sa="toggle">Open Odin Student</button>`;
+    return `<section class="view" aria-labelledby="tab-studentapp">
+      <div class="head"><h2>Odin Student: the students' own app</h2></div>
+      <p class="lead">Students open Odin Student on a tablet, phone or computer and see only their own work: this week's practice sheets and checks, fluency practice with the voice, their badges and best scores, and a chart of their own reading. They never see support tiers, levels or other students.</p>
+      ${state.saNotice ? `<div class="notice" role="status"><b>${esc(state.saNotice)}</b></div>` : ""}
+      <div class="panel" style="display:grid;gap:10px"><h3>Open it</h3>
+        <p class="small" style="max-width:72ch">${SERVER ? `On a student's device, open <span class="mono">${esc(saAddress())}</span> or scan the code below. It installs as its own app: on an iPhone or iPad, <b>Share › Add to Home Screen</b>; on Android, <b>Install app</b>. In the Odin app for Android, choose <b>Student device</b>.`
+          : "In the demo there's no sign-in: pick an invented student and see their app. Work they do there shows up here, in the teacher view, in this browser."}</p>
+        <div class="p4bar">${open}</div>
+        ${SERVER ? `<div class="st-qr">${qrSVG(saAddress(), 132, "QR code for Odin Student")}</div>` : ""}</div>
+      ${SERVER ? saSetupHTML() : `<div class="panel" style="display:grid;gap:8px"><h3>How students sign in at school</h3><p class="small" style="max-width:72ch">On the school's Project Cerberus server, each class chooses one or more ways. Students never type a password.</p>
+        <ul class="rules">${SA_METHODS.map(([, l, d]) => `<li><b>${l}.</b> ${d}</li>`).join("")}</ul>
+        <p class="small muted">Odin keeps only scrambled copies of picture passwords and card codes. A student's session shows only that student's work and ends after 30 minutes without use.</p></div>`}
+    </section>`;
+  }
+  function saSetupHTML() {
+    const A = DATA.access, on = A ? A.methods : SA_METHODS.map(m => m[0]);
+    const studs = DATA.students, has = c => (A && A.students[c]) || {};
+    return `<div class="panel" style="display:grid;gap:12px"><h3>How students in this class sign in</h3>
+        ${A ? `<p>Class code: <b class="mono st-code">${esc(A.classCode)}</b> <button class="btn ghost sm" data-sa="newcode">Make a new class code</button></p><p class="small muted">Share the class code with the class. A new code stops the old one at once.</p>`
+          : `<p class="small">Odin Student isn't set up for this class yet. Choose the ways students sign in, then set it up: Odin makes a class code.</p>`}
+        <fieldset class="st-methods"><legend class="small">Ways to sign in</legend>${SA_METHODS.map(([k, l, d]) => `<label><input type="checkbox" name="sa-m" value="${k}" ${on.includes(k) ? "checked" : ""}> <span><b>${l}</b><br><span class="small muted">${d}</span></span></label>`).join("")}</fieldset>
+        <div class="p4bar"><button class="btn" data-sa="setup">${A ? "Save" : "Set up Odin Student for this class"}</button></div></div>
+      ${A ? `<div class="panel" style="display:grid;gap:10px"><h3>Sign-in cards</h3>
+        <p class="small" style="max-width:72ch">Each card has the class code, the student's picture password, and a QR code with its card code. Odin keeps only scrambled copies, so <b>print the cards right after you make them</b>. Making a new card for a student replaces the old one.</p>
+        <div class="p4bar"><button class="btn" data-sa="cards">Make cards for the whole class</button></div>
+        <div class="scroller"><table class="ref"><thead><tr><th>Student</th><th>Picture password</th><th>QR card</th><th>Made</th><th></th></tr></thead><tbody>
+          ${studs.map(s => `<tr><td>${who(s.code)}</td><td>${has(s.code).picture ? "✓" : "–"}</td><td>${has(s.code).card ? "✓" : "–"}</td><td class="small muted">${has(s.code).updated ? shortDate(has(s.code).updated) : ""}</td><td><button class="btn ghost sm" data-sa="card" data-code="${s.code}">${has(s.code).card ? "New card" : "Make a card"}</button></td></tr>`).join("")}
+        </tbody></table></div></div>` : ""}`;
+  }
+  // The cards, ready to print. They exist only on this screen: going back forgets them.
+  function viewPrintCards() {
+    const A = DATA.access, ms = A.methods, url = saAddress();
+    return `<section class="view"><div class="noprint" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${printBtn("Print the cards")}<button class="btn ghost" data-sa="closecards">Done</button>
+        <span class="muted small" style="align-self:center">Print now: Odin can't show these pictures and codes again.</span></div>
+      <div class="st-cards">${state.saCards.map(c => `<div class="st-cardp">
+        <div class="st-cardh"><b>Odin Student</b><span>${esc(DATA.teacher)} · Room ${esc(DATA.room)}</span></div>
+        <p class="st-cardn">${esc(c.name)} <span class="mono">${esc(c.code)}</span></p>
+        ${ms.includes("picture") ? `<div class="st-cardrow"><span class="small">Class code</span><b class="mono">${esc(A.classCode)}</b></div>
+          <div class="st-cardpics" aria-label="Picture password">${c.pictures.map((i, k) => `<span><i>${k + 1}</i><em>${ST_PICS[i][0]}</em><small>${ST_PICS[i][1]}</small></span>`).join("")}</div>` : ""}
+        ${ms.includes("card") ? `<div class="st-cardqr">${qrSVG(url + "#card=" + c.card, 104, "Sign-in QR code")}<span class="small">Scan to sign in, or type<br><b class="mono">${esc(stCardShow(c.card))}</b></span></div>` : ""}
+      </div>`).join("")}</div></section>`;
+  }
+  document.addEventListener("click", e => {
+    if (STUDENT_APP || SM.on || FL.on) return;
+    const t = e.target.closest("[data-sa]"); if (!t) return;
+    const a = t.dataset.sa, fail = err => { state.saveError = String(err.message || err); render(); };
+    if (a === "toggle") enterStudentApp();
+    else if (a === "setup") {
+      const methods = [...document.querySelectorAll('input[name="sa-m"]:checked')].map(x => x.value);
+      if (!methods.length) { state.saNotice = "Choose at least one way to sign in."; return render(); }
+      postJSON("api/access/setup", { classId: DATA.id, methods }).then(r => { DATA.access = r.access; state.saNotice = `Saved. Class code ${r.access.classCode}.`; render(); }).catch(fail);
+    }
+    else if (a === "newcode") postJSON("api/access/classcode", { classId: DATA.id }).then(r => { DATA.access = r.access; state.saNotice = `The new class code is ${r.access.classCode}. The old one no longer works.`; render(); }).catch(fail);
+    else if (a === "cards" || a === "card") {
+      postJSON("api/access/cards", Object.assign({ classId: DATA.id }, a === "card" ? { codes: [t.dataset.code] } : {}))
+        .then(r => { DATA.access = r.access; state.saCards = r.cards; state.saNotice = null; render(); window.scrollTo(0, 0); }).catch(fail);
+    }
+    else if (a === "closecards") { state.saCards = null; state.saNotice = "The cards are made. If one is lost, make a new card for that student."; render(); }
+  });
+  // test hook (no student data): which student the app shows
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { st: () => ({ app: STUDENT_APP, code: STU.code, classId: STU.classId, locked: !!(SERVER && SCHOOL && SCHOOL.locked) }) });
 
   loadComparison();
   render();
