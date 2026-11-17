@@ -748,26 +748,11 @@ body.student-app main.wrap { padding-top: 0; padding-bottom: 32px; max-width: 10
 .st-brand b { font-family: var(--f-display); font-size: 1.2rem; font-weight: 650; }
 .st-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .st-hi { font-size: clamp(1.6rem, 5vw, 2.2rem); }
-.st-hello { display: grid; gap: 2px; margin-bottom: 16px; }
-.st-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); align-items: start; }
-.st-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; display: grid; gap: 10px; min-width: 0; }
-.st-card.st-wide { grid-column: 1 / -1; }
-.st-card h3 { font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+.st-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px 22px; display: grid; gap: 14px; min-width: 0; margin-top: 16px; }
+.st-card h3 { font-size: 1.25rem; display: flex; align-items: center; gap: 8px; color: var(--ink); flex-wrap: wrap; }
+.st-h3sub { font-family: var(--f-body); font-size: 0.85rem; font-weight: 400; color: var(--muted); margin-left: auto; }
 .st-card h3 svg { color: var(--accent); flex: none; }
-.st-sub { display: grid; }
-.st-sub + .st-sub { margin-top: 10px; }
-.st-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); min-height: 52px; }
-.st-sub .smkind + .st-row, .st-passage + .st-row { border-top: 0; }
-.st-row .what { flex: 1; min-width: 0; display: grid; }
-.st-row .btn.sm { padding: 8px 16px; font-size: 0.95rem; }
-.st-done { color: var(--ongrade); font-weight: 600; white-space: nowrap; text-align: right; }
-.st-lock { color: var(--muted); font-size: 0.85rem; text-align: right; }
-.st-passage { display: grid; }
 .st-mic { background: var(--sunk); border-radius: 10px; padding: 10px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.st-best { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.st-best > div { background: var(--accent-soft); border-radius: 12px; padding: 10px; display: grid; gap: 2px; text-align: center; }
-.st-best b { font-family: var(--f-display); font-size: 1.5rem; color: var(--accent); }
-.st-best span { font-size: 0.78rem; color: var(--muted); line-height: 1.25; }
 .st-pick { display: grid; gap: 12px; }
 .st-classpick select { margin-left: 6px; }
 .st-people { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
@@ -821,6 +806,154 @@ a.btn { text-decoration: none; display: inline-block; }
 body.student-app { --accent: #1C6E66; --accent-soft: #D9EEEA; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body.student-app { --accent: #63C7B9; --accent-soft: #13312D; --accent-ink: #0E141A; } }
 :root[data-theme="dark"] body.student-app { --accent: #63C7B9; --accent-soft: #13312D; --accent-ink: #0E141A; }
+
+/* ---------- 0.8: the game page: stars and rank, quests, progress, the trophy case, unlocking ---------- */
+body.student-app { --st-gold: #E0A91B; --st-gold-soft: #FCF1D2; --st-star: #F2B705; }
+.st-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 22px 24px; border-radius: 24px; color: #fff;
+  background: radial-gradient(120% 140% at 0% 0%, #2E9488 0%, #1C6E66 45%, #12504A 100%); box-shadow: 0 10px 30px -18px rgba(18, 80, 74, .9); }
+.st-hero .st-hi { color: #fff; }
+.st-avatar { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-display); font-size: 2.1rem; font-weight: 650;
+  background: #fff; color: #1C6E66; box-shadow: 0 0 0 5px rgba(255, 255, 255, .25), 0 0 0 9px rgba(242, 183, 5, .55); }
+.st-hmain { display: grid; gap: 6px; min-width: 0; }
+.st-rank { display: flex; align-items: center; gap: 6px; font-size: 1rem; color: #E5F4F1; }
+.st-rank svg { color: var(--st-star); }
+.st-xp { height: 14px; border-radius: 999px; background: rgba(255, 255, 255, .22); overflow: hidden; max-width: 460px; }
+.st-xp i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #F7D774, var(--st-star)); box-shadow: 0 0 12px rgba(247, 215, 116, .8); }
+.st-xpt { font-size: 0.9rem; color: #E5F4F1; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.st-xpt svg { color: var(--st-star); fill: var(--st-star); }
+.st-hstats { display: grid; gap: 10px; }
+.st-hstats > div { display: grid; grid-template-columns: auto auto; column-gap: 8px; align-items: center; background: rgba(255, 255, 255, .13); border-radius: 14px; padding: 8px 12px; }
+.st-hstats svg { grid-row: span 2; color: var(--st-star); }
+.st-hstats b { font-family: var(--f-display); font-size: 1.45rem; line-height: 1; }
+.st-hstats span { font-size: 0.75rem; color: #D6ECE8; }
+.st-next { margin-top: 14px; display: grid; gap: 8px; }
+.st-nextt { display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--ink); }
+.st-nextt svg { color: var(--st-gold); }
+.st-nextrow { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.st-nexta { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px; }
+.st-nexta > span:last-child { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.st-nexta small { color: var(--muted); font-size: 0.78rem; }
+.st-abar { display: block; height: 8px; border-radius: 999px; background: var(--sunk); overflow: hidden; }
+.st-abar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #2EA394); }
+/* quests */
+.st-quest { display: grid; gap: 10px; padding: 14px 16px 6px; border-radius: 16px; background: var(--bg); }
+.st-quest + .st-quest { margin-top: 4px; }
+.st-qhead { display: flex; align-items: center; gap: 10px; }
+.st-qicon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); flex: none; }
+.st-qtitle { display: grid; flex: 1; min-width: 0; }
+.st-qtitle small { color: var(--muted); font-size: 0.82rem; }
+.st-qcount { font-weight: 700; font-size: 0.85rem; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.st-qcount.full { background: var(--st-gold-soft); color: #8A6400; }
+.st-qbar { height: 8px; border-radius: 999px; background: var(--sunk); overflow: hidden; }
+.st-qbar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #2EA394); }
+.st-track { list-style: none; margin: 0; padding: 4px 0 8px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; position: relative; }
+.st-node { display: grid; justify-items: center; text-align: center; gap: 6px; position: relative; padding-top: 2px; }
+.st-node::before { content: ""; position: absolute; top: 22px; right: 50%; width: calc(100% + 8px); height: 4px; background: var(--line); z-index: 0; }
+.st-node:first-child::before { display: none; }
+.st-node.done::before, .st-node.done + .st-node::before { background: var(--accent); }
+.st-dot { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-display); font-weight: 650; font-size: 1.1rem; position: relative; z-index: 1;
+  background: var(--surface); color: var(--muted); border: 3px solid var(--line); }
+.st-node.done .st-dot { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.st-node.now .st-dot { border-color: var(--st-gold); color: #8A6400; background: var(--st-gold-soft); animation: st-pulse 1.8s ease-in-out infinite; }
+.st-node.open .st-dot { border-color: var(--accent); color: var(--accent); }
+.st-node.locked .st-dot { background: var(--sunk); }
+.st-ntext { display: grid; gap: 1px; }
+.st-ntext small { color: var(--muted); font-size: 0.78rem; line-height: 1.3; }
+.st-node.locked .st-ntext b { color: var(--muted); }
+.st-node .btn.sm { padding: 7px 16px; font-size: 0.92rem; border-radius: 999px; }
+.st-node.now .btn.sm { background: var(--st-gold); color: #1F1600; }
+@keyframes st-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(224, 169, 27, .55); } 50% { box-shadow: 0 0 0 9px rgba(224, 169, 27, 0); } }
+.st-noq { padding: 4px 2px; }
+@media (max-width: 560px) {
+  .st-hero { grid-template-columns: auto 1fr; padding: 18px; }
+  .st-hstats { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+  .st-avatar { width: 60px; height: 60px; font-size: 1.7rem; }
+  .st-track { grid-auto-flow: row; grid-auto-columns: auto; gap: 0; }
+  .st-node { grid-template-columns: 44px 1fr auto; justify-items: start; text-align: left; align-items: center; column-gap: 12px; padding: 6px 0; }
+  .st-node::before { top: auto; bottom: 50%; right: auto; left: 20px; width: 4px; height: 100%; }
+}
+/* progress */
+.st-recs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.st-rec { display: grid; justify-items: center; text-align: center; gap: 2px; padding: 12px 8px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); }
+.st-rec b { font-family: var(--f-display); font-size: 1.55rem; line-height: 1.1; color: var(--ink); }
+.st-rec span { font-size: 0.75rem; color: var(--muted); line-height: 1.25; }
+.st-progrid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
+.st-ptitle { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+.st-chart { width: 100%; height: auto; display: block; }
+.st-chart .st-base { stroke: var(--line); stroke-width: 2; }
+.st-chart .st-bar { fill: var(--accent); opacity: .55; }
+.st-chart .st-bar.now { fill: var(--st-gold); opacity: 1; }
+.st-chart .st-bv { font: 700 13px var(--f-body); fill: var(--muted); }
+.st-chart .st-bv.now { fill: var(--ink); font-size: 15px; }
+.st-chart .st-bx { font: 12px var(--f-body); fill: var(--muted); }
+.st-chart .st-goal { stroke: #C2410C; stroke-width: 2; stroke-dasharray: 6 5; }
+.st-chart .st-goalf rect { fill: #C2410C; }
+.st-chart .st-goalf text { font: 700 11.5px var(--f-body); fill: #fff; }
+.st-power { display: grid; gap: 4px; padding: 8px 0; border-top: 1px solid var(--line); }
+.st-power:first-of-type { border-top: 0; }
+.st-power p { font-size: 0.88rem; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.st-up { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: #1C6E66; background: #D9EEEA; border-radius: 999px; padding: 1px 8px; font-size: 0.8rem; }
+.st-pbar { display: grid; grid-template-columns: 52px 1fr 44px; gap: 8px; align-items: center; font-size: 0.8rem; color: var(--muted); }
+.st-pbar > div { height: 12px; border-radius: 999px; background: var(--sunk); overflow: hidden; }
+.st-pbar i { display: block; height: 100%; border-radius: 999px; background: #9AA6B2; }
+.st-pbar.after i { background: linear-gradient(90deg, var(--accent), #2EA394); }
+.st-pbar b { color: var(--ink); text-align: right; }
+@media (max-width: 760px) { .st-progrid { grid-template-columns: 1fr; } .st-recs { grid-template-columns: repeat(2, 1fr); } }
+/* medals and the trophy case */
+.st-medal { --sz: 56px; width: var(--sz); height: var(--sz); border-radius: 50%; display: inline-grid; place-items: center; position: relative; flex: none; color: #fff;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .14), inset 0 3px 0 rgba(255, 255, 255, .35); }
+.st-medal.t0 { background: var(--sunk); color: var(--muted); box-shadow: inset 0 0 0 2px var(--line); }
+.st-medal.t1 { background: linear-gradient(145deg, #E8A86E, #A85F28); }
+.st-medal.t2 { background: linear-gradient(145deg, #F1F4F7, #A4AFBA); color: #3B4652; }
+.st-medal.t3 { background: linear-gradient(145deg, #FBE08A, #D49A0E); color: #5A3E00; }
+.st-mlock { position: absolute; right: -4px; bottom: -4px; width: calc(var(--sz) * 0.42); height: calc(var(--sz) * 0.42); border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface); color: var(--muted); box-shadow: 0 0 0 2px var(--line); }
+.st-pips { display: flex; gap: 4px; justify-content: center; margin-top: 4px; }
+.st-pips i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.st-pips i.on:nth-child(1) { background: #C27C3F; } .st-pips i.on:nth-child(2) { background: #9AA6B2; } .st-pips i.on:nth-child(3) { background: var(--st-gold); }
+.st-tgroup + .st-tgroup { margin-top: 6px; }
+.st-tgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.st-ach { position: relative; display: grid; justify-items: center; text-align: center; gap: 4px; padding: 14px 10px 12px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); }
+.st-ach.t1 { background: linear-gradient(180deg, #FBEADB, var(--surface) 70%); border-color: #E8C3A0; }
+.st-ach.t2 { background: linear-gradient(180deg, #EEF2F5, var(--surface) 70%); border-color: #C9D2DA; }
+.st-ach.t3 { background: linear-gradient(180deg, var(--st-gold-soft), var(--surface) 70%); border-color: #EBCB73; }
+.st-ach.locked > b, .st-ach.locked .st-adesc { opacity: .7; }
+.st-medalw { display: grid; justify-items: center; }
+.st-adesc { font-size: 0.75rem; color: var(--muted); line-height: 1.3; }
+.st-astate { font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.st-ach .st-abar { width: 100%; }
+.st-newtag { position: absolute; top: 8px; right: 8px; font-style: normal; font-size: 0.7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  color: #fff; background: #C2410C; border-radius: 999px; padding: 2px 8px; }
+.st-ach.new .st-medal { animation: st-shine 2.4s ease-in-out infinite; }
+@keyframes st-shine { 0%, 100% { filter: brightness(1); transform: scale(1); } 50% { filter: brightness(1.15); transform: scale(1.06); } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .st-ach.t1, :root:not([data-theme="light"]) .st-ach.t2, :root:not([data-theme="light"]) .st-ach.t3 { background: var(--surface); } :root:not([data-theme="light"]) body.student-app { --st-gold-soft: #3A2F10; } }
+:root[data-theme="dark"] .st-ach.t1, :root[data-theme="dark"] .st-ach.t2, :root[data-theme="dark"] .st-ach.t3 { background: var(--surface); }
+/* unlocking: the celebration and the stars toast */
+#st-cele { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(10, 30, 28, .62); }
+.st-celecard { position: relative; z-index: 1; width: min(560px, 100%); background: var(--surface); border-radius: 26px; padding: 28px 24px 24px; display: grid; justify-items: center; gap: 14px; text-align: center;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .55); animation: st-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.st-celek { font-family: var(--f-display); font-size: 1.7rem; font-weight: 650; color: var(--accent); }
+.st-celem { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+.st-celem > div { display: grid; justify-items: center; gap: 4px; }
+.st-celem .st-medal { animation: st-spin .9s cubic-bezier(.2, 1.2, .4, 1) both; }
+.st-celem small { color: var(--muted); }
+.st-celer { display: flex; align-items: center; gap: 6px; font-size: 1.1rem; }
+.st-celer svg, .st-celes svg { color: var(--st-gold); }
+.st-celes { display: flex; align-items: center; gap: 6px; font-weight: 800; color: #8A6400; background: var(--st-gold-soft); border-radius: 999px; padding: 4px 14px; }
+.st-celecard .btn.big { font-size: 1.15rem; padding: 12px 34px; border-radius: 999px; }
+.st-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.st-confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation-name: st-fall; animation-timing-function: linear; animation-iteration-count: 1; animation-fill-mode: forwards; }
+@keyframes st-fall { from { transform: translateY(-20px) rotate(0); opacity: 1; } to { transform: translateY(105vh) rotate(540deg); opacity: .8; } }
+@keyframes st-pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes st-spin { from { transform: rotateY(90deg) scale(.6); } to { transform: rotateY(0) scale(1); } }
+#st-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 80; display: flex; align-items: center; gap: 8px;
+  background: #1F1600; color: #FCE7A6; font-weight: 800; padding: 10px 18px; border-radius: 999px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .5); animation: st-pop .35s ease-out both; }
+#st-toast svg { color: var(--st-star); }
+@media (prefers-reduced-motion: reduce) {
+  .st-node.now .st-dot, .st-ach.new .st-medal, .st-celecard, .st-celem .st-medal, #st-toast { animation: none; }
+  .st-confetti { display: none; }
+}
+@media print { #st-cele, #st-toast { display: none !important; } }
 </style>
 
 <header class="top">
@@ -3762,7 +3895,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.8.0-alpha";
+const ODIN_VERSION = "0.8.1-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -6030,9 +6163,9 @@ const FL_BADGES = [
   { id: "ten", name: "Ten reads", desc: "Finish ten practice readings", icon: "ten" },
   { id: "level", name: "Level up", desc: "Move up to a harder reading level", icon: "arrow" }
 ];
-// runs: one student's readings. grade: the student's grade. Returns { id: { n: times earned, date: first earned } }.
+// runs: one student's readings. grade: the student's grade. Returns { id: { n: times earned, date: first earned, dates: each time } }.
 function flBadges(runs, grade) {
-  const out = {}, give = (id, r) => { const o = out[id] || (out[id] = { n: 0, date: r.date, run: r.id }); o.n++; };
+  const out = {}, give = (id, r) => { const o = out[id] || (out[id] = { n: 0, date: r.date, run: r.id, dates: [] }); o.n++; o.dates.push(r.date || r.week); };
   const list = [...runs].sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.id || 0) - (b.id || 0));
   const seen = [];
   let practiced = 0;
@@ -7382,6 +7515,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
+      <div style="display:grid;gap:6px"><h3>New in 0.8.1: Odin Student plays like a game</h3><p class="small" style="max-width:80ch">Students earn stars for their work and climb ranks, follow this week's quests step by step, see their own progress (records, a bar for each week's best reading, and their checks before and after practice), and fill a trophy case: 19 achievements that unlock as bronze, silver and gold medals, with a celebration when one unlocks. It all comes from the student's own work and rewards effort and growth, never a comparison with classmates; nothing new is stored.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.8: Odin Student, the students' own app</h3><p class="small" style="max-width:80ch">Students open Odin Student (<span class="mono">student.html</span>) on a tablet, phone or computer and see only their own work: this week's practice sheets and checks, in order, reading out loud with the voice, their badges and best scores, and a chart of their own progress. They never see support tiers, levels, other students or IEP details. In the demo you pick an invented student; at school a student signs in with the class code and a picture password, a QR card, or the teacher unlocks the device with an exit code. A student's session opens only that student's own data. Set it up and print sign-in cards on the <b>Student app</b> tab.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.7: the Odin app for Android, with the microphone</h3><p class="small" style="max-width:80ch">An Android app (Android 12 or newer for the microphone) opens Odin from the school's server and adds Android's own on-device speech recognition. Fluency practice now works on Android phones and tablets the way it does in Chrome on a computer: the voice says a word the student stops on or misreads, listens while the student says it back, cheers and goes on. The student's voice never leaves the device and nothing is recorded; the app turns the microphone on only for Odin's own address. The app also blocks screenshots of student information, keeps the back button from leaving the locked student mode, and prints through Android. iPhones and iPads still use the teacher's scoring.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.6: Odin on phones and tablets</h3><p class="small" style="max-width:80ch">Odin installs from the browser as an app on Android phones, iPhones, iPads and computers, with no app store: on iPhone, Safari's <b>Share › Add to Home Screen</b>; on Android, Chrome's <b>Install app</b>. On a phone, a bar at the bottom holds Class, Student, Focus, Practice and Fluency, and <b>Menu</b> holds the class, subject and codes or names. Teachers review students; students take practice sheets and fluency readings in the locked student mode. For teachers' own phones: a sign-in page, codes (not names) each time Odin opens, a cover over the screen when the app goes to the background, and signing out after 30 minutes without use. No student information is kept on the phone, and the app works only on the school network.</p></div>
@@ -9436,6 +9570,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     else STU.code = null;
     const err = state.saveError ? `<div class="notice" role="alert" style="margin-bottom:14px"><b>Your work was not saved: ${esc(state.saveError)}.</b><span class="small muted">Ask your teacher.</span></div>` : "";
     $("#main").innerHTML = err + (STU.code ? stHomeHTML() : stPickHTML());
+    if (STU.code && STU.before && !SM.on && !FL.on) stAfterActivity();
     if (STU.code && FLS.status === "checking" && !FLS.started) { FLS.started = true; flCheckSpeech(true); }
     const pin = document.getElementById("st-exit"); if (pin) pin.focus();
   }
@@ -9459,18 +9594,14 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   }
 
   function stHomeHTML() {
-    const code = STU.code, wk = mondayOf(ISO_TODAY);
+    const code = STU.code, wk = mondayOf(ISO_TODAY), P = stProgress(code);
     const out = SERVER ? (SCHOOL.locked ? `<button class="btn ghost sm" data-st="exit">Teacher</button>` : `<button class="btn ghost sm" data-st="signout">Sign out</button>`)
       : `<button class="btn ghost sm" data-st="switch">Switch student</button>`;
     return stTop(`${esc(gradeLabel(DATA.grade))} · Room ${esc(DATA.room)}${SERVER ? "" : " · demo"}`, out) +
-      (STU.exitAsk ? stExitHTML() : "") +
-      `<div class="st-hello"><h2 class="st-hi">Hi, ${esc(stName())}!</h2><p class="muted">This week: ${esc(weekLabel(wk))}</p></div>
-      <div class="st-grid">
-        <section class="st-card" aria-labelledby="st-h-sheets"><h3 id="st-h-sheets">${flIcon("book", 22)} My practice</h3>${stSheetsHTML(code, wk)}</section>
-        <section class="st-card" aria-labelledby="st-h-read"><h3 id="st-h-read">${flIcon("wave", 22)} Reading out loud</h3>${stReadingHTML(code, wk)}</section>
-        <section class="st-card" aria-labelledby="st-h-badges"><h3 id="st-h-badges">${flIcon("star", 22)} My badges and best scores</h3>${stBadgesHTML(code, wk)}</section>
-        <section class="st-card st-wide" aria-labelledby="st-h-prog"><h3 id="st-h-prog">${flIcon("target", 22)} My progress</h3>${stProgressHTML(code)}</section>
-      </div>`;
+      (STU.exitAsk ? stExitHTML() : "") + stHeroHTML(P) + stNextHTML(P) +
+      `<section class="st-card st-quests" aria-labelledby="st-h-quest"><h3 id="st-h-quest">${stIcon("flag", 22)} This week's quests <span class="st-h3sub">${esc(weekLabel(wk))}</span></h3>${stQuestsHTML(code, wk)}</section>
+      <section class="st-card" aria-labelledby="st-h-prog"><h3 id="st-h-prog">${stIcon("target", 22)} My progress</h3>${stProgressHTML(code, P)}</section>
+      <section class="st-card" aria-labelledby="st-h-trophy"><h3 id="st-h-trophy">${stIcon("trophy", 22)} Trophy case <span class="st-h3sub">${P.unlocked} of ${P.list.length} unlocked</span></h3>${stTrophiesHTML(P)}</section>`;
   }
   // A device the teacher locked to this student: only the teacher's exit code signs out.
   function stExitHTML() {
@@ -9480,40 +9611,158 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       ${STU.exitMsg ? `<span class="small" style="color:var(--support)">${esc(STU.exitMsg)}</span>` : ""}</div>`;
   }
 
-  // This week's sheets: the pre-check, practice 1 and 2, then the post-check. Each is done once here.
-  function stSheetsHTML(code, wk) {
-    const list = DATA.sheets.filter(x => x.code === code && x.week === wk);
-    if (!list.length) return `<p class="small muted">No practice sheets this week. When your teacher makes them, they show up here.</p>`;
-    return ["reading", "math"].filter(sj => list.some(x => x.subject === sj)).map(sj => {
-      const mine = list.filter(x => x.subject === sj);
-      const rows = SHEET_SLOTS.map(([k, p]) => slotOf(mine, k, p)).filter(Boolean);
-      return `<div class="st-sub"><p class="smkind">${SUBJ[sj]} · ${esc(shSkillName(sj, mine[0].skill))}</p>${rows.map(x => stSheetRow(x, mine)).join("")}</div>`;
-    }).join("");
+
+  // ---------- 0.8: progress you can see, and achievements to unlock, like a game ----------
+  // Stars come from work done, and a rank grows with stars. Achievements unlock in bronze, silver and gold. All of it is
+  // worked out from the student's own sheets and readings each time the page is drawn: nothing new is kept anywhere.
+  const ST_ICON = {
+    trophy: '<path d="M8 4.5h8v5a4 4 0 0 1-8 0z"/><path d="M8 6.5H5.5a2.5 2.5 0 0 0 2.7 3.5M16 6.5h2.5a2.5 2.5 0 0 1-2.7 3.5"/><path d="M12 13.5v3M9 20h6M10 16.5h4V20h-4z"/>',
+    flame: '<path d="M12 20.5c-3.3 0-5.5-2.2-5.5-5.2 0-2.6 1.7-4.2 3-5.7.4 1.5 1.2 2.4 2.2 2.8-.4-2.8.6-5.3 2.8-7.4.2 2.4 1.2 3.9 2.4 5.4 1.1 1.4 1.6 2.9 1.6 4.6 0 3.2-2.4 5.5-6.5 5.5z"/>',
+    lock: '<rect x="6" y="11" width="12" height="9" rx="2"/><path d="M8.5 11V8.5a3.5 3.5 0 0 1 7 0V11"/>',
+    sheet: '<path d="M7 3.5h7.5L18 7v13.5H7z"/><path d="M14.5 3.5V7H18M9.5 11h6M9.5 14.5h6M9.5 18h3.5"/>',
+    brain: '<path d="M12 5.5v13M12 7.5a3 3 0 0 0-5.6-1.3A3 3 0 0 0 5 11.5a3 3 0 0 0 1.4 5A3 3 0 0 0 12 18.5M12 7.5a3 3 0 0 1 5.6-1.3 3 3 0 0 1 1.4 5.3 3 3 0 0 1-1.4 5 3 3 0 0 1-5.6 2"/>',
+    crown: '<path d="M4.5 17.5l-1-9 5 4 3.5-6 3.5 6 5-4-1 9z"/><path d="M5 20.5h14"/>',
+    eye: '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/>',
+    flag: '<path d="M6 21V4M6 4.5h11l-2.5 4 2.5 4H6"/>',
+    gem: '<path d="M7 4.5h10l3.5 5L12 20 3.5 9.5z"/><path d="M3.5 9.5h17M9.5 4.5L8 9.5l4 10.5 4-10.5-1.5-5"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>'
+  };
+  const stIcon = (n, size) => ST_ICON[n] ? `<svg viewBox="0 0 24 24" width="${size || 24}" height="${size || 24}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ST_ICON[n]}</svg>` : flIcon(n, size);
+  // The achievements. tiers: how many (or how much) for bronze, silver and gold; one number means one medal.
+  const ST_ACH = [
+    { id: "first", g: "read", name: "First read", desc: "Read a whole story in practice", icon: "book", tiers: [1] },
+    { id: "best", g: "read", name: "New best", desc: "Beat your best words a minute on a story", icon: "star", tiers: [1, 5, 15] },
+    { id: "speed", g: "read", name: "Speedy", desc: "Read a story faster than ever before", icon: "bolt", tiers: [1, 5, 15] },
+    { id: "smooth", g: "read", name: "Smooth reader", desc: "Read a whole story with no help", icon: "wave", tiers: [1, 5, 15] },
+    { id: "every", g: "read", name: "Every word", desc: "Read every word right", icon: "check", tiers: [1, 3, 10] },
+    { id: "goal", g: "read", name: "Goal!", desc: "Reach your goal in practice", icon: "target", tiers: [1, 3, 6] },
+    { id: "three", g: "read", name: "Three times", desc: "Read the same story three times", icon: "three", tiers: [1, 3, 6] },
+    { id: "jump", g: "read", name: "Big jump", desc: "Read 20 more words a minute than your first try on a story", icon: "up", tiers: [1, 3, 6] },
+    { id: "days", g: "read", name: "Three days", desc: "Practice on three different days in one week", icon: "cal", tiers: [1, 3, 6] },
+    { id: "ten", g: "read", name: "Reading marathon", desc: "Finish practice readings", icon: "ten", tiers: [10, 25, 50] },
+    { id: "level", g: "read", name: "Moving up", desc: "Move on to harder stories", icon: "arrow", tiers: [1] },
+    { id: "sheets", g: "sheet", name: "Practice pro", desc: "Finish practice sheets and checks", icon: "sheet", tiers: [1, 8, 20] },
+    { id: "sharp", g: "sheet", name: "Sharp eye", desc: "Every answer right on the first try, on a practice sheet", icon: "eye", tiers: [1, 3, 8] },
+    { id: "grow", g: "sheet", name: "Growing brain", desc: "Score higher on the post-check than on the pre-check", icon: "brain", tiers: [1, 3, 6] },
+    { id: "met", g: "sheet", name: "Skill master", desc: "80% or more on a post-check", icon: "crown", tiers: [1, 3, 6] },
+    { id: "quest", g: "sheet", name: "Quest complete", desc: "Finish all four sheets for a skill in one week", icon: "flag", tiers: [1, 3, 6] },
+    { id: "words", g: "mile", name: "Word collector", desc: "Words read right, in all your readings", icon: "gem", tiers: [500, 2000, 5000] },
+    { id: "climb", g: "mile", name: "Speed climber", desc: "More words a minute than your very first reading", icon: "up", tiers: [10, 25, 40] },
+    { id: "weeks", g: "mile", name: "On a roll", desc: "Weeks in a row with practice", icon: "flame", tiers: [2, 4, 8] }
+  ];
+  const ST_GROUPS = [["read", "Reading out loud"], ["sheet", "Practice sheets"], ["mile", "Milestones"]];
+  const ST_TIER = ["Locked", "Bronze", "Silver", "Gold"];
+  const ST_RANKS = [[0, "Starter"], [60, "Explorer"], [150, "Adventurer"], [300, "Trailblazer"], [500, "Pathfinder"], [750, "Voyager"], [1050, "Champion"], [1400, "Hero"], [1800, "Legend"], [2300, "Superstar"], [3000, "Grand master"]];
+  const stDay = x => x.taken || x.date || x.week || "";
+  function stProgress(code) {
+    const runs = flRunsOf(DATA, code), done = DATA.sheets.filter(x => x.code === code && x.status === "done").sort((a, b) => stDay(a).localeCompare(stDay(b)));
+    const B = flBadges(runs, DATA.grade), series = {};
+    const count = dates => dates.slice().sort().map((d, i) => [d, i + 1]);
+    FL_BADGES.forEach(b => { series[b.id] = count((B[b.id] && B[b.id].dates) || []); });
+    series.ten = count(runs.filter(r => r.kind === "practice" && r.finished).map(stDay));
+    series.sheets = count(done.map(stDay));
+    series.sharp = count(done.filter(x => x.kind === "practice" && x.right === x.total).map(stDay));
+    const sets = {};
+    done.forEach(x => { const k = x.week + x.subject + x.skill; (sets[k] = sets[k] || {})[x.kind + (x.part || 0)] = x; });
+    const pct = x => x.right / x.total;
+    series.grow = count(Object.values(sets).filter(q => q.pre0 && q.post0 && pct(q.post0) > pct(q.pre0)).map(q => stDay(q.post0)));
+    series.met = count(done.filter(x => x.kind === "post" && pct(x) >= CHECK_PASS).map(stDay));
+    series.quest = count(Object.values(sets).filter(q => q.pre0 && q.practice1 && q.practice2 && q.post0).map(q => [q.pre0, q.practice1, q.practice2, q.post0].map(stDay).sort().pop()));
+    // amounts that grow: words read right, words a minute above the very first reading, weeks in a row
+    let tot = 0, best = 0; const first = runs.length ? runs[0].wcpm || 0 : 0;
+    series.words = runs.map(r => [stDay(r), tot += r.correct || 0]);
+    series.climb = runs.map(r => { best = Math.max(best, (r.wcpm || 0) - first); return [stDay(r), best]; });
+    const weeks = [...new Set(runs.map(r => r.week).concat(done.map(x => x.week)))].filter(Boolean).sort();
+    let run = 0, top = 0, prev = null; series.weeks = [];
+    weeks.forEach(w => { run = prev && addDaysISO(prev, 7) === w ? run + 1 : 1; top = Math.max(top, run); prev = w; series.weeks.push([w, top]); });
+    const thisWk = mondayOf(ISO_TODAY), streak = prev && (prev === thisWk || addDaysISO(prev, 7) === thisWk) ? run : 0;
+    const list = ST_ACH.map(a => {
+      const S = series[a.id] || [], have = S.length ? S[S.length - 1][1] : 0, tiers = a.tiers;
+      const n = tiers.filter(t => have >= t).length, tier = !n ? 0 : tiers.length === 1 ? 3 : n;
+      const dates = tiers.map(t => (S.find(x => x[1] >= t) || [null])[0]);
+      const last = n ? dates[n - 1] : null, next = n < tiers.length ? tiers[n] : null;
+      return Object.assign({}, a, { have, n, tier, next, last, isNew: !!(last && last >= thisWk), pct: next ? Math.min(100, Math.round(100 * have / next)) : 100 });
+    });
+    const unlocked = list.filter(a => a.n).length, medals = list.reduce((t, a) => t + a.n, 0);
+    const stars = 10 * done.length + runs.reduce((t, r) => t + (r.kind === "practice" && !r.finished ? 5 : 10), 0) + 25 * medals;
+    let ri = 0; ST_RANKS.forEach(([min], i) => { if (stars >= min) ri = i; });
+    const nx = ST_RANKS[ri + 1], lo = ST_RANKS[ri][0];
+    const rank = { n: ri + 1, name: ST_RANKS[ri][1], next: nx ? nx[0] : null, nextName: nx ? nx[1] : null, pct: nx ? Math.round(100 * (stars - lo) / (nx[0] - lo)) : 100 };
+    return { list, unlocked, medals, stars, rank, streak, runs, done,
+      words: tot, bestEver: runs.reduce((m, r) => Math.max(m, r.wcpm || 0), 0), climb: best,
+      fastest: runs.filter(r => r.kind === "practice" && r.finished).reduce((m, r) => Math.min(m, r.secs), Infinity) };
   }
-  function stSheetRow(x, mine) {
-    const done = x.status === "done", before = SHEET_SLOTS.findIndex(([k, p]) => k === x.kind && (x.part || 0) === p);
-    const waitFor = SHEET_SLOTS.slice(0, before).map(([k, p]) => slotOf(mine, k, p)).filter(y => y && y.status !== "done").pop();
-    const what = x.kind === "pre" ? "What you know before practice" : x.kind === "post" ? "Show what you learned" : x.part === 1 ? "A short lesson, then practice with hints" : "Practice on your own";
-    const right = done ? (x.kind === "practice" ? `<span class="st-done">✓ ${x.right} of ${x.total}</span>` : `<span class="st-done">✓ Done</span>`)
-      : waitFor ? `<span class="st-lock">After ${esc(sheetLabel(waitFor).toLowerCase())}</span>`
-      : `<button class="btn sm" data-st="sheet" data-id="${x.id}">Start</button>`;
-    return `<div class="st-row"><span class="what"><b>${esc(sheetLabel(x))}</b><span class="small muted">${what}</span></span>${right}</div>`;
+  // A medal: bronze, silver or gold, or grey with a lock. Pips under a tiered one show how many of its 3 medals are won.
+  function stMedal(a, size) {
+    const sz = size || 56, pips = a.tiers.length > 1 ? `<span class="st-pips" aria-hidden="true">${a.tiers.map((_, i) => `<i class="${i < a.n ? "on" : ""}"></i>`).join("")}</span>` : "";
+    return `<span class="st-medal t${a.tier}" style="--sz:${sz}px" aria-hidden="true">${stIcon(a.icon, Math.round(sz * 0.5))}${a.tier ? "" : `<span class="st-mlock">${stIcon("lock", Math.round(sz * 0.3))}</span>`}</span>${pips}`;
+  }
+  const stTierWord = a => (a.tiers.length === 1 ? (a.n ? "Unlocked" : "Locked") : ST_TIER[a.tier]);
+  const stHave = (a, v) => a.id === "words" ? Number(v).toLocaleString("en-US") : v;
+
+  function stHeroHTML(P) {
+    const R = P.rank;
+    return `<section class="st-hero" aria-label="My rank and stars">
+      <div class="st-avatar" aria-hidden="true">${esc(String(stName()).charAt(0))}</div>
+      <div class="st-hmain"><h2 class="st-hi">Hi, ${esc(stName())}!</h2>
+        <p class="st-rank">${stIcon("crown", 18)} Rank ${R.n} · <b>${esc(R.name)}</b></p>
+        <div class="st-xp" role="progressbar" aria-label="Stars toward the next rank" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${R.pct}"><i style="width:${R.pct}%"></i></div>
+        <p class="st-xpt">${stIcon("star", 16)} <b>${P.stars}</b> stars${R.next ? ` · ${R.next - P.stars} more to <b>${esc(R.nextName)}</b>` : " · the top rank!"}</p></div>
+      <div class="st-hstats">
+        <div>${stIcon("trophy", 22)}<b>${P.unlocked}</b><span>of ${P.list.length} achievements</span></div>
+        <div>${stIcon("flame", 22)}<b>${P.streak}</b><span>week${P.streak === 1 ? "" : "s"} in a row</span></div>
+      </div></section>`;
+  }
+  // "Almost there": the three achievements closest to their next medal.
+  function stNextHTML(P) {
+    const near = P.list.filter(a => a.next && a.have > 0).sort((a, b) => b.have / b.next - a.have / a.next).slice(0, 3);
+    if (!near.length) return `<section class="st-next"><p class="st-nextt">${stIcon("sun", 20)} Start a quest below to earn your first stars and unlock achievements!</p></section>`;
+    return `<section class="st-next" aria-label="Almost there"><p class="st-nextt">${stIcon("sun", 20)} Almost there</p><div class="st-nextrow">${near.map(a => `<div class="st-nexta">${stMedal(Object.assign({}, a, { tier: 0 }), 40)}
+      <span><b>${esc(a.name)}</b><small>${stHave(a, a.have)} / ${stHave(a, a.next)} for ${a.tiers.length === 1 ? "this medal" : ST_TIER[a.n + 1].toLowerCase()}</small><span class="st-abar"><i style="width:${a.pct}%"></i></span></span></div>`).join("")}</div></section>`;
   }
 
-  // Fluency: the first reading (1 minute), practice (as often as they like), then the final reading (1 minute).
-  function stReadingHTML(code, wk) {
+  // ---------- this week's quests: each step unlocks the next ----------
+  function stNode(stateCls, num, title, sub, action) {
+    const dot = stateCls === "done" ? stIcon("check", 18) : stateCls === "locked" ? stIcon("lock", 15) : num;
+    return `<li class="st-node ${stateCls}"><span class="st-dot" aria-hidden="true">${dot}</span><span class="st-ntext"><b>${title}</b><small>${sub}</small></span>${action || ""}</li>`;
+  }
+  function stQuestHead(q, icon, title, sub, done, total) {
+    return `<div class="st-qhead"><span class="st-qicon">${stIcon(icon, 20)}</span><span class="st-qtitle"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span>
+      <span class="st-qcount ${done === total ? "full" : ""}">${done === total ? stIcon("check", 16) + " Complete" : `${done} of ${total}`}</span></div>
+      <div class="st-qbar" role="progressbar" aria-label="${title}: ${done} of ${total} steps" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><i style="width:${Math.round(100 * done / total)}%"></i></div>`;
+  }
+  function stQuestsHTML(code, wk) {
+    const list = DATA.sheets.filter(x => x.code === code && x.week === wk);
+    const sheetQuests = ["reading", "math"].filter(sj => list.some(x => x.subject === sj)).map(sj => {
+      const mine = list.filter(x => x.subject === sj), rows = SHEET_SLOTS.map(([k, p]) => slotOf(mine, k, p)).filter(Boolean);
+      let now = false;
+      const nodes = rows.map((x, i) => {
+        const waitFor = rows.slice(0, i).filter(y => y.status !== "done").pop();
+        const what = x.kind === "pre" ? "What you know first" : x.kind === "post" ? "Show what you learned" : x.part === 1 ? "A short lesson and hints" : "On your own";
+        if (x.status === "done") return stNode("done", i + 1, esc(sheetLabel(x)), x.kind === "practice" ? `${x.right} of ${x.total} right` : "Done");
+        if (waitFor) return stNode("locked", i + 1, esc(sheetLabel(x)), `After ${esc(sheetLabel(waitFor).toLowerCase())}`);
+        const cls = now ? "open" : "now"; now = true;
+        return stNode(cls, i + 1, esc(sheetLabel(x)), what, `<button class="btn sm" data-st="sheet" data-id="${x.id}">Start</button>`);
+      });
+      return `<div class="st-quest" data-q="${sj}">${stQuestHead(sj, "sheet", `${SUBJ[sj]} quest`, esc(shSkillName(sj, mine[0].skill)), rows.filter(x => x.status === "done").length, rows.length)}<ol class="st-track">${nodes.join("")}</ol></div>`;
+    });
+    return stReadQuestHTML(code, wk) + (sheetQuests.length ? sheetQuests.join("") : `<p class="small muted st-noq">No practice sheets this week. When your teacher makes them, a new quest shows up here.</p>`);
+  }
+  // Reading out loud: the first reading (1 minute), practice (as often as they like), then the final reading (1 minute).
+  function stReadQuestHTML(code, wk) {
     const P = flPassageFor(DATA, code, wk).passage, sum = flWeekSummary(DATA, code, wk);
     const ready = CAN_MIC && flReady(), practiced = sum.practice.filter(r => r.finished).length;
     const btn = (kind, label) => `<button class="btn sm" data-st="read" data-kind="${kind}" ${ready ? "" : "disabled"}>${label}</button>`;
-    const row = (title, what, right) => `<div class="st-row"><span class="what"><b>${title}</b><span class="small muted">${what}</span></span>${right}</div>`;
-    const status = ready ? "" : `<div class="st-mic small">${stMicText()}</div>`;
-    return `<p class="st-passage"><b>${esc(P.title)}</b><span class="small muted">${flPassageWords(P.id).length} words</span></p>
-      ${row("First reading", "One minute, your first time with the story", sum.pre ? `<span class="st-done">✓ ${sum.pre.wcpm} words a minute</span>` : btn("pre", "Start"))}
-      ${row("Practice", sum.best != null ? `${practiced} time${practiced === 1 ? "" : "s"} · your best: ${sum.best} words a minute` : "Read the whole story. Try to beat your best!",
-        !sum.pre ? `<span class="st-lock">After your first reading</span>` : btn("practice", practiced ? "Read again" : "Start"))}
-      ${row("Final reading", "One minute, at the end of the week", sum.post ? `<span class="st-done">✓ ${sum.post.wcpm} words a minute</span>`
-        : !practiced ? `<span class="st-lock">After you practice</span>` : btn("post", "Start"))}
-      ${status}`;
+    const nodes = [
+      sum.pre ? stNode("done", 1, "First reading", `${sum.pre.wcpm} words a minute`) : stNode("now", 1, "First reading", "One minute, your first time", btn("pre", "Start")),
+      !sum.pre ? stNode("locked", 2, "Practice", "After your first reading")
+        : stNode(practiced ? "done" : "now", 2, "Practice", practiced ? `${practiced} time${practiced === 1 ? "" : "s"} · best ${sum.best} words a minute` : "Read the whole story. Beat your best!", btn("practice", practiced ? "Read again" : "Start")),
+      sum.post ? stNode("done", 3, "Final reading", `${sum.post.wcpm} words a minute${sum.pre ? ` · ${sum.post.wcpm >= sum.pre.wcpm ? "+" : ""}${sum.post.wcpm - sum.pre.wcpm} since the first` : ""}`)
+        : !practiced ? stNode("locked", 3, "Final reading", "After you practice") : stNode("now", 3, "Final reading", "One minute, at the end of the week", btn("post", "Start"))
+    ];
+    const steps = (sum.pre ? 1 : 0) + (practiced ? 1 : 0) + (sum.post ? 1 : 0);
+    return `<div class="st-quest" data-q="read">${stQuestHead("read", "wave", "Reading quest", `${esc(P.title)} · ${flPassageWords(P.id).length} words`, steps, 3)}<ol class="st-track">${nodes.join("")}</ol>
+      ${ready ? "" : `<div class="st-mic small">${stMicText()}</div>`}</div>`;
   }
   function stMicText() {
     const s = FLS.status, sample = `<button class="btn ghost sm" data-st="sample">See how it works</button>`;
@@ -9525,31 +9774,94 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     return `This device can't listen to your reading yet. Ask your teacher. ${sample}`;
   }
 
-  // Badges, and the best scores: on this week's story and ever.
-  function stBadgesHTML(code, wk) {
-    const runs = flRunsOf(DATA, code), got = flBadges(runs, DATA.grade), sum = flWeekSummary(DATA, code, wk);
-    const ever = runs.filter(r => r.kind !== "practice" || r.finished).reduce((m, r) => Math.max(m, r.wcpm || 0), 0);
-    const n = FL_BADGES.filter(b => got[b.id]).length;
-    return `<div class="st-best">
-        <div><b>${sum.best != null ? sum.best : "–"}</b><span>best words a minute this week</span></div>
-        <div><b>${sum.fastest != null ? flTime(sum.fastest) : "–"}</b><span>fastest time this week</span></div>
-        <div><b>${ever || "–"}</b><span>best words a minute ever</span></div></div>
-      <p class="small muted">${n ? `${n} of ${FL_BADGES.length} badges` : "Read to earn your first badge!"}</p>
-      <div class="flbadges">${FL_BADGES.map(b => `<span class="flbadge ${got[b.id] ? "" : "off"}" title="${esc(b.desc)}">${flIcon(b.icon, 20)}<b>${esc(b.name)}</b>${got[b.id] && got[b.id].n > 1 ? `<small>×${got[b.id].n}</small>` : ""}</span>`).join("")}</div>`;
+
+  // ---------- my progress: records, words a minute week by week, and checks before and after ----------
+  function stProgressHTML(code, P) {
+    const rec = (icon, v, label) => `<div class="st-rec">${stIcon(icon, 20)}<b>${v}</b><span>${label}</span></div>`;
+    const checks = {};
+    P.done.filter(x => x.kind !== "practice").forEach(x => { const k = x.week + x.subject + x.skill, e = checks[k] || (checks[k] = { week: x.week, subject: x.subject, skill: x.skill }); e[x.kind] = x; });
+    const rows = Object.values(checks).sort((a, b) => b.week.localeCompare(a.week) || a.subject.localeCompare(b.subject)).slice(0, 6);
+    const bar = (label, x, cls) => `<div class="st-pbar ${cls}"><span>${label}</span><div><i style="width:${x ? p100(x.right, x.total) : 0}%"></i></div><b>${x ? p100(x.right, x.total) + "%" : "–"}</b></div>`;
+    return `<div class="st-recs">
+        ${rec("gem", P.words.toLocaleString("en-US"), "words read right")}
+        ${rec("bolt", P.bestEver || "–", "best words a minute")}
+        ${rec("up", P.climb ? "+" + P.climb : "–", "since your first reading")}
+        ${rec("cal", Number.isFinite(P.fastest) ? flTime(P.fastest) : "–", "fastest story")}</div>
+      <div class="st-progrid">
+        <div class="st-speed"><p class="st-ptitle">Words a minute, week by week</p>${stSpeedChart(code, P)}</div>
+        <div class="st-checks"><p class="st-ptitle">My checks: before and after practice</p>
+          ${rows.length ? rows.map(r => { const up = r.pre && r.post ? p100(r.post.right, r.post.total) - p100(r.pre.right, r.pre.total) : null;
+            return `<div class="st-power"><p><b>${SUBJ[r.subject]} · ${esc(shSkillName(r.subject, r.skill))}</b><span class="muted"> · ${esc(weekLabel(r.week))}</span>${up != null && up > 0 ? `<span class="st-up">${stIcon("up", 14)} +${up}</span>` : ""}</p>
+              ${bar("Before", r.pre, "")}${bar("After", r.post, "after")}</div>`; }).join("")
+            : `<p class="small muted">Your checks show up here after you do them.</p>`}</div>
+      </div>`;
+  }
+  // Each week's best reading as a bar, the goal as a flag line, and the newest week lit up.
+  function stSpeedChart(code, P) {
+    const byWk = {};
+    P.runs.forEach(r => { if (r.kind !== "practice" || r.finished) byWk[r.week] = Math.max(byWk[r.week] || 0, r.wcpm || 0); });
+    const weeks = Object.keys(byWk).sort().slice(-8);
+    if (!weeks.length) return `<p class="small muted">Read out loud and your bars start to grow here.</p>`;
+    const g = flGoal(DATA.grade, flPassageFor(DATA, code, mondayOf(ISO_TODAY)).passage.band, ISO_TODAY);
+    const top = Math.max(30, g ? g.wc : 0, ...weeks.map(w => byWk[w])) * 1.18;
+    const W = 600, H = 230, L = 14, R = g ? 92 : 14, T = 24, B = 30, cw = (W - L - R) / weeks.length, bw = Math.min(54, cw * 0.62), Y = v => T + (H - T - B) * (1 - v / top);
+    const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let s = `<svg class="st-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Best words a minute each week: ${weeks.map(w => byWk[w]).join(", ")}${g ? `; goal ${g.wc}` : ""}">`;
+    s += `<line class="st-base" x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+    weeks.forEach((w, i) => {
+      const v = byWk[w], x = L + i * cw + (cw - bw) / 2, last = i === weeks.length - 1;
+      s += `<rect class="st-bar ${last ? "now" : ""}" x="${x}" y="${Y(v)}" width="${bw}" height="${Math.max(2, Y(0) - Y(v))}" rx="7"/>`;
+      s += `<text class="st-bv ${last ? "now" : ""}" x="${x + bw / 2}" y="${Y(v) - 7}" text-anchor="middle">${v}</text>`;
+      s += `<text class="st-bx" x="${x + bw / 2}" y="${H - 9}" text-anchor="middle">${MON[Number(w.slice(5, 7)) - 1]} ${Number(w.slice(8))}</text>`;
+    });
+    if (g) s += `<line class="st-goal" x1="${L}" x2="${W - R}" y1="${Y(g.wc)}" y2="${Y(g.wc)}"/><g class="st-goalf" transform="translate(${W - R + 8},${Y(g.wc) - 10})"><rect width="74" height="20" rx="10"/><text x="37" y="14.5" text-anchor="middle">Goal ${g.wc}</text></g>`;
+    return s + `</svg>`;
   }
 
-  // Their own progress: words a minute week by week, and each week's check before and after practice. No levels or tiers.
-  function stProgressHTML(code) {
-    const checks = {};
-    DATA.sheets.filter(x => x.code === code && x.kind !== "practice" && x.status === "done").forEach(x => {
-      const k = x.week + x.subject, e = checks[k] || (checks[k] = { week: x.week, subject: x.subject, skill: x.skill }); e[x.kind] = x; });
-    const rows = Object.values(checks).sort((a, b) => b.week.localeCompare(a.week) || a.subject.localeCompare(b.subject)).slice(0, 8);
-    return `<div class="flchart">${flChart(DATA, code)}</div>
-      ${rows.length ? `<div class="scroller"><table class="ref"><caption class="small muted" style="text-align:left">My checks: before and after practice</caption>
-        <thead><tr><th>Week</th><th>Skill</th><th>Before</th><th>After</th></tr></thead><tbody>
-        ${rows.map(r => `<tr><td>${esc(weekLabel(r.week))}</td><td>${SUBJ[r.subject]} · ${esc(shSkillName(r.subject, r.skill))}</td><td class="n">${r.pre ? p100(r.pre.right, r.pre.total) + "%" : "–"}</td><td class="n">${r.post ? `<b>${p100(r.post.right, r.post.total)}%</b>` : "–"}</td></tr>`).join("")}
-        </tbody></table></div>` : `<p class="small muted">Your checks show up here after you do them.</p>`}`;
+  // ---------- the trophy case ----------
+  function stTrophiesHTML(P) {
+    return ST_GROUPS.map(([g, label]) => `<div class="st-tgroup"><p class="st-ptitle">${label}</p><div class="st-tgrid">${P.list.filter(a => a.g === g).map(a => `
+      <div class="st-ach ${a.tier ? "t" + a.tier : "locked"} ${a.isNew ? "new" : ""}" title="${esc(a.desc)}">
+        ${a.isNew ? `<em class="st-newtag">New!</em>` : ""}
+        <span class="st-medalw">${stMedal(a, 58)}</span>
+        <b>${esc(a.name)}</b><span class="st-adesc">${esc(a.desc)}</span>
+        <span class="st-astate">${a.next ? `${stHave(a, a.have)} / ${stHave(a, a.next)}${a.n ? ` · ${stTierWord(a)}` : ""}` : `${stTierWord(a)}${a.have > 1 && a.id !== "words" && a.id !== "climb" ? ` · ×${a.have}` : ""}`}</span>
+        ${a.next ? `<span class="st-abar"><i style="width:${a.pct}%"></i></span>` : ""}
+      </div>`).join("")}</div></div>`).join("");
   }
+
+  // ---------- unlocking: after a sheet or a reading, what's new gets a celebration ----------
+  function stSnap() { const P = stProgress(STU.code); return { code: STU.code, n: Object.fromEntries(P.list.map(a => [a.id, a.n])), rank: P.rank.n, stars: P.stars }; }
+  function stAfterActivity() {
+    const before = STU.before; STU.before = null;
+    if (!before || before.code !== STU.code) return;
+    const P = stProgress(STU.code), won = P.list.filter(a => a.n > (before.n[a.id] || 0)), gained = P.stars - before.stars, rankUp = P.rank.n > before.rank ? P.rank : null;
+    if (won.length || rankUp) stCelebrate(won, rankUp, gained);
+    else if (gained > 0) stToast(`+${gained} stars`);
+  }
+  function stCelebrate(won, rankUp, gained) {
+    const old = document.getElementById("st-cele"); if (old) old.remove();
+    const el = document.createElement("div"); el.id = "st-cele"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-labelledby", "st-cele-t");
+    const COLORS = ["#F2C14E", "#1C6E66", "#E07A5F", "#2E4BB5", "#63C7B9", "#F4A259"];
+    const bits = Array.from({ length: 36 }, (_, i) => `<i style="left:${(i * 97) % 100}%;background:${COLORS[i % COLORS.length]};animation-delay:${(i % 9) * 0.09}s;animation-duration:${1.6 + (i % 5) * 0.25}s;transform:rotate(${(i * 47) % 360}deg)"></i>`).join("");
+    const title = won.length ? (won.length === 1 ? "Achievement unlocked!" : `${won.length} achievements unlocked!`) : "Rank up!";
+    el.innerHTML = `<div class="st-confetti" aria-hidden="true">${bits}</div><div class="st-celecard">
+      <p class="st-celek" id="st-cele-t">${title}</p>
+      ${won.length ? `<div class="st-celem">${won.slice(0, 4).map(a => `<div>${stMedal(a, 92)}<b>${esc(a.name)}</b><small>${esc(stTierWord(a))}</small></div>`).join("")}</div>` : ""}
+      ${rankUp ? `<p class="st-celer">${stIcon("crown", 24)} You're now <b>${esc(rankUp.name)}</b>!</p>` : ""}
+      ${gained > 0 ? `<p class="st-celes">${stIcon("star", 20)} +${gained} stars</p>` : ""}
+      <button class="btn big" data-stc="ok">Awesome!</button></div>`;
+    document.body.appendChild(el);
+    const b = el.querySelector("[data-stc=ok]"); if (b) b.focus();
+    try { smSay(won.length ? `You unlocked ${won.map(a => a.name.replace("!", "")).join(" and ")}!` : `Rank up! You're now ${rankUp.name}!`); } catch (e) {}
+  }
+  function stToast(text) {
+    const old = document.getElementById("st-toast"); if (old) old.remove();
+    const el = document.createElement("div"); el.id = "st-toast"; el.setAttribute("role", "status"); el.innerHTML = `${stIcon("star", 20)} ${esc(text)}`;
+    document.body.appendChild(el); setTimeout(() => el.remove(), 2600);
+  }
+  document.addEventListener("click", e => { const t = e.target.closest("[data-stc=ok]"); if (t) { const el = document.getElementById("st-cele"); if (el) el.remove(); } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") { const el = document.getElementById("st-cele"); if (el) el.remove(); } });
 
   // ---------- going in and out (the demo can switch from the teacher view in the same page) ----------
   function enterStudentApp() {
@@ -9569,8 +9881,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     if (!STUDENT_APP || SM.on || FL.on) return;
     const t = e.target.closest("[data-st]"); if (!t) return;
     const a = t.dataset.st;
-    if (a === "pick") { STU.classId = t.dataset.class; STU.code = t.dataset.code; state.saveError = null; window.scrollTo(0, 0); render(); }
-    else if (a === "switch") { STU.code = null; render(); }
+    if (a === "pick") { STU.classId = t.dataset.class; STU.code = t.dataset.code; STU.before = null; state.saveError = null; window.scrollTo(0, 0); render(); }
+    else if (a === "switch") { STU.code = null; STU.before = null; render(); }
     else if (a === "teacherview") leaveStudentApp();
     else if (a === "signout") stSignOut();
     else if (a === "exit") { STU.exitAsk = true; STU.exitIn = ""; STU.exitMsg = ""; render(); }
@@ -9581,8 +9893,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         .then(r => r.json().catch(() => ({})).then(j => { if (r.ok) { document.body.classList.add("covered"); location.replace("student.html"); } else { STU.exitIn = ""; STU.exitMsg = j.error || "That code isn't right."; render(); } }))
         .catch(() => { STU.exitMsg = "Odin can't reach the server."; render(); });
     }
-    else if (a === "sheet") { const id = Number(t.dataset.id), f = sheetFind(id); if (f && f.rec.code === STU.code && f.rec.status !== "done") smStart(id, null); }
-    else if (a === "read") { const k = t.dataset.kind; if (["pre", "practice", "post"].includes(k) && flReady()) flOpen(DATA, STU.code, k, "voice", null); }
+    else if (a === "sheet") { const id = Number(t.dataset.id), f = sheetFind(id); if (f && f.rec.code === STU.code && f.rec.status !== "done") { STU.before = stSnap(); smStart(id, null); } }
+    else if (a === "read") { const k = t.dataset.kind; if (["pre", "practice", "post"].includes(k) && flReady()) { STU.before = stSnap(); flOpen(DATA, STU.code, k, "voice", null); } }
     else if (a === "sample") flOpen(DATA, STU.code, "practice", "sample", null);
     else if (a === "check") flCheckSpeech(false);
     else if (a === "install") flInstall();
@@ -9663,7 +9975,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     else if (a === "closecards") { state.saCards = null; state.saNotice = "The cards are made. If one is lost, make a new card for that student."; render(); }
   });
   // test hook (no student data): which student the app shows
-  window.__odinDebug = Object.assign(window.__odinDebug || {}, { st: () => ({ app: STUDENT_APP, code: STU.code, classId: STU.classId, locked: !!(SERVER && SCHOOL && SCHOOL.locked) }) });
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { st: () => ({ app: STUDENT_APP, code: STU.code, classId: STU.classId, locked: !!(SERVER && SCHOOL && SCHOOL.locked),
+    progress: STU.code ? (P => ({ stars: P.stars, rank: P.rank.n, rankName: P.rank.name, unlocked: P.unlocked, medals: P.medals, streak: P.streak, ach: Object.fromEntries(P.list.map(a => [a.id, a.n])) }))(stProgress(STU.code)) : null }) });
 
   loadComparison();
   render();

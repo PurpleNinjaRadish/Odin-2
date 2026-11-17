@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.8.0-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.8.1-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -28,11 +28,14 @@ On a phone, the bar at the bottom holds Class, Student, Focus, Practice and Flue
 
 ![QR code for Odin Student](qr-student.png)
 
-Odin Student is what a student sees: only their own work. In the demo there's no sign-in: pick a class and an invented student (Room 112 has the most to try).
+Odin Student is what a student sees: only their own work, set out like a game. In the demo there's no sign-in: pick a class and an invented student (Room 112 has the most to try; Liam T. has lots of readings).
 
-- **My practice:** this week's pre-check, practice 1 and 2, and post-check, one after the other. In Room 112 it's Friday, so the post-checks are ready.
-- **Reading out loud:** the first reading, practice and the final reading, with the voice that helps. The microphone works in Google Chrome on a computer, or in the Odin app for Android below.
-- **My badges and best scores**, and **My progress:** a chart of the student's own reading.
+- **Stars and a rank** that grow with their work, and **Almost there**: the achievements they're closest to.
+- **This week's quests:** the reading quest (first reading, practice, final reading, with the voice that helps) and a quest for each subject's sheets. In Room 112 it's Friday, so the post-checks are next. Finish one to see **Achievement unlocked!**
+- **My progress:** records, a bar for each week's best reading, and checks before and after practice.
+- **Trophy case:** 19 achievements that unlock as bronze, silver and gold medals.
+
+The microphone works in Google Chrome on a computer, or in the Odin app for Android below.
 
 Students never see support tiers, levels or other students. It installs as its own app with a teal icon (iPhone: Safari › Share › Add to Home Screen; Android: Chrome › Install app). Work done in Odin Student shows in the teacher view on the same device. At school, students sign in with a class code and picture password, a QR card, or the teacher unlocks the device.
 
