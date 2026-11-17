@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.9.0-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.9.1-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -48,7 +48,7 @@ A separate app for **students' tablets and phones**, in teal (0.9). It opens onl
 ![QR code for the Odin Student app for Android](qr-student-android.png)
 
 1. Open the download and install it (see step 1 below if Android asks).
-2. Open **Odin Student**, then **Try the demo (invented students, built into the app)**. Pick a class and a student.
+2. Open **Odin Student**, then **Try the demo (invented students, built into the app)**. Pick a class and a student. Android asks to let Odin Student record audio: choose **While using the app** (it's for reading out loud; speech stays on the device and nothing is recorded).
 3. On the student's page, in the reading quest, press **Read again** (practice). When the sign at the top says **Listening**, read the story aloud. Stop on a word for 2 seconds, or misread one: the voice says the word, you say it back, and it praises you when you say it right (or says "Not quite" and lets you try again).
 4. **Teacher: Odin's address** on the first screen goes back to the setup screen, to type the school server's address.
 
@@ -60,7 +60,7 @@ On Android, the **Odin app** (for teachers) adds the microphone to fluency pract
 
 ![QR code for the Odin app for Android](qr-android.png)
 
-**Already have the app?** Install this one over it (version 0.9.0). For students' devices, use the **Odin Student** app above: the Odin app no longer has the students' setting.
+**Already have the app?** Install this one over it (version 0.9.1). For students' devices, use the **Odin Student** app above: the Odin app no longer has the students' setting.
 
 1. Open the download. Android asks to allow installing apps from this source (the browser or Files): allow it, then **Install**. If Google Play Protect warns about an unknown app, choose **More details**, then **Install anyway**: it is a test build, signed with a test key, not from the Play Store.
 2. Open **Odin**, then **Try the demo (invented students)**.

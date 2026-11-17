@@ -1046,7 +1046,9 @@ const ODIN_STUDENT_APP = true;
       else if (m.ev === "end") this._finish();
     }
   }
-  OdinRec.available = async o => { const r = await ask("status", { lang: (o && o.langs && o.langs[0]) || "en-US" }); OdinRec.why = r && r.why; return (r && r.state) || "unavailable"; };
+  // 0.9.1: the app may first ask Android for the microphone, so wait for the person to answer (up to 2 minutes).
+  // "denied": the microphone isn't allowed for the app.
+  OdinRec.available = async o => { const r = await ask("status", { lang: (o && o.langs && o.langs[0]) || "en-US" }, 120000); OdinRec.why = (r && r.why) || (r ? "" : "no-answer"); return (r && r.state) || "unavailable"; };
   OdinRec.install = async o => {
     const r = await ask("install", { lang: (o && o.langs && o.langs[0]) || "en-US" }, 15 * 60000);
     OdinRec.note = (r && r.note) || ""; return !!(r && r.ok);
@@ -3910,7 +3912,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.9.0-alpha";
+const ODIN_VERSION = "0.9.1-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -7535,6 +7537,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
+      <div style="display:grid;gap:6px"><h3>Fixed in 0.9.1: a new Odin Student app hears the student</h3><p class="small" style="max-width:80ch">A newly installed app doesn't have the microphone yet. Odin used to ask for it only once a reading began, so its speech check could fail first (and the page said the device couldn't listen), or Android's question came up in the middle of the microphone check. Now the app asks for the microphone before the speech check, and the page waits for the answer. If it isn't allowed, the page says so, with <b>Allow the microphone</b> and where to find it in Android's Settings. The microphone check's 8 seconds start only once the device is listening ("Listening… say it now.").</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.9: the Odin Student app, and quicker help in practice</h3><p class="small" style="max-width:80ch"><b>Odin Student is now its own Android app</b>, separate from Odin for teachers: it opens only Odin Student, in teal, and on a student's tablet or phone there's nothing else to choose. For now the demo with invented students is built into the app, so it works with no server and no internet; the beta leaves it out. <b>Practice helps sooner:</b> the voice says a word after a 2-second stop (it was 4), and corrects a misread word as soon as the student reads the next one. <b>The student says the word back, and must say it right:</b> right, and Odin praises them and they read on; something else, and Odin says "Not quite. Listen…" and the word again, up to 3 tries before going on. The one-minute pre- and post-reads still follow DIBELS: the word after 3 seconds, no repeating.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.8.2: fluency practice listens better on phones</h3><p class="small" style="max-width:80ch">On some Android phones the recognizer sends no words until the student pauses, and it can take a second or two to start listening. Odin used to take that silence for a student stuck on a word, so the voice said the words while the student was still reading. Now Odin helps only once the student goes quiet: the Odin app tells Odin how loud the microphone hears the student, Odin lets the recognizer finish before the voice speaks, and the time a phone takes to start listening doesn't count. Words a phone misses while it starts are given the benefit of the doubt, shown for checking. A <b>Listening</b> sign shows when to start, and <b>Test the microphone</b> is now a short reading that says how the device listens. Install the Odin app for Android 0.8.2.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.8.1: Odin Student plays like a game</h3><p class="small" style="max-width:80ch">Students earn stars for their work and climb ranks, follow this week's quests step by step, see their own progress (records, a bar for each week's best reading, and their checks before and after practice), and fill a trophy case: 19 achievements that unlock as bronze, silver and gold medals, with a celebration when one unlocks. It all comes from the student's own work and rewards effort and growth, never a comparison with classmates; nothing new is stored.</p></div>
@@ -8834,7 +8837,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     try {
       let r = await SR.available({ langs: ["en-US"], processLocally: true, quality: "dictation" });
       if (r === "unavailable") { const r2 = await SR.available({ langs: ["en-US"], processLocally: true }); if (r2 !== "unavailable") { FLS.quality = null; r = r2; } }
-      set(r === "available" || r === "downloadable" || r === "downloading" ? r : "unavailable");
+      FLS.why = String(SR.why || "");
+      set(r === "available" || r === "downloadable" || r === "downloading" || r === "denied" ? r : "unavailable");
     } catch (e) { set("none"); }
   }
   async function flInstall() {
@@ -8863,7 +8867,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     unavailable: ["no", "This device can't recognize English speech on the device itself, so Odin won't turn the microphone on. Use <b>Teacher scores</b>."],
     downloadable: ["mid", "This device needs Android's English speech pack, a one-time download. Nothing about students is sent."],
     downloading: ["mid", "Android is getting the English speech pack. It may wait for Wi-Fi. Press <b>Check again</b> in a minute."],
-    available: ["ok", "Ready. Android recognizes speech on this device, so a student's voice never leaves it. Nothing is recorded."]
+    available: ["ok", "Ready. Android recognizes speech on this device, so a student's voice never leaves it. Nothing is recorded."],
+    denied: ["no", "Odin isn't allowed to use the microphone. Press <b>Check again</b> and choose <b>Allow</b>. If Android doesn't ask, open Android's Settings › Apps › Odin › Permissions › Microphone › Allow."]
   };
   const flStatusText = s => (DROID && FL_STATUS_APP[s]) || FL_STATUS[s] || FL_STATUS.none;
   // Chrome on Android phones can't keep speech on the device; the Odin app can.
@@ -8986,6 +8991,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
           if (FL.awaitReady) { FL.awaitReady = false; FL.readyAt = Date.now(); }
           if (FL.seg && FL.seg.deafMs == null) FL.seg.deafMs = Date.now() - FL.seg.askedAt;
           flPaintMic();
+          const cm = document.getElementById("fl-checkmsg"); if (cm && FL.step === "check") cm.textContent = flCheckMsg();
         },
         level: v => { if (mine()) flVoiceLevel(v); }
       });
@@ -9074,6 +9080,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     const now = Date.now();
     if (FL.step === "read") flPaintClock();
     flPaintMic();
+    if (FL.step === "check") return flCheckTick(now);
     if (FL.step === "help" && FL.listen === "repeat" && !FL.speaking && !FL.settling) return flRepeatTick(now);
     if (FL.step !== "read" || FL.speaking || FL.ended || FL.settling) return;
     if (FL.fix && FL.seg && now - FL.fix.t >= FL_FIX_MS) return flUpdate();
@@ -9281,7 +9288,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         ${practice && FL.best != null ? `<p class="flbest">Your best on this passage: <b>${FL.best}</b> words a minute${FL.fastest ? ` · <b>${flTime(FL.fastest)}</b>` : ""}</p>` : ""}
         <button class="btn big" data-flx="go">Start</button></div>`;
     else if (FL.step === "check") body = `<div class="smcard"><p class="smkind">Microphone check</p><h2>Say: “I am ready to read!”</h2>
-        <p class="flmic ${FL.checkTries ? "warn" : ""}">${FL.checkTries ? "I can't hear you yet. Speak a little louder, close to the computer." : "Listening…"}</p>
+        <p class="flmic ${FL.checkTries ? "warn" : ""}" id="fl-checkmsg">${flCheckMsg()}</p>
         <div class="smrow">${FL.checkTries ? `<button class="btn" data-flx="go">Try again</button>` : ""}</div></div>`;
     else if (FL.step === "error") body = `<div class="smcard"><h2>Let's get your teacher.</h2><p>${esc(FL.err || "Something went wrong.")}</p>${STUDENT_APP ? `<button class="btn big" data-flx="leave">Back to my page</button>` : `<p class="muted">Tap <b>Teacher</b> at the top.</p>`}</div>`;
     else if (FL.step === "done") {
@@ -9306,10 +9313,17 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     flPaint(); flPaintCaption(); flPaintClock();
     const pin = document.getElementById("fl-pin"); if (pin) pin.focus();
   }
+  // 0.9.1: the 8 seconds start when the device is listening (a phone can take a moment, and the first time Android may
+  // ask for the microphone), checked by flTick.
+  const flCheckMsg = () => FL.checkTries ? `I can't hear you yet. Speak a little louder, close to the ${DROID ? "tablet" : "computer"}.`
+    : FL.awaitReady ? "Getting the microphone ready…" : "Listening… say it now.";
   function flCheckMic() {
-    FL.step = "check"; flRender(); flListen("check");
-    const gen = FL.recGen;
-    setTimeout(() => { if (FL.on && FL.step === "check" && FL.recGen === gen) { FL.checkTries++; flStopRec(true); flRender(); } }, 8000);
+    FL.step = "check"; FL.awaitReady = true; FL.readyAt = 0; flRender(); flListen("check");
+  }
+  function flCheckTick(now) {
+    if (FL.listen !== "check" || !FL.rec) return;
+    if (FL.awaitReady) { if (now - FL.listenAt < 30000) return; FL.awaitReady = false; FL.readyAt = FL.listenAt; }
+    if (now - FL.readyAt >= 8000) { FL.checkTries++; FL.listen = null; flStopRec(true); flRender(); }
   }
   function flClick(t) {
     const a = t.dataset.flx;
@@ -9454,7 +9468,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         <p class="small" style="max-width:86ch">Each student gets a short passage at their level, full of high-frequency words. <b>Monday:</b> a one-minute pre-read, the first time they see it. <b>During the week:</b> practice, reading the whole passage again and again to beat their best. <b>Friday:</b> a one-minute post-read of the same passage. When a student stops on a word for 3 seconds, the voice says the word, as a DIBELS examiner would. In practice it also fixes misread words: it says the word, the student says it back, and they go on.</p>
         <div class="flstatus ${stCls}" role="status"><span>${stTxt}</span>
           ${FLS.status === "downloadable" ? `<button class="btn sm" data-fl="install">Set up speech on this ${DROID ? "device" : "computer"}</button>` : ""}
-          ${DROID && FLS.status === "downloading" && !FLS.installing ? `<button class="btn sm" data-fl="check">Check again</button>` : ""}
+          ${DROID && (FLS.status === "downloading" || FLS.status === "denied" || FLS.status === "unavailable") && !FLS.installing ? `<button class="btn sm" data-fl="check">Check again</button>` : ""}
           ${FLS.status === "manual" ? `<button class="btn sm" data-fl="check">Check this browser</button>` : ""}
           ${flReady() ? `<button class="btn ghost sm" data-fl="mictest">Test the microphone</button>` : ""}
           <button class="btn ghost sm" data-fl="sample">Watch a sample reading</button></div>
@@ -9605,7 +9619,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       ${runs.map(r => `<tr><td>${shortDate(r.date)}</td><td>${esc(FL_KIND[r.kind])}</td><td>${esc((FL_BY_ID[r.passage] || { title: r.passage }).title)}</td><td class="n">${r.wcpm}</td><td class="n">${r.acc}%</td><td>${r.mode === "teacher" ? "by the teacher" : "speech recognition on the school computer"}</td></tr>`).join("")}</tbody></table></div></div>`;
   }
   // test hook (no student data): the reading screen's state, for the automated tests
-  window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, passage: FL.passage ? FL.passage.id : null, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, helped: FL.helped ? [...FL.helped] : [],
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, passage: FL.passage ? FL.passage.id : null, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, why: FLS.why || "", helped: FL.helped ? [...FL.helped] : [],
     ready: FL.on ? !FL.awaitReady : null, voice: FL.vox ? { ...FL.vox } : null, settling: !!FL.settling, t0: FL.t0 || 0, tBegin: FL.tBegin || 0 }) });
 
   // =====================================================================================================
@@ -9938,7 +9952,9 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     if (s === "manual") return `<button class="btn ghost sm" data-st="check">Check this device</button> Odin listens in Google Chrome or the Odin app for Android.`;
     if (s === "downloadable") return `This device needs its speech pack first. <button class="btn ghost sm" data-st="install">Set it up</button>`;
     if (s === "downloading") return `Getting the speech pack… <button class="btn ghost sm" data-st="check">Check again</button>`;
-    return `This device can't listen to your reading yet. Ask your teacher. ${sample}`;
+    // 0.9.1: the microphone isn't allowed for the app (a new install asks first)
+    if (s === "denied") return `Odin needs the microphone to hear your reading. <button class="btn ghost sm" data-st="check">Allow the microphone</button><span class="muted"> If Android doesn't ask, a teacher turns it on in Android's Settings › Apps › ${ST_IN_APP ? "Odin Student" : "Odin"} › Permissions › Microphone.</span>`;
+    return `This device can't listen to your reading yet. Ask your teacher. ${DROID ? `<button class="btn ghost sm" data-st="check">Check again</button>` : ""} ${sample}${FLS.why ? ` <span class="muted mono">(${esc(FLS.why)})</span>` : ""}`;
   }
 
 
