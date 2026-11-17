@@ -697,6 +697,15 @@ fieldset.cs legend { padding: 0; margin-bottom: 6px; }
 #fl .flgo { background: var(--ongrade); border-color: var(--ongrade); }
 #fl .pin.big { font-size: 2rem; width: 6em; text-align: center; }
 @media print { .flprint { font-size: 15pt; } }
+/* 0.8.2: a small "Listening" sign on the reading screen; the dot grows with the student's voice */
+#fl .flmicl { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+#fl .flmicl i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); flex: none; transition: background .2s, box-shadow .12s; }
+#fl .flmicl.ready i { background: var(--ongrade); box-shadow: 0 0 0 calc(var(--lv, 0) * 7px) color-mix(in srgb, var(--ongrade) 30%, transparent); }
+#fl .flmicl.on .lbl { color: var(--ongrade); }
+#fl .flmicl.hush { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { #fl .flmicl i { transition: none; } }
+.flmeter { display: block; width: min(240px, 100%); height: 8px; margin-top: 6px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.flmeter i { display: block; height: 100%; width: 0; background: var(--ongrade); transition: width .1s; }
 
 /* ===== Odin 0.6: phones, tablets and the installed app ===== */
 .menubtn, .subm, #bnav, #more, #cover { display: none; }
@@ -996,7 +1005,7 @@ const ODIN_STUDENT_APP = true;
   class OdinRec {
     constructor() {
       Object.assign(this, { lang: "en-US", continuous: false, interimResults: false, maxAlternatives: 1, phrases: [],
-        onresult: null, onerror: null, onend: null, onstart: null, _id: null, _res: [], _ended: true });
+        onresult: null, onerror: null, onend: null, onstart: null, onsoundlevel: null, onspeechstart: null, onspeechend: null, _id: null, _res: [], _ended: true });
     }
     // Android's on-device recognizer is the only one the app uses, so this is always true.
     get processLocally() { return true; }
@@ -1028,6 +1037,11 @@ const ODIN_STUDENT_APP = true;
         results.item = n => results[n];
         if (this.onresult) this.onresult({ type: "result", resultIndex: i, results });
       }
+      // 0.8.2: how loud the microphone hears the room, a few times a second (Odin's own event: browsers have none),
+      // and Android's "the student started / stopped talking".
+      else if (m.ev === "level") { if (this.onsoundlevel) this.onsoundlevel({ type: "soundlevel", level: Number(m.v) || 0 }); }
+      else if (m.ev === "speechstart") { if (this.onspeechstart) this.onspeechstart({ type: "speechstart" }); }
+      else if (m.ev === "speechend") { if (this.onspeechend) this.onspeechend({ type: "speechend" }); }
       else if (m.ev === "error") { if (this.onerror) this.onerror({ type: "error", error: m.error || "error", message: m.message || "" }); }
       else if (m.ev === "end") this._finish();
     }
@@ -3896,7 +3910,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.8.1-alpha";
+const ODIN_VERSION = "0.8.2-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -6097,6 +6111,11 @@ function flSegment(words, seg) {
     else if (marks[i] === "x" && FL_TINY.has(w) && FL_TINY.has(said[i])) marks[i] = "u";
     else if (marks[i] === "o" && seg.restart && i === (seg.first != null ? seg.first : start)) marks[i] = "u";   // the first word after the microphone restarted may not have been heard
   });
+  // 0.8.2: a phone's recognizer can take a second or two to start listening, so the first words of a reading (or after the
+  // microphone restarted) may never reach Odin. As many left-out words as a quick reader says in that time (one every 0.3
+  // seconds, and 2 more) are given the benefit of the doubt, shown for checking. deafMs: how long the recognizer took to start.
+  const from = seg.first != null ? seg.first : start, forgive = Math.min(12, 2 + Math.ceil(Math.max(0, seg.deafMs || 0) / 300));
+  if (seg.restart || from === 0) for (let i = from, k = 0; k < forgive && (marks[i] === "o" || marks[i] === "u"); i++, k++) marks[i] = "u";
   return { marks, said, last };
 }
 
@@ -7516,6 +7535,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
+      <div style="display:grid;gap:6px"><h3>New in 0.8.2: fluency practice listens better on phones</h3><p class="small" style="max-width:80ch">On some Android phones the recognizer sends no words until the student pauses, and it can take a second or two to start listening. Odin used to take that silence for a student stuck on a word, so the voice said the words while the student was still reading. Now Odin helps only once the student goes quiet: the Odin app tells Odin how loud the microphone hears the student, Odin lets the recognizer finish before the voice speaks, and the time a phone takes to start listening doesn't count. Words a phone misses while it starts are given the benefit of the doubt, shown for checking. A <b>Listening</b> sign shows when to start, and <b>Test the microphone</b> is now a short reading that says how the device listens. Install the Odin app for Android 0.8.2.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.8.1: Odin Student plays like a game</h3><p class="small" style="max-width:80ch">Students earn stars for their work and climb ranks, follow this week's quests step by step, see their own progress (records, a bar for each week's best reading, and their checks before and after practice), and fill a trophy case: 19 achievements that unlock as bronze, silver and gold medals, with a celebration when one unlocks. It all comes from the student's own work and rewards effort and growth, never a comparison with classmates; nothing new is stored.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.8: Odin Student, the students' own app</h3><p class="small" style="max-width:80ch">Students open Odin Student (<span class="mono">student.html</span>) on a tablet, phone or computer and see only their own work: this week's practice sheets and checks, in order, reading out loud with the voice, their badges and best scores, and a chart of their own progress. They never see support tiers, levels, other students or IEP details. In the demo you pick an invented student; at school a student signs in with the class code and a picture password, a QR card, or the teacher unlocks the device with an exit code. A student's session opens only that student's own data. Set it up and print sign-in cards on the <b>Student app</b> tab.</p></div>
       <div style="display:grid;gap:6px"><h3>New in 0.7: the Odin app for Android, with the microphone</h3><p class="small" style="max-width:80ch">An Android app (Android 12 or newer for the microphone) opens Odin from the school's server and adds Android's own on-device speech recognition. Fluency practice now works on Android phones and tablets the way it does in Chrome on a computer: the voice says a word the student stops on or misreads, listens while the student says it back, cheers and goes on. The student's voice never leaves the device and nothing is recorded; the app turns the microphone on only for Odin's own address. The app also blocks screenshots of student information, keeps the back button from leaving the locked student mode, and prints through Android. iPhones and iPads still use the teacher's scoring.</p></div>
@@ -8890,6 +8910,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     r.onresult = e => { let txt = ""; for (let i = 0; i < e.results.length; i++) txt += " " + e.results[i][0].transcript; handlers.text(txt); };
     r.onerror = e => handlers.error(e.error || "error");
     r.onend = () => handlers.end();
+    r.onstart = () => handlers.start && handlers.start();
+    r.onsoundlevel = e => handlers.level && handlers.level(e.level);   // the Odin app only (0.8.2): how loud the microphone hears the room
     r.start();
     return r;
   }
@@ -8911,6 +8933,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         say(w, t);
       }
     }
+    if (h.start) setTimeout(() => { if (live) h.start(); }, 0);
     return { abort() { live = false; timers.forEach(clearTimeout); }, stop() { live = false; timers.forEach(clearTimeout); setTimeout(() => h.end(), 50); } };
   }
   function flSimPlan(words, wcpm) {
@@ -8926,10 +8949,12 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function flOpen(cls, code, kind, mode, pin) {
     const wk = flWk(), p = flPassageFor(cls, code, wk).passage, words = flPassageWords(p.id);
     const prior = flRunsOf(cls, code), sum = flWeekSummary(cls, code, wk);
+    FL.op = (FL.op || 0) + 1;   // timers left over from an earlier reading check this
     Object.assign(FL, { on: true, cls, code, kind, mode, pin, week: wk, passage: p, words, n: words.length, timed: kind !== "practice", step: "hello",
       marks: new Array(words.length).fill(null), said: {}, helped: new Set(), seg: null, rec: null, ptr: 0, t0: 0, tLast: 0, tTok: 0, tBegin: 0,
       supplied: 0, inARow: 0, half: false, listen: null, helpAt: -1, caption: "", result: null, exitAsk: false, pinIn: "", pinOk: false, pinBad: false, ended: false,
-      prior, before: flBadges(prior, cls.grade), best: sum.best, fastest: sum.fastest, pre: sum.pre, err: null, checkTries: 0 });
+      prior, before: flBadges(prior, cls.grade), best: sum.best, fastest: sum.fastest, pre: sum.pre, err: null, checkTries: 0,
+      vox: { n: 0, floor: 0, level: 0, at: 0, runStart: 0 }, awaitReady: false, readyAt: 0, listenAt: 0, settling: false, settleFin: null, stopFin: null });
     if (mode === "sample") { const g = flGoal(cls.grade, p.band, ISO_TODAY); FL.sim = flSimPlan(words, Math.round((g ? g.wc : 40) * (kind === "practice" ? 0.95 + 0.06 * sum.practice.length : 0.85))); }
     document.querySelectorAll("header.top, .banner, nav.tabs, main").forEach(e => { e.setAttribute("inert", ""); e.setAttribute("aria-hidden", "true"); });
     clearInterval(FL.tick); FL.tick = setInterval(flTick, 200);
@@ -8945,14 +8970,22 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function flStopRec(abort) { FL.recGen++; const r = FL.rec; FL.rec = null; if (r) { try { abort ? r.abort() : r.stop(); } catch (e) {} } }
   function flListen(kind, start, minPtr, restart) {
     FL.listen = kind;
-    if (kind === "read") FL.seg = { start, minPtr, first: minPtr, restart, tokens: [] };
+    if (kind === "read") FL.seg = { start, minPtr, first: minPtr, restart, tokens: [], askedAt: Date.now(), deafMs: null };
     const gen = ++FL.recGen;
     const mine = () => FL.on && FL.recGen === gen;
+    FL.listenAt = Date.now();
     try {
       FL.rec = flMakeRec({
         text: t => { if (!mine()) return; flHeard(flSpoken(t)); },
         error: e => { if (!mine()) return; flRecError(e); },
-        end: () => { if (!mine()) return; FL.rec = null; flRecEnded(); }
+        end: () => { if (!mine()) return; FL.rec = null; flRecEnded(); },
+        start: () => {   // the recognizer is listening now: words said before this never reached it
+          if (!mine()) return;
+          if (FL.awaitReady) { FL.awaitReady = false; FL.readyAt = Date.now(); }
+          if (FL.seg && FL.seg.deafMs == null) FL.seg.deafMs = Date.now() - FL.seg.askedAt;
+          flPaintMic();
+        },
+        level: v => { if (mine()) flVoiceLevel(v); }
       });
     } catch (e) { flFail(String(e.message || e)); }
   }
@@ -8974,7 +9007,10 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   }
   function flFail(msg) { FL.err = msg; FL.step = "error"; FL.sayGen++; FL.speaking = false; flRender(); }
   // The recognizer can end on its own after a while; keep listening, starting a new stretch where the student is.
+  // When Odin asked it to finish (before the voice helps, or at the end of the minute), carry on from there instead.
   function flRecEnded() {
+    if (FL.settleFin) return FL.settleFin();
+    if (FL.step === "stopping" && FL.stopFin) return FL.stopFin();
     if (FL.step === "read" && !FL.speaking && !FL.ended) { flCommit(); flListen("read", FL.ptr, FL.ptr, true); }
     else if (FL.step === "check" && !FL.speaking) flListen("check");
     else if (FL.step === "help" && FL.listen === "repeat" && !FL.speaking) flListen("repeat");
@@ -8984,7 +9020,11 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     if (FL.listen === "check") { if (toks.length) { FL.listen = null; FL.step = "ready"; flRender(); flSay("Great, I can hear you.", flStartReading); } return; }
     if (FL.listen === "repeat") { const w = FL.words[FL.helpAt].n; if (toks.some(t => flSame(t, w))) { FL.listen = null; FL.inARow = 0; flSay(flPick(FL_CHEER.yes) + " Keep going.", () => flResume(FL.helpAt + 1, FL.helpAt)); } return; }
     if (FL.listen !== "read" || (FL.ended && FL.step !== "stopping")) return;   // words heard just after the minute were said before it
-    if (!FL.t0 && toks.length) { FL.t0 = Date.now() - 350; FL.tLast = FL.t0; }
+    if (FL.awaitReady && toks.length) { FL.awaitReady = false; FL.readyAt = FL.listenAt; }   // words prove it was listening
+    if (!FL.t0 && toks.length) {   // the clock starts with the first word: when the voice began, if the device says (its words can come later)
+      const V = FL.vox, now = Date.now();
+      FL.t0 = V.runStart && V.runStart >= FL.tBegin - 300 && now - V.at < 4000 ? V.runStart - 150 : now - 350; FL.tLast = FL.t0;
+    }
     FL.seg.tokens = toks;
     flUpdate();
   }
@@ -9000,9 +9040,10 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function flMarksNow() { const m = FL.marks.slice(), L = flLive(); Object.keys(L.marks).forEach(k => { if (m[k] !== "s" && Number(k) >= FL.seg.first) m[k] = L.marks[k]; }); return m; }
   function flUpdate() {
     const L = flLive(), ptr = Math.max(FL.seg.minPtr, L.last + 1), now = Date.now();
-    if (ptr > FL.ptr) { FL.ptr = ptr; FL.tLast = now; FL.inARow = 0; }
+    // Progress counts from when the student said the words: words can arrive a second or two after the voice stopped.
+    if (ptr > FL.ptr) { FL.ptr = ptr; FL.tLast = FL.vox.at && now - FL.vox.at < 2500 ? Math.max(FL.tLast, Math.min(now, FL.vox.at + 300)) : now; FL.inARow = 0; }
     if (!FL.timed && !FL.half && FL.n > 40 && FL.ptr >= FL.n / 2) { FL.half = true; flToast(flPick(FL_CHEER.half)); }
-    if (!FL.timed) {   // practice: fix a misread or skipped word once the student has clearly moved past it (and the recognizer has settled)
+    if (!FL.timed && !FL.settling) {   // practice: fix a misread or skipped word once the student has clearly moved past it (and the recognizer has settled)
       let cand = null;
       for (let i = FL.seg.first; i <= L.last - 2 && !cand; i++) {
         const m = L.marks[i];
@@ -9018,18 +9059,68 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   }
   // A cheer on the screen only: speaking while the student reads would cover their words.
   function flToast(text) { FL.caption = text; flPaintCaption(); setTimeout(() => { if (FL.caption === text) { FL.caption = ""; flPaintCaption(); } }, 2600); }
+  // 0.8.2: Odin helps only when the student has gone quiet. A phone's recognizer can take a moment to start, and some phones
+  // send no words until the student pauses, so the time the recognizer was getting ready doesn't count, and while the
+  // microphone hears the student reading (the Odin app tells Odin how loud it is), Odin waits for the words to arrive.
   function flTick() {
     if (!FL.on) return;
     const now = Date.now();
     if (FL.step === "read") flPaintClock();
-    if (FL.step !== "read" || FL.speaking || FL.ended) return;
+    flPaintMic();
+    if (FL.step !== "read" || FL.speaking || FL.ended || FL.settling) return;
     if (FL.fix && FL.seg && now - FL.fix.t >= 800) return flUpdate();
-    if (FL.timed && FL.t0 && now - FL.t0 >= FL_TIMED * 1000) return flTimeUp();
-    const wait = FL.timed ? FL_WAIT.timed : FL_WAIT.practice, since = now - (FL.t0 ? FL.tLast : FL.tBegin), quiet = now - Math.max(FL.tTok, FL.tBegin);
-    if ((since >= wait && quiet >= 1200) || since >= wait + 2500) flStuck();
+    if (FL.timed) {   // the minute runs from the first word, or from when the microphone first heard the student
+      const st = FL.t0 || (FL.vox.runStart && FL.vox.runStart >= FL.tBegin - 300 ? FL.vox.runStart - 150 : 0);
+      if (st && now - st >= FL_TIMED * 1000) { if (!FL.t0) { FL.t0 = st; FL.tLast = st; } return flTimeUp(); }
+    }
+    if (FL.awaitReady) { if (now - FL.listenAt < 3000) return; FL.awaitReady = false; FL.readyAt = FL.listenAt; }   // a recognizer that never says it's ready: count from when it started
+    const wait = FL.timed ? FL_WAIT.timed : FL_WAIT.practice, from = Math.max(FL.t0 ? FL.tLast : FL.tBegin, FL.readyAt);
+    const since = now - from, quiet = now - Math.max(FL.vox.at, FL.tTok, from);
+    // Words arriving that aren't the next word: the student may be sounding it out. Only the student's voice and no words yet:
+    // the recognizer is still catching up, so wait longer (and even then, let it finish before deciding).
+    const cap = wait + (FL.tTok > from ? 3000 : FL.vox.at > from ? 17000 : 2500);
+    if ((since >= wait && quiet >= 1200) || since >= cap) flStuck();
+  }
+  // The microphone's level (Odin app): a slowly rising floor follows the room, and the student's voice is well above it.
+  function flVoiceLevel(v) {
+    const V = FL.vox, now = Date.now();
+    if (!V.n++) V.floor = v;
+    V.floor = v < V.floor ? v : Math.min(V.floor + 0.02, v);
+    V.level = v;
+    if (v - V.floor >= 2.5) { if (now - V.at > 1500) V.runStart = now; V.at = now; }
+  }
+  function flPaintMic() {
+    const el = document.getElementById("fl-mic"); if (!el) return;
+    const now = Date.now(), V = FL.vox, on = !!FL.rec && !FL.speaking && !FL.settling;
+    const ready = on && !FL.awaitReady, hearing = ready && now - Math.max(V.at, FL.tTok) < 450;
+    el.className = "flmicl" + (ready ? " ready" : "") + (hearing ? " on" : "") + (FL.speaking ? " hush" : "");
+    el.style.setProperty("--lv", hearing && V.n ? Math.max(0.25, Math.min(1, (V.level - V.floor) / 7)).toFixed(2) : hearing ? "0.6" : "0");
+    const lbl = el.querySelector(".lbl"), txt = ready ? "Listening" : on ? "One moment…" : "";
+    if (lbl && lbl.textContent !== txt) lbl.textContent = txt;
+  }
+  // Ask the recognizer to finish what it heard (stop, not cancel), then decide. moved: the words brought the student further.
+  function flSettle(then) {
+    const r = FL.rec, ptr0 = FL.ptr, op = FL.op; let done = false;
+    const fin = () => {
+      if (done || FL.op !== op) return; done = true; FL.settling = false; FL.settleFin = null;
+      flStopRec(true); flCommit();
+      then(FL.ptr > ptr0);
+    };
+    FL.settling = true; FL.settleFin = fin; flPaintMic();
+    try { r.stop(); } catch (e) { return fin(); }
+    setTimeout(fin, 2000);   // in case the device never answers
   }
   // The student stopped on a word for 3 seconds (4 in practice): say the word, as a DIBELS examiner would.
+  // First the recognizer finishes what it heard: if those words carry the student further, Odin keeps listening instead.
   function flStuck() {
+    if (FL.rec && !FL.settling) return flSettle(moved => {
+      if (!FL.on || FL.step !== "read" || FL.ended) return;
+      if (moved) { flPaint(); return FL.ptr >= FL.n ? flFinish(false) : flResume(FL.ptr, null); }
+      flHelpWord();
+    });
+    flHelpWord();
+  }
+  function flHelpWord() {
     const i = FL.ptr; if (i >= FL.n) return flFinish(false);
     if (!FL.t0) { FL.t0 = Date.now(); FL.tLast = FL.t0; }
     flCommit(i - 1);
@@ -9067,17 +9158,24 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     FL.step = "read"; FL.helpAt = -1; FL.ptr = Math.max(from, 0); FL.tLast = Date.now(); FL.tTok = 0;
     if (FL.ptr >= FL.n) return flFinish(false);
     flRender();
+    FL.awaitReady = true;
     flListen("read", keep != null ? keep : FL.ptr, FL.ptr, true);
   }
   function flStartReading() {
     FL.step = "read"; FL.ptr = 0; FL.t0 = 0; FL.tBegin = Date.now() + 99999; flRender();
     const intro = FL.timed ? "Start at the top and read each word out loud. If you get stuck, I'll help you with the word. Do your best reading. Ready? Begin."
       : FL.best != null ? `Read the whole passage out loud. Your best is ${FL.best} words a minute. Try to beat it! Ready? Begin.` : "Read the whole passage out loud. If you get stuck, I'll help. Ready? Begin.";
-    flSay(intro, () => { FL.tBegin = Date.now(); FL.tLast = FL.tBegin; flRender(); flListen("read", 0, 0, false); });
+    flSay(intro, () => { FL.tBegin = Date.now(); FL.tLast = FL.tBegin; FL.awaitReady = true; flRender(); flListen("read", 0, 0, false); });
   }
   function flTimeUp() {
     FL.ended = true; FL.step = "stopping"; flRender();
-    setTimeout(() => { flStopRec(false); flFinish(true); }, 700);   // results spoken just before the minute may still be on their way
+    // The recognizer stops listening now and sends the words said before the minute ended (a phone's can come a second or two later).
+    const r = FL.rec, op = FL.op; let done = false;
+    const fin = () => { if (done || FL.op !== op) return; done = true; FL.stopFin = null; flFinish(true); };
+    if (!r) return setTimeout(fin, 300);
+    FL.stopFin = fin;
+    try { r.stop(); } catch (e) { return fin(); }
+    setTimeout(fin, 2500);
   }
   function flFinish(timeUp) {
     if (FL.step === "done" || FL.result) return;
@@ -9169,7 +9267,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     } else if (FL.step === "bye") body = `<div class="smcard"><h2>All done${sample ? "" : ", " + esc(nm)}!</h2><p class="smbig">Please give the device back to your teacher.</p></div>`;
     else {   // ready, read, help, paused, stopping
       body = `<div class="flread ${FL.timed ? "timed" : "practice"}">
-        <div class="flhead"><span class="smkind">${esc(P.title)}</span>${practice ? `<span class="flclock" aria-label="Time"><span id="fl-clock">0:00</span>${FL.best != null ? ` <span class="muted">· best ${FL.best} words a minute${FL.fastest ? ", " + flTime(FL.fastest) : ""}</span>` : ""}</span>` : `<span class="muted small">${FL.step === "stopping" ? "Time!" : ""}</span>`}</div>
+        <div class="flhead"><span class="smkind">${esc(P.title)}</span><span id="fl-mic" class="flmicl" aria-hidden="true"><i></i><span class="lbl"></span></span>${practice ? `<span class="flclock" aria-label="Time"><span id="fl-clock">0:00</span>${FL.best != null ? ` <span class="muted">· best ${FL.best} words a minute${FL.fastest ? ", " + flTime(FL.fastest) : ""}</span>` : ""}</span>` : `<span class="muted small">${FL.step === "stopping" ? "Time!" : ""}</span>`}</div>
         ${practice ? `<div class="flprog"><i id="fl-bar"></i></div>` : ""}
         <div id="fl-text" class="fltext ${P.band <= 1 ? "big" : ""}">${flPassageHTML()}</div>
         ${FL.step === "paused" ? `<div class="smrow"><button class="btn big flgo" data-flx="resume">I'm ready</button></div>` : ""}
@@ -9332,7 +9430,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
           ${FLS.status === "manual" ? `<button class="btn sm" data-fl="check">Check this browser</button>` : ""}
           ${flReady() ? `<button class="btn ghost sm" data-fl="mictest">Test the microphone</button>` : ""}
           <button class="btn ghost sm" data-fl="sample">Watch a sample reading</button></div>
-        ${state.flMic ? `<p class="small mono" role="status">${esc(state.flMic)}</p>` : ""}
+        ${state.flMic ? `<p class="small mono" role="status">${flMicLines(state.flMic, null)}</p>` : ""}
       </div>
       ${state.flNotice ? `<div class="notice" role="status" style="margin-top:14px"><b>${esc(state.flNotice)}</b></div>` : ""}
       <div class="panel" style="display:grid;gap:10px;margin-top:14px">
@@ -9378,18 +9476,53 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       <div class="sheet flprint ${P.band <= 1 ? "big" : ""}"><h2>${esc(P.title)}</h2>${String(P.text).split(/\n\s*\n/).map(x => `<p>${esc(x)}</p>`).join("")}<p class="small muted">Odin fluency · ${P.id}</p></div></section>`;
   }
   // Microphone test for the teacher: six seconds, then the words heard are shown and forgotten.
+  // 0.8.2: the microphone test is a short reading. It shows what the device heard, how long it took to start listening,
+  // and whether words came while the reader was still reading (so Odin can follow word by word) or only at pauses.
+  const FL_MIC_TEXT = "The little red hen found some seeds. She asked her friends to help her plant them, but they all said no.";
   function flMicTest() {
-    state.flMic = "Listening for 6 seconds: say something…"; render();
-    let heard = "";
+    const T = { t0: Date.now(), ready: 0, first: 0, grew: 0, n: 0, heard: "", failed: false, levels: 0, lo: 99, hi: -99, level: null };
+    const el = () => document.querySelector("#main p.mono[role=status]");
+    const lines = done => {
+      const out = [];
+      if (!done) out.push(`Read this out loud, without stopping: “${FL_MIC_TEXT}”`);
+      out.push(T.heard ? `Heard: ${T.heard}` : done ? "" : "Listening…");
+      if (done && T.heard) {
+        if (T.ready) out.push(`Started listening ${((T.ready - T.t0) / 1000).toFixed(1)} seconds after the test began.`);
+        out.push(T.grew >= 2 ? "Words came while you read, so Odin follows the student word by word."
+          : `Words came only when you paused. Odin waits for them: it doesn't help while a student is still reading, and the highlight catches up at each pause.`);
+        if (DROID) out.push(T.levels ? `The app hears how loud the reading is (${T.lo.toFixed(0)} to ${T.hi.toFixed(0)}), so Odin knows when a student is reading.`
+          : "This version of the Odin app doesn't tell Odin how loud the microphone is. Install the newest app so Odin knows when a student is reading.");
+      }
+      return out.filter(Boolean);
+    };
+    const paint = () => { state.flMic = lines(false); const p = el(); if (p) p.innerHTML = flMicLines(state.flMic, T.level); };
+    paint(); render();
     try {
       const SR = flSR(), r = new SR(); r.lang = "en-US"; r.continuous = true; r.interimResults = true; r.processLocally = true;
       if (r.processLocally !== true) throw new Error("this browser would not keep speech on the computer");
-      r.onresult = e => { heard = ""; for (let i = 0; i < e.results.length; i++) heard += " " + e.results[i][0].transcript; state.flMic = "Heard: " + heard.trim(); const el = document.querySelector("#main p.mono[role=status]"); if (el) el.textContent = state.flMic; };
-      let failed = false;
-      r.onerror = e => { const er = e.error || "error"; if (er === "no-speech" || er === "aborted") return; failed = true; if (er === "language-not-supported") FLS.status = "downloadable"; state.flMic = "Microphone test stopped: " + flWhy(er); render(); };
-      r.start(); setTimeout(() => { try { r.stop(); } catch (e) {} if (failed) return; if (!heard) state.flMic = DROID ? "Nothing heard. Check that Odin may use the microphone (Android Settings › Apps › Odin › Permissions)." : "Nothing heard. Check that a microphone is plugged in and allowed for this page."; else state.flMic = "Heard: " + heard.trim() + " — the microphone works."; render(); }, 6000);
+      r.onstart = () => { if (!T.ready) T.ready = Date.now(); };
+      r.onsoundlevel = e => { T.levels++; T.level = e.level; T.lo = Math.min(T.lo, e.level); T.hi = Math.max(T.hi, e.level); const p = el(); const m = p && p.querySelector(".flmeter i"); if (m) m.style.width = flMeterPct(e.level, T) + "%"; else paint(); };
+      r.onresult = e => {
+        let txt = "", fin = 0; for (let i = 0; i < e.results.length; i++) { txt += " " + e.results[i][0].transcript; if (e.results[i].isFinal) fin++; }
+        const n = flSpoken(txt).length;
+        if (n > T.n && fin < e.results.length) T.grew++;   // an unfinished (live) result brought new words
+        if (n && !T.first) T.first = Date.now();
+        T.n = n; T.heard = txt.trim(); paint();
+      };
+      r.onerror = e => { const er = e.error || "error"; if (er === "no-speech" || er === "aborted") return; T.failed = true; if (er === "language-not-supported") FLS.status = "downloadable"; state.flMic = "Microphone test stopped: " + flWhy(er); render(); };
+      r.start();
+      setTimeout(() => {
+        try { r.stop(); } catch (e) {}
+        setTimeout(() => {   // the last words can come just after stopping
+          if (T.failed) return;
+          state.flMic = T.heard ? lines(true).concat(["The microphone works."]) : [DROID ? "Nothing heard. Check that Odin may use the microphone (Android Settings › Apps › Odin › Permissions)." : "Nothing heard. Check that a microphone is plugged in and allowed for this page."];
+          render();
+        }, 1500);
+      }, 10000);
     } catch (e) { state.flMic = "The microphone test could not start: " + (e.message || e); render(); }
   }
+  const flMeterPct = (v, T) => Math.round(100 * Math.max(0, Math.min(1, (v - Math.min(T.lo, v)) / 10)));
+  const flMicLines = (m, level) => [].concat(m).map(esc).join("<br>") + (level != null ? `<span class="flmeter" aria-hidden="true"><i></i></span>` : "");
   function flSetPlan(code, week, band, passage) {
     const F = flF(DATA); let p = F.plans.find(x => x.code === code && x.week === week);
     if (!p) { p = { code, week, band, passage: "" }; F.plans.push(p); }
@@ -9444,7 +9577,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       ${runs.map(r => `<tr><td>${shortDate(r.date)}</td><td>${esc(FL_KIND[r.kind])}</td><td>${esc((FL_BY_ID[r.passage] || { title: r.passage }).title)}</td><td class="n">${r.wcpm}</td><td class="n">${r.acc}%</td><td>${r.mode === "teacher" ? "by the teacher" : "speech recognition on the school computer"}</td></tr>`).join("")}</tbody></table></div></div>`;
   }
   // test hook (no student data): the reading screen's state, for the automated tests
-  window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, passage: FL.passage ? FL.passage.id : null, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, helped: FL.helped ? [...FL.helped] : [] }) });
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, passage: FL.passage ? FL.passage.id : null, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, helped: FL.helped ? [...FL.helped] : [],
+    ready: FL.on ? !FL.awaitReady : null, voice: FL.vox ? { ...FL.vox } : null, settling: !!FL.settling, t0: FL.t0 || 0, tBegin: FL.tBegin || 0 }) });
 
   // =====================================================================================================
   // Odin 0.6: Odin as an app on phones and tablets. Installable from the browser (no app store), a phone layout

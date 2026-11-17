@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.8.1-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.8.2-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -47,11 +47,13 @@ On Android, the **Odin app** adds the microphone to fluency practice. When a stu
 
 ![QR code for the Odin app for Android](qr-android.png)
 
+**Already have the app?** Install this one over it (version 0.8.2). It fixes fluency practice on phones whose recognizer sends words late or only at pauses, where the voice used to say each word while the student was still reading.
+
 1. Open the download. Android asks to allow installing apps from this source (the browser or Files): allow it, then **Install**. If Google Play Protect warns about an unknown app, choose **More details**, then **Install anyway**: it is a test build, signed with a test key, not from the Play Store.
 2. Open **Odin**. Under **Who uses this device?** choose **A teacher** or **Students** (Odin Student), then **Try the demo (invented students)**.
 3. Open **Fluency**. The status line says whether this device can recognize speech on the device. If it offers **Set up speech on this device**, press it once (a one-time download from Google).
-4. Press **Test the microphone**, allow the microphone, and say a sentence.
-5. On a student's row, press **Open**, then **Practice on this device** and **Start practice**. Read the passage aloud. Stop on a word, or misread one, to hear the voice help and wait for you to say it.
+4. Press **Test the microphone**, allow the microphone, and read the sentence on the screen out loud. Odin shows what it heard, how fast the phone started listening, and whether words came while you read or only when you paused.
+5. On a student's row, press **Open**, then **Practice on this device** and **Start practice**. When the sign at the top says **Listening**, read the passage aloud. Stop on a word for a few seconds, or misread one, to hear the voice help and wait for you to say it. While you keep reading, the voice stays quiet.
 
 The microphone needs **Android 12 or newer** with Google's speech services. On older devices the app still opens Odin, and fluency uses **Teacher scores**. For real students, the app opens the school's Project Cerberus server instead (type its `https://` address), only with the school's written approval.
 
