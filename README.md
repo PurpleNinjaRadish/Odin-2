@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.9.1-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.9.2-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -60,7 +60,7 @@ On Android, the **Odin app** (for teachers) adds the microphone to fluency pract
 
 ![QR code for the Odin app for Android](qr-android.png)
 
-**Already have the app?** Install this one over it (version 0.9.1). For students' devices, use the **Odin Student** app above: the Odin app no longer has the students' setting.
+**Already have the app?** Install this one over it (version 0.9.2). For students' devices, use the **Odin Student** app above: the Odin app no longer has the students' setting.
 
 1. Open the download. Android asks to allow installing apps from this source (the browser or Files): allow it, then **Install**. If Google Play Protect warns about an unknown app, choose **More details**, then **Install anyway**: it is a test build, signed with a test key, not from the Play Store.
 2. Open **Odin**, then **Try the demo (invented students)**.
