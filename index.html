@@ -3911,7 +3911,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.9.3-alpha";
+const ODIN_VERSION = "0.9.4-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -5612,6 +5612,231 @@ function shFigLabel(f) {
     linefig: "a figure", angle: "an angle", coord: "a coordinate grid with point A" }[f.t] || "a figure";
 }
 if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { SHEET_GEN, SH_PAGE, SH_MARK, SH_MARKS, SH_CODE, SH_BODY, shPlanFor, shRecordsFor, shBuildSheet, shWeekItems, shScore, shCodeBits, shCodeRead, shCodeCells, shLayout, shFig, shConcepts, shWrap, shPassagesFor });
+
+// ---------- PDF: Odin writes its own PDF files (0.9.4) ----------
+// A small, dependency-free PDF writer, so the school server (offline), the demo and the online preview can all save a sheet
+// as a PDF. Vector only: rectangles, lines, circles, curves and text in the standard PDF fonts (Helvetica, Helvetica-Bold,
+// Helvetica-Oblique, Courier), which every PDF reader has, so nothing is embedded. Coordinates are millimetres from the
+// top-left of a US Letter page, the same as Odin's printed sheets (sheets.js), so a printed PDF scans like a printed sheet.
+// Widths of Helvetica and Helvetica-Bold for WinAnsi codes 32-255 (from the Adobe font metrics), for wrapping and centring.
+const PDF_WIDTHS = {
+  R: [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,278,222,556,333,1000,556,556,333,1000,667,333,1000,278,611,278,278,222,222,333,333,350,556,1000,333,1000,500,333,944,278,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],
+  B: [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,278,278,556,500,1000,556,556,333,1000,667,333,1000,278,611,278,278,278,278,500,500,350,556,1000,333,1000,556,333,944,278,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]
+};
+const PDF_PAGE = { w: 215.9, h: 279.4 }, PDF_K = 72 / 25.4;
+// Unicode to WinAnsi for the characters Odin's sheets use beyond Latin-1 (quotes, dashes, the bullet...); anything else is "?".
+const PDF_WIN = { 0x20AC: 128, 0x201A: 130, 0x0192: 131, 0x201E: 132, 0x2026: 133, 0x2020: 134, 0x2021: 135, 0x02C6: 136, 0x2030: 137, 0x0160: 138, 0x2039: 139, 0x0152: 140, 0x017D: 142,
+  0x2018: 145, 0x2019: 146, 0x201C: 147, 0x201D: 148, 0x2022: 149, 0x2013: 150, 0x2014: 151, 0x02DC: 152, 0x2122: 153, 0x0161: 154, 0x203A: 155, 0x0153: 156, 0x017E: 158, 0x0178: 159,
+  0x2212: 45, 0x00D7: 215, 0x00F7: 247, 0x2264: 60, 0x2265: 62, 0x2192: 62, 0x2190: 60, 0x2715: 120, 0x2713: 118 };
+function pdfCode(ch) { const c = ch.codePointAt(0); if (c >= 32 && c < 127) return c; if (c >= 160 && c <= 255) return c; return PDF_WIN[c] || (c === 9 ? 32 : 63); }
+const PDF_FONT = { R: "F1", B: "F2", I: "F3", M: "F4" };
+// Width of a string in millimetres at a font size in points. f: R (regular), B (bold), I (italic: Helvetica's widths), M (Courier).
+function pdfWidth(s, f, pt) {
+  let u = 0;
+  for (const ch of String(s)) u += f === "M" ? 600 : (f === "B" ? PDF_WIDTHS.B : PDF_WIDTHS.R)[pdfCode(ch) - 32] || 556;
+  return (u / 1000) * pt * 25.4 / 72;
+}
+// Wraps text into lines that fit widthMm (words longer than a line are broken). Keeps line breaks ("\n").
+function pdfWrap(text, f, pt, widthMm) {
+  const lines = [];
+  for (const para of String(text).split("\n")) {
+    let cur = "";
+    for (let w of para.split(/ +/)) {
+      while (pdfWidth(w, f, pt) > widthMm && w.length > 1) {   // a very long word: break it
+        let k = w.length - 1; while (k > 1 && pdfWidth(w.slice(0, k), f, pt) > widthMm) k--;
+        if (cur) { lines.push(cur); cur = ""; }
+        lines.push(w.slice(0, k)); w = w.slice(k);
+      }
+      const t = cur ? cur + " " + w : w;
+      if (cur && pdfWidth(t, f, pt) > widthMm) { lines.push(cur); cur = w; } else cur = t;
+    }
+    lines.push(cur);
+  }
+  return lines;
+}
+// Shortens one line with "…" so it fits widthMm.
+function pdfFit(s, f, pt, widthMm) {
+  s = String(s); if (pdfWidth(s, f, pt) <= widthMm) return s;
+  while (s.length > 1 && pdfWidth(s + "…", f, pt) > widthMm) s = s.slice(0, -1);
+  return s.replace(/\s+$/, "") + "…";
+}
+function pdfColor(c) {   // "#333" or "#d0d0d0" to "r g b" (0-1); null for none
+  if (!c || c === "none" || c === "transparent") return null;
+  let h = String(c).trim().replace("#", "");
+  if (h === "black") h = "000"; if (h === "white") h = "fff";
+  if (h.length === 3) h = h.split("").map(x => x + x).join("");
+  if (!/^[0-9a-f]{6}$/i.test(h)) return "0 0 0";
+  return [0, 2, 4].map(i => (parseInt(h.slice(i, i + 2), 16) / 255).toFixed(3)).join(" ");
+}
+class OdinPdf {
+  constructor(title) { this.title = title || "Odin"; this.pages = []; this.ops = null; }
+  page() { this.ops = []; this.pages.push(this.ops); return this; }
+  // ----- coordinates: mm from the top-left to PDF points from the bottom-left
+  X(x) { return (x * PDF_K).toFixed(2); }
+  Y(y) { return ((PDF_PAGE.h - y) * PDF_K).toFixed(2); }
+  L(v) { return (v * PDF_K).toFixed(3); }
+  op(s) { this.ops.push(s); return this; }
+  style(o) {   // o: { fill, stroke, lw (mm), cap }
+    const f = pdfColor(o.fill), s = pdfColor(o.stroke);
+    if (f) this.op(f + " rg"); if (s) this.op(s + " RG");
+    this.op(this.L(o.lw != null ? o.lw : 0.3) + " w"); this.op((o.cap === "round" ? 1 : 0) + " J"); this.op((o.join === "round" ? 1 : 0) + " j");
+    return f && s ? "B" : f ? "f" : s ? "S" : "n";
+  }
+  rect(x, y, w, h, o = {}) {
+    this.op("q"); const paint = this.style(o), r = Math.min(o.r || 0, w / 2, h / 2);
+    if (r > 0) { this.path(this.roundRect(x, y, w, h, r)); this.op(paint); }
+    else this.op(`${this.X(x)} ${this.Y(y + h)} ${this.L(w)} ${this.L(h)} re ${paint}`);
+    this.op("Q"); return this;
+  }
+  roundRect(x, y, w, h, r) {
+    const k = 0.5523 * r;
+    return [["M", x + r, y], ["L", x + w - r, y], ["C", x + w - r + k, y, x + w, y + r - k, x + w, y + r], ["L", x + w, y + h - r], ["C", x + w, y + h - r + k, x + w - r + k, y + h, x + w - r, y + h],
+      ["L", x + r, y + h], ["C", x + r - k, y + h, x, y + h - r + k, x, y + h - r], ["L", x, y + r], ["C", x, y + r - k, x + r - k, y, x + r, y], ["Z"]];
+  }
+  ellipse(cx, cy, rx, ry, o = {}) {
+    const kx = 0.5523 * rx, ky = 0.5523 * ry;
+    this.op("q"); const paint = this.style(o);
+    this.path([["M", cx + rx, cy], ["C", cx + rx, cy + ky, cx + kx, cy + ry, cx, cy + ry], ["C", cx - kx, cy + ry, cx - rx, cy + ky, cx - rx, cy], ["C", cx - rx, cy - ky, cx - kx, cy - ry, cx, cy - ry], ["C", cx + kx, cy - ry, cx + rx, cy - ky, cx + rx, cy], ["Z"]]);
+    this.op(paint).op("Q"); return this;
+  }
+  circle(cx, cy, r, o = {}) { return this.ellipse(cx, cy, r, r, o); }
+  line(x1, y1, x2, y2, o = {}) { this.op("q"); this.style({ stroke: o.stroke || "#000", lw: o.lw, cap: o.cap }); this.op(`${this.X(x1)} ${this.Y(y1)} m ${this.X(x2)} ${this.Y(y2)} l S Q`); return this; }
+  // A path in mm: [["M", x, y], ["L", x, y], ["C", x1, y1, x2, y2, x, y], ["Z"]], painted with o.
+  path(segs, o) {
+    const s = segs.map(([c, ...v]) => c === "Z" ? "h" : c === "M" ? `${this.X(v[0])} ${this.Y(v[1])} m` : c === "L" ? `${this.X(v[0])} ${this.Y(v[1])} l`
+      : `${this.X(v[0])} ${this.Y(v[1])} ${this.X(v[2])} ${this.Y(v[3])} ${this.X(v[4])} ${this.Y(v[5])} c`).join(" ");
+    if (!o) { this.op(s); return this; }
+    this.op("q"); const paint = this.style(o); this.op(s).op(paint).op("Q"); return this;
+  }
+  // Text with its baseline at y. o: { f: R|B|I|M, pt, color, align: left|center|right, spacing (mm) }
+  text(x, y, s, o = {}) {
+    s = String(s == null ? "" : s); if (!s) return this;
+    const f = o.f || "R", pt = o.pt || 11, w = pdfWidth(s, f, pt) + (o.spacing ? o.spacing * (s.length - 1) : 0);
+    const x0 = o.align === "center" ? x - w / 2 : o.align === "right" ? x - w : x;
+    let bytes = ""; for (const ch of s) { const c = pdfCode(ch); bytes += c === 40 || c === 41 || c === 92 ? "\\" + String.fromCharCode(c) : String.fromCharCode(c); }
+    // Letter spacing (Tc) stays set after ET, so text with spacing is wrapped in q ... Q to keep it off the text after it.
+    this.op(`${o.spacing ? "q " : ""}BT /${PDF_FONT[f]} ${pt.toFixed(2)} Tf ${pdfColor(o.color || "#000")} rg ${o.spacing ? this.L(o.spacing) + " Tc " : ""}${this.X(x0)} ${this.Y(y)} Td (${bytes}) Tj ET${o.spacing ? " Q" : ""}`);
+    return this;
+  }
+  // The baseline that centres a line of text (cap height) in a box from top to top + h.
+  static mid(top, h, pt) { return top + h / 2 + 0.35 * pt * 25.4 / 72; }
+  // A paragraph of runs ([text, font, color]) wrapped to width w, its first line's top at `top`. Returns the number of lines.
+  // o: { pt, lh (mm), color, dry (measure only) }. Runs that touch with no space between them never split across lines.
+  para(x, top, w, runs, o = {}) {
+    const pt = o.pt || 11, lh = o.lh || pt * 0.3528 * 1.3, units = [];
+    let gap = false, br = false;
+    for (const [t, f, c] of runs) for (const p of String(t == null ? "" : t).split(/(\s+)/)) {
+      if (!p) continue;
+      if (/^\s+$/.test(p)) { gap = true; if (p.includes("\n")) br = true; continue; }
+      const part = { t: p, f: f || "R", c: c || o.color || "#000" };
+      if (units.length && !gap) units[units.length - 1].parts.push(part); else units.push({ parts: [part], br });
+      gap = br = false;
+    }
+    const sp = pdfWidth(" ", "R", pt), lines = [[]];
+    let cur = 0;
+    for (const u of units) {
+      u.w = u.parts.reduce((a, p) => a + pdfWidth(p.t, p.f, pt), 0);
+      const line = lines[lines.length - 1];
+      if (line.length && (u.br || cur + sp + u.w > w)) { lines.push([u]); cur = u.w; }
+      else { cur += (line.length ? sp : 0) + u.w; line.push(u); }
+    }
+    if (!o.dry) lines.forEach((line, i) => {
+      const y = OdinPdf.mid(top + i * lh, lh, pt); let cx = x;
+      line.forEach((u, k) => { if (k) cx += sp; u.parts.forEach(p => { this.text(cx, y, p.t, { f: p.f, pt, color: p.c }); cx += pdfWidth(p.t, p.f, pt); }); });
+    });
+    return units.length ? lines.length : 0;
+  }
+  // Draws an SVG (Odin's figures: rect, line, circle, ellipse, polygon, polyline, path with M L H V A Z, text) into a box in mm.
+  svg(markup, x, y, wmm, hmm) {
+    let doc; try { doc = new DOMParser().parseFromString(markup, "image/svg+xml"); } catch (e) { return this; }
+    const root = doc.documentElement; if (!root || root.nodeName !== "svg") return this;
+    const vb = (root.getAttribute("viewBox") || "0 0 100 100").split(/[\s,]+/).map(Number), sx = wmm / vb[2], sy = hmm / vb[3], s = Math.min(sx, sy);
+    const P = (px, py) => [x + (px - vb[0]) * s, y + (py - vb[1]) * s];
+    const num = (el, a, d = 0) => { const v = parseFloat(el.getAttribute(a)); return isNaN(v) ? d : v; };
+    const paint = el => ({ fill: el.getAttribute("fill") == null ? "#000" : el.getAttribute("fill"), stroke: el.getAttribute("stroke"), lw: num(el, "stroke-width", 1) * s, cap: el.getAttribute("stroke-linecap") });
+    for (const el of root.querySelectorAll("*")) {
+      const t = el.nodeName;
+      if (t === "rect") { const [px, py] = P(num(el, "x"), num(el, "y")); this.rect(px, py, num(el, "width") * s, num(el, "height") * s, { ...paint(el), r: num(el, "rx") * s }); }
+      else if (t === "circle") { const [cx, cy] = P(num(el, "cx"), num(el, "cy")); this.circle(cx, cy, num(el, "r") * s, paint(el)); }
+      else if (t === "ellipse") { const [cx, cy] = P(num(el, "cx"), num(el, "cy")); this.ellipse(cx, cy, num(el, "rx") * s, num(el, "ry") * s, paint(el)); }
+      else if (t === "line") { const [x1, y1] = P(num(el, "x1"), num(el, "y1")), [x2, y2] = P(num(el, "x2"), num(el, "y2")); this.line(x1, y1, x2, y2, { stroke: el.getAttribute("stroke") || "#000", lw: num(el, "stroke-width", 1) * s, cap: el.getAttribute("stroke-linecap") }); }
+      else if (t === "polygon" || t === "polyline") {
+        const pts = (el.getAttribute("points") || "").trim().split(/[\s,]+/).map(Number), segs = [];
+        for (let i = 0; i + 1 < pts.length; i += 2) segs.push([i ? "L" : "M", ...P(pts[i], pts[i + 1])]);
+        if (t === "polygon") segs.push(["Z"]);
+        this.path(segs, paint(el));
+      }
+      else if (t === "path") this.path(pdfSvgPath(el.getAttribute("d") || "", P, s), paint(el));
+      else if (t === "text") {
+        const [tx, ty] = P(num(el, "x"), num(el, "y")), pt = num(el, "font-size", 3) * s * 72 / 25.4, anchor = el.getAttribute("text-anchor");
+        this.text(tx, ty, el.textContent, { f: Number(el.getAttribute("font-weight")) >= 600 ? "B" : "R", pt, color: el.getAttribute("fill") || "#000", align: anchor === "middle" ? "center" : anchor === "end" ? "right" : "left" });
+      }
+    }
+    return this;
+  }
+  // ----- the file
+  bytes() {
+    const objs = [], add = s => { objs.push(s); return objs.length; };
+    const cat = add(null), pages = add(null);
+    const fonts = [["F1", "Helvetica"], ["F2", "Helvetica-Bold"], ["F3", "Helvetica-Oblique"], ["F4", "Courier"]].map(([n, b]) => [n, add(`<< /Type /Font /Subtype /Type1 /BaseFont /${b} /Encoding /WinAnsiEncoding >>`)]);
+    const res = `<< /Font << ${fonts.map(([n, i]) => `/${n} ${i} 0 R`).join(" ")} >> >>`;
+    const kids = this.pages.map(ops => { const body = ops.join("\n"), c = add(`<< /Length ${body.length} >>\nstream\n${body}\nendstream`);
+      return add(`<< /Type /Page /Parent ${pages} 0 R /MediaBox [0 0 612 792] /Resources ${res} /Contents ${c} 0 R >>`); });
+    objs[cat - 1] = `<< /Type /Catalog /Pages ${pages} 0 R >>`;
+    objs[pages - 1] = `<< /Type /Pages /Kids [${kids.map(k => k + " 0 R").join(" ")}] /Count ${kids.length} >>`;
+    const lit = s => "(" + Array.from(String(s), ch => { const c = pdfCode(ch); return c === 40 || c === 41 || c === 92 ? "\\" + String.fromCharCode(c) : String.fromCharCode(c); }).join("") + ")";
+    const info = add(`<< /Title ${lit(this.title)} /Producer (Odin) /Creator (Odin ${typeof ODIN_VERSION === "string" ? ODIN_VERSION : ""}) >>`);
+    let out = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"; const at = [];
+    objs.forEach((o, i) => { at.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+    const xref = out.length;
+    out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + at.map(n => String(n).padStart(10, "0") + " 00000 n \n").join("");
+    out += `trailer\n<< /Size ${objs.length + 1} /Root ${cat} 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+    const b = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) b[i] = out.charCodeAt(i) & 255;
+    return b;
+  }
+}
+// SVG path data (M L H V A Z, absolute and relative) to the writer's segments in mm. Arcs become cubic curves.
+function pdfSvgPath(d, P, s) {
+  const toks = String(d).match(/[MLHVAZCmlhvazc]|-?\d*\.?\d+(?:e-?\d+)?/g) || [], segs = [];
+  let i = 0, cx = 0, cy = 0, sx = 0, sy = 0, cmd = "";
+  const n = () => parseFloat(toks[i++]);
+  while (i < toks.length) {
+    if (/[A-Za-z]/.test(toks[i])) cmd = toks[i++];
+    const rel = cmd === cmd.toLowerCase(), C = cmd.toUpperCase();
+    if (C === "Z") { segs.push(["Z"]); cx = sx; cy = sy; continue; }
+    if (C === "M" || C === "L") { let x = n(), y = n(); if (rel) { x += cx; y += cy; } segs.push([C, ...P(x, y)]); cx = x; cy = y; if (C === "M") { sx = x; sy = y; cmd = rel ? "l" : "L"; } }
+    else if (C === "H") { let x = n(); if (rel) x += cx; segs.push(["L", ...P(x, cy)]); cx = x; }
+    else if (C === "V") { let y = n(); if (rel) y += cy; segs.push(["L", ...P(cx, y)]); cy = y; }
+    else if (C === "C") { const v = [n(), n(), n(), n(), n(), n()]; if (rel) for (let k = 0; k < 6; k++) v[k] += k % 2 ? cy : cx; segs.push(["C", ...P(v[0], v[1]), ...P(v[2], v[3]), ...P(v[4], v[5])]); cx = v[4]; cy = v[5]; }
+    else if (C === "A") {
+      const rx0 = n(), ry0 = n(), rot = n(), large = n(), sweep = n(); let x = n(), y = n(); if (rel) { x += cx; y += cy; }
+      for (const c of pdfArc(cx, cy, rx0, ry0, rot, large, sweep, x, y)) segs.push(["C", ...P(c[0], c[1]), ...P(c[2], c[3]), ...P(c[4], c[5])]);
+      cx = x; cy = y;
+    } else i++;
+  }
+  return segs;
+}
+// An SVG arc as cubic Bézier curves (endpoint to centre form, then quarter-turn pieces).
+function pdfArc(x1, y1, rx, ry, rotDeg, large, sweep, x2, y2) {
+  if (!rx || !ry || (x1 === x2 && y1 === y2)) return [[x1, y1, x2, y2, x2, y2]];
+  const phi = (rotDeg * Math.PI) / 180, cs = Math.cos(phi), sn = Math.sin(phi);
+  const dx = (x1 - x2) / 2, dy = (y1 - y2) / 2, xp = cs * dx + sn * dy, yp = -sn * dx + cs * dy;
+  rx = Math.abs(rx); ry = Math.abs(ry); const lam = (xp * xp) / (rx * rx) + (yp * yp) / (ry * ry); if (lam > 1) { rx *= Math.sqrt(lam); ry *= Math.sqrt(lam); }
+  const sign = large === sweep ? -1 : 1, num = rx * rx * ry * ry - rx * rx * yp * yp - ry * ry * xp * xp, den = rx * rx * yp * yp + ry * ry * xp * xp;
+  const co = sign * Math.sqrt(Math.max(0, num / den)), cxp = (co * rx * yp) / ry, cyp = (-co * ry * xp) / rx;
+  const cx = cs * cxp - sn * cyp + (x1 + x2) / 2, cy = sn * cxp + cs * cyp + (y1 + y2) / 2;
+  const ang = (ux, uy, vx, vy) => { const a = Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy); return a; };
+  let t1 = ang(1, 0, (xp - cxp) / rx, (yp - cyp) / ry), dt = ang((xp - cxp) / rx, (yp - cyp) / ry, (-xp - cxp) / rx, (-yp - cyp) / ry);
+  if (!sweep && dt > 0) dt -= 2 * Math.PI; else if (sweep && dt < 0) dt += 2 * Math.PI;
+  const segs = Math.ceil(Math.abs(dt) / (Math.PI / 2)), d = dt / segs, out = [], k = (4 / 3) * Math.tan(d / 4);
+  const pt = t => [cx + rx * Math.cos(t) * cs - ry * Math.sin(t) * sn, cy + rx * Math.cos(t) * sn + ry * Math.sin(t) * cs];
+  const der = t => [-rx * Math.sin(t) * cs - ry * Math.cos(t) * sn, -rx * Math.sin(t) * sn + ry * Math.cos(t) * cs];
+  for (let j = 0; j < segs; j++) {
+    const a = t1 + j * d, b = a + d, p0 = pt(a), p3 = pt(b), d0 = der(a), d3 = der(b);
+    out.push([p0[0] + k * d0[0], p0[1] + k * d0[1], p3[0] - k * d3[0], p3[1] - k * d3[1], p3[0], p3[1]]);
+  }
+  return out;
+}
 
 // ===== Odin 0.4: reading scanned answer sheets, inside the browser =====
 // Nothing leaves the computer: images are decoded and read in this page, and only the answers are saved.
@@ -7536,6 +7761,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
+      <div style="display:grid;gap:6px"><h3>New in 0.9.4: practice sheets as PDF files</h3><p class="small" style="max-width:80ch">On the Practice tab, <b>View, print or save as PDF</b> shows the pre-checks, practice packets, post-checks or answer keys, with <b>Print</b> and <b>Save as PDF</b>. Odin draws the PDF itself, from the same measurements as the printed sheet, so a printed PDF scans like any printed sheet: print it at 100% (actual size). A sheet's panel saves that one sheet, or shows all of one student's sheets. <b>Include the Learn it pages</b> can be unticked. File names have the subject and week or the sheet number, never a name. The online preview can't open the print dialog, so there <b>Save as PDF</b> asks first and saves a file to print from. The Odin app on Android prints but doesn't save PDFs, since nothing about students is kept on phones.</p></div>
       <div style="display:grid;gap:6px"><h3>0.9.3: the student side back to 0.8.2's way</h3><p class="small" style="max-width:80ch">The microphone worked on Android in 0.8.2, when Odin Student was a setting in the Odin app. From 0.9.0 the new Odin Student app got "the speech recognizer is busy" from Android. The Odin app's listening code is back to 0.8.2's, <b>Who uses this device? → Students</b> is back in the Odin app, and the Odin Student app's <b>Try the demo</b> opens the online demo, as students' devices did in 0.8.2. On a students' device, the app asks for the microphone as Odin Student opens. The practice changes of 0.9 (quicker help, the word said back right, praise) stay.</p></div>
       <div style="display:grid;gap:6px"><h3>Fixed in 0.9.2: "the speech recognizer is busy"</h3><p class="small" style="max-width:80ch">On a phone, Android's speech service can say it's busy for a few seconds: the first time a new app such as Odin Student uses it, or just after Odin checked the device. Odin gave up after about a second and asked for the teacher. Now the Odin app waits about 8 seconds, starting over with a new recognizer, and Odin tries twice more before asking for the teacher. The device check lets go of its recognizer before a reading can start. The teacher screen says which answer Android gave and has <b>Try again</b>, which starts again at the microphone check.</p></div>
       <div style="display:grid;gap:6px"><h3>Fixed in 0.9.1: a new Odin Student app hears the student</h3><p class="small" style="max-width:80ch">A newly installed app doesn't have the microphone yet. Odin used to ask for it only once a reading began, so its speech check could fail first (and the page said the device couldn't listen), or Android's question came up in the middle of the microphone check. Now the app asks for the microphone before the speech check, and the page waits for the answer. If it isn't allowed, the page says so, with <b>Allow the microphone</b> and where to find it in Android's Settings. The microphone check's 8 seconds start only once the device is listening ("Listening… say it now.").</p></div>
@@ -8209,6 +8435,28 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     $("#main").innerHTML = (state.saveError ? `<div class="notice" role="alert" style="margin-bottom:14px"><b>A change was not saved: ${esc(state.saveError)}.</b><span class="small muted">Reload the page to see what the server has.</span></div>` : "") + html;
   }
 
+  // 0.9.4: save a file Odin made (a PDF of practice sheets). The GitHub Pages copy and the school server: a normal download.
+  // The online preview has no plain downloads, so it asks its viewer first (the "downloads" capability). Resolves "saved",
+  // "declined", "busy" or "" (this copy can't save files).
+  const SAVER = { state: CAN_DOWNLOAD ? "yes" : "wait", ns: null };
+  if (!CAN_DOWNLOAD) {
+    const use = typeof window !== "undefined" && window.claude && typeof window.claude.use === "function" ? window.claude.use("downloads") : Promise.resolve(null);
+    Promise.resolve(use).catch(() => null).then(ns => { SAVER.ns = ns || null; SAVER.state = ns ? "yes" : "no"; if (!ns && (state.printSheets || state.sheetOpen)) render(); });
+  }
+  function saveFile(name, data, type) {
+    if (DROID) return Promise.resolve("");
+    if (CAN_DOWNLOAD) {
+      try {
+        const url = URL.createObjectURL(new Blob([data], { type })), a = document.createElement("a");
+        a.href = url; a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+        return Promise.resolve("saved");
+      } catch (e) { return Promise.resolve(""); }
+    }
+    if (!SAVER.ns) return Promise.resolve("");
+    return SAVER.ns.save({ filename: name, data: new Blob([data], { type }) }).then(() => "saved",
+      e => (e && e.code === "declined" ? "declined" : e && e.code === "rate_limited" ? "busy" : ""));
+  }
   function download(name, text) {
     try {
       const url = URL.createObjectURL(new Blob([text], { type: "text/csv" }));
@@ -8317,7 +8565,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   // Odin 0.4: individual practice sheets, pre- and post-checks, student mode and scanning (Practice tab)
   // =====================================================================================================
   CLASSES.forEach(c => { c.sheets = c.sheets || []; });
-  Object.assign(state, { pWeek: null, printSheets: null, sheetOpen: null, handEntry: null, scan: null, pNotice: null, startPin: null });
+  Object.assign(state, { pWeek: null, printSheets: null, sheetOpen: null, handEntry: null, scan: null, pNotice: null, startPin: null, pdfNote: null });
   const SHEET_SLOTS = [["pre", 0, "Pre-check"], ["practice", 1, "Practice 1"], ["practice", 2, "Practice 2"], ["post", 0, "Post-check"]];
   const SRC_WORD = { scan: "scanned", digital: "on a device", hand: "entered by hand" };
   const pWeek = () => state.pWeek || mondayOf(ISO_TODAY);
@@ -8408,11 +8656,14 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
             <div class="stat"><span class="n">${post.length} / ${made.length}</span><span class="l">post-checks done${avg(post, "post") != null ? `, average ${avg(post, "post")}%` : ""}</span></div>
             <div class="stat"><span class="n">${both.length ? (avg(both, "post") - avg(both, "pre") >= 0 ? "+" : "−") + Math.abs(avg(both, "post") - avg(both, "pre")) + " pts" : "–"}</span><span class="l">pre to post, for ${both.length} student${both.length === 1 ? "" : "s"} with both</span></div>
           </div>
+          <div class="p4bar" role="group" aria-label="${printVerbs()}">
+            <span class="small" style="align-self:center"><b>${printVerbs()}:</b></span>
+            <button class="btn" data-p4="print" data-which="pre">Pre-checks</button>
+            <button class="btn" data-p4="print" data-which="packet">Practice packets</button>
+            <button class="btn" data-p4="print" data-which="post">Post-checks</button>
+            <button class="btn ghost" data-p4="print" data-which="keys">Answer keys</button>
+          </div>
           <div class="p4bar">
-            <button class="btn" data-p4="print" data-which="pre">Print pre-checks</button>
-            <button class="btn" data-p4="print" data-which="packet">Print practice packets</button>
-            <button class="btn" data-p4="print" data-which="post">Print post-checks</button>
-            <button class="btn ghost" data-p4="print" data-which="keys">Print answer keys</button>
             <button class="btn ${state.scan ? "" : "ghost"}" data-p4="scanopen">Scan sheets</button>
             ${missing > 0 ? `<button class="btn ghost" data-p4="make">Make missing sheets (${missing})</button>` : ""}
           </div>
@@ -8466,7 +8717,9 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
           <label class="small">Teacher exit code (4 digits, needed to leave student mode) <input id="pin-in" class="pin" inputmode="numeric" maxlength="4" value="${esc(state.startPin.pin)}" aria-label="Teacher exit code"></label>
           <div style="display:flex;gap:8px"><button class="btn" data-p4="smgo" data-id="${rec.id}">Hand the device to the student</button><button class="btn ghost" data-p4="smcancel">Cancel</button></div></div>`
         : `<div class="p4bar"><button class="btn" data-p4="smstart" data-id="${rec.id}">${done ? "Take it again on this device" : "Start on this device"}</button>
-          <button class="btn ghost" data-p4="print" data-which="one" data-id="${rec.id}">Print this sheet${rec.kind === "practice" && rec.part === 1 ? " and its lesson" : ""}</button>
+          <button class="btn ghost" data-p4="print" data-which="one" data-id="${rec.id}">${CAN_PRINT ? "View or print this sheet" : "View this sheet"}</button>
+          ${canSavePdf() ? `<button class="btn ghost" data-p4="pdf" data-which="one" data-id="${rec.id}">Save this sheet as PDF</button>` : ""}
+          <button class="btn ghost" data-p4="print" data-which="student" data-code="${rec.code}">All of ${esc(whoIn(DATA, rec.code, true))}'s sheets</button>
           <button class="btn ghost" data-p4="hand" data-id="${rec.id}">${hand ? "Hide" : "Enter answers by hand"}</button>
           ${others.some(x => x.status === "done") ? "" : `<button class="btn ghost" data-p4="remake" data-code="${rec.code}">Make new sheets for this student</button>`}</div>`}
       ${hand ? handEntry(rec, sp) : ""}
@@ -8537,29 +8790,199 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         return `<tr><td>${i ? "" : esc(whoIn(DATA, code, true))}</td><td>${esc(sheetLabel(r))} · ${r.id}</td><td class="mono">${sp.key.split("").map((k, j) => `${j + 1}${k}`).join(" ")}${says.length ? `<br><span class="small">Say: ${says.map(esc).join(", ")}</span>` : ""}</td></tr>`; }).join("")).join("")}
       </tbody></table></div></div>`;
   }
+  // Which sheets a print or a PDF covers. ps.which: pre, packet, post or keys (this week's, for every student), one (sheet ps.id)
+  // or student (all of student ps.code's sheets this week). ps.learn === false leaves out the Learn it pages.
+  function printSet(ps) {
+    if (ps.which === "one") { const f = sheetFind(ps.id); return f ? [f] : []; }
+    const slot = r => SHEET_SLOTS.findIndex(([k, p]) => k === r.kind && p === (r.part || 0));
+    return DATA.sheets.filter(r => r.subject === state.subject && r.week === pWeek() && (ps.which !== "student" || r.code === ps.code)
+      && ({ pre: "pre", post: "post", packet: "practice" }[ps.which] || r.kind) === r.kind)
+      .sort((a, b) => a.code.localeCompare(b.code) || slot(a) - slot(b)).map(rec => ({ rec, cls: DATA }));
+  }
+  const withLearn = (ps, rec) => ps.which !== "keys" && ps.learn !== false && rec.kind === "practice" && rec.part === 1;
+  function printWhat(ps, set) {
+    const n = set.length, s = (one, many) => `${n} ${n === 1 ? one : many}`;
+    if (ps.which === "one") return set.length ? sheetLabel(set[0].rec) + " for " + whoIn(set[0].cls, set[0].rec.code, true) : "one sheet";
+    if (ps.which === "student") return `${whoIn(DATA, ps.code, true)}'s sheets (${n})`;
+    return { pre: s("pre-check", "pre-checks"), post: s("post-check", "post-checks"), packet: s("practice sheet", "practice sheets") + " (practice 1 and practice 2)", keys: "answer keys for " + s("sheet", "sheets") }[ps.which];
+  }
+  // The file's name: no student names in it, only the sheet number or the student code.
+  function printFileName(ps) {
+    const tail = `${state.subject}-${pWeek()}.pdf`;
+    if (ps.which === "one") return `odin-sheet-${ps.id}.pdf`;
+    if (ps.which === "student") return `odin-sheets-${ps.code}-${tail}`;
+    return `odin-${{ pre: "pre-checks", post: "post-checks", packet: "practice-packets", keys: "answer-keys" }[ps.which]}-${tail}`;
+  }
+  // 0.9.4: Save as PDF, on the GitHub Pages copy, the school server and (with its own "save a file" step) the online preview.
+  // Not in the Android app: nothing about students is kept on phones.
+  const canSavePdf = () => !DROID && (CAN_DOWNLOAD || SAVER.state !== "no");
+  const printVerbs = () => (CAN_PRINT ? (canSavePdf() ? "View, print or save as PDF" : "View or print") : canSavePdf() ? "View or save as PDF" : "View");
   function viewPrintSheets() {
-    const ps = state.printSheets, subj = state.subject, wk = pWeek();
-    let pages = "", count = 0;
-    if (ps.which === "one") { const f = sheetFind(ps.id); if (f) { if (f.rec.kind === "practice" && f.rec.part === 1) pages += learnPageHTML(f.rec, f.cls); pages += sheetPageHTML(f.rec, f.cls); count = 1; } }
-    else {
-      const list = DATA.sheets.filter(x => x.subject === subj && x.week === wk).sort((a, b) => a.code.localeCompare(b.code) || a.part - b.part);
-      if (ps.which === "keys") { pages = keysPageHTML(list); count = list.length; }
-      else for (const r of list) {
-        if (ps.which === "pre" && r.kind !== "pre") continue;
-        if (ps.which === "post" && r.kind !== "post") continue;
-        if (ps.which === "packet" && r.kind !== "practice") continue;
-        if (r.kind === "practice" && r.part === 1) pages += learnPageHTML(r, DATA);
-        pages += sheetPageHTML(r, DATA); count++;
-      }
-    }
-    const what = { pre: "pre-checks", post: "post-checks", packet: "practice packets (Learn it, practice 1 and practice 2)", keys: "answer keys", one: "one sheet" }[ps.which];
+    const ps = state.printSheets, set = printSet(ps), subj = state.subject, wk = pWeek();
+    let pages = "";
+    if (ps.which === "keys") pages = set.length ? keysPageHTML(set.map(x => x.rec)) : "";
+    else set.forEach(({ rec, cls }) => { if (withLearn(ps, rec)) pages += learnPageHTML(rec, cls); pages += sheetPageHTML(rec, cls); });
+    const learnable = ps.which !== "keys" && set.some(x => x.rec.kind === "practice" && x.rec.part === 1);
     return `<section class="view om-view"><style>@page { size: letter; margin: 0; }</style>
       <div class="noprint" style="display:grid;gap:10px">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${printBtn("Print")}<button class="btn ghost" data-p4="closeprint">Back</button><span class="small muted">${count} ${what} · ${SUBJ[subj]} · week of ${weekLabel(wk)}</span></div>
-        <p class="small muted">Print on US Letter at 100% (actual size), one side only, and don't staple. A little shrinking is fine: the corner squares let Odin line each page up when you scan it.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          ${CAN_PRINT ? `<button class="btn" data-v3="print">Print</button>` : ""}
+          ${canSavePdf() && set.length ? `<button class="btn ${CAN_PRINT ? "ghost" : ""}" data-p4="pdf">Save as PDF</button>` : ""}
+          <button class="btn ghost" data-p4="closeprint">Back</button>
+          <span class="small muted">${esc(printWhat(ps, set))} · ${SUBJ[subj]} · week of ${weekLabel(wk)}</span>
+          ${learnable ? `<label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-p4="learn" ${ps.learn !== false ? "checked" : ""}> Include the Learn it page${ps.which === "one" ? "" : "s"}</label>` : ""}
+        </div>
+        ${state.pdfNote ? `<div class="notice" role="status"><b>${esc(state.pdfNote)}</b></div>` : ""}
+        <p class="small muted">${CAN_PRINT ? "Print on US Letter at 100% (actual size), one side only, and don't staple." : "The print dialog can't open in this online preview: save the PDF, open it, and print it from there on US Letter at 100% (actual size), one side only."}
+          ${canSavePdf() ? (CAN_PRINT ? " Save as PDF makes a file with exactly these pages, to print later or on another computer: print it at 100% too." : "") : ""}
+          A little shrinking is fine: the corner squares let Odin line each page up when you scan it.${state.names && canSavePdf() ? " The PDF has students' names on it: delete it once the sheets are printed, or turn Names off first to print student codes instead." : ""}</p>
       </div>
       <div class="om-wrap">${pages || `<p class="muted">Nothing to print.</p>`}</div>
     </section>`;
+  }
+
+  // ---------- 0.9.4: the same pages as a PDF, drawn from the same millimetre layout, so a printed PDF scans like a printed page ----------
+  function sheetsPdf(ps) {
+    const set = printSet(ps), doc = new OdinPdf(`Odin · ${printWhat(ps, set)} · ${SUBJ[state.subject]} · week of ${weekLabel(pWeek())}`);
+    if (ps.which === "keys") { if (set.length) pdfKeysPages(doc, set.map(x => x.rec)); }
+    else set.forEach(({ rec, cls }) => { if (withLearn(ps, rec)) pdfLearnPage(doc, rec, cls); pdfSheetPage(doc, rec, cls); });
+    return doc.pages.length ? doc.bytes() : null;
+  }
+  const PT_MM = 0.3528;
+  function pdfSheetPage(doc, rec, cls) {
+    const sp = specOf(rec), L = sp.layout, bits = shCodeBits(rec.id), s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
+    doc.page();
+    SH_MARKS.forEach(([x, y]) => doc.rect(x - SH_MARK / 2, y - SH_MARK / 2, SH_MARK, SH_MARK, { fill: "#000" }));
+    shCodeCells().forEach((c, i) => { if (bits[i]) doc.rect(c.x, c.y, c.w, c.h, { fill: "#000" }); });
+    doc.text(40, 18.9, `Odin sheet ${rec.id} · keep this strip clean`, { f: "M", pt: 6, color: "#555" });
+    const wk = `Week of ${weekLabel(rec.week)}`;
+    doc.text(14, 25, pdfFit(sp.title, "B", 14, 134), { f: "B", pt: 14 });
+    doc.text(201.9, 25, wk, { pt: 9.5, color: "#333", align: "right" });
+    // Name: ____  Date: ____            Score: _____ / 8
+    const nb = 31.4, gap = 1.6, nm = pdfFit(state.names ? s.name : s.code, "B", 10.5, 62);
+    let x = 14;
+    doc.text(x, nb, "Name:", { pt: 10.5 }); x += pdfWidth("Name: ", "R", 10.5);
+    doc.text(x, nb, nm, { f: "B", pt: 10.5 }); x += pdfWidth(nm, "B", 10.5) + gap;
+    doc.line(x, nb + 0.3, x + 38, nb + 0.3, { lw: 0.3 }); x += 38 + gap;
+    doc.text(x, nb, "Date:", { pt: 10.5 }); x += pdfWidth("Date:", "R", 10.5) + gap;
+    doc.line(x, nb + 0.3, x + 26, nb + 0.3, { lw: 0.3 });
+    doc.text(201.9, nb, `Score: _____ / ${sp.total}`, { pt: 10.5, color: "#333", align: "right" });
+    const dlh = 9.5 * PT_MM * 1.25;
+    pdfWrap(sp.directions, "R", 9.5, 187.9).forEach((l, i) => doc.text(14, OdinPdf.mid(33.6 + i * dlh, dlh, 9.5), l, { pt: 9.5, color: "#222" }));
+    if (L.passage) {
+      const P = L.passage, inner = P.w - 7.6;
+      doc.rect(P.x + 0.15, P.y + 0.15, P.w - 0.3, P.h - 0.3, { stroke: "#888", lw: 0.3, r: 2 });
+      doc.text(P.x + 3.8, P.y + 5.4, pdfFit(P.title, "B", 10.5, inner), { f: "B", pt: 10.5 });
+      const room = Math.max(1, Math.floor((P.h - 7.2 - 1.9) / P.lh + 0.01));
+      pdfWrap(sp.passage.text, "R", P.pt, inner).slice(0, room).forEach((l, i) => doc.text(P.x + 3.8, OdinPdf.mid(P.y + 7.2 + i * P.lh, P.lh, P.pt), l, { pt: P.pt }));
+    }
+    L.items.forEach((it, i) => {
+      const item = sp.items[i], r = Math.min(2.6, it.lh * 0.62), npt = Math.max(7, it.pt - 3);
+      doc.circle(it.num.x, it.num.y, r - 0.175, { stroke: "#000", lw: 0.35 });
+      doc.text(it.num.x, OdinPdf.mid(it.num.y - r, 2 * r, npt), String(it.n), { f: "B", pt: npt, align: "center" });
+      // the question, wrapped to its box; a question too long for its box ends with "…" (the layout leaves room, so this is rare)
+      const room = Math.max(1, Math.round(it.stem.h / it.lh));
+      let lines = pdfWrap(item.stem, "R", it.pt, it.stem.w);
+      if (lines.length > room) lines = lines.slice(0, room - 1).concat(pdfFit(lines.slice(room - 1).join(" ") + " …", "R", it.pt, it.stem.w));
+      const base = k => OdinPdf.mid(it.stem.y + k * it.lh, it.lh, it.pt);
+      lines.forEach((l, k) => doc.text(it.stem.x, base(k), l, { pt: it.pt }));
+      if (item.review) {   // a small "review" tag after the question
+        const tw = pdfWidth("review", "R", 7.5) + 2, last = lines.length - 1, after = it.stem.x + pdfWidth(lines[last], "R", it.pt) + 1.4;
+        const [tx, k] = after + tw <= it.stem.x + it.stem.w || lines.length >= room ? [after, last] : [it.stem.x, last + 1];
+        doc.rect(tx, base(k) - 2.75, tw, 3.4, { stroke: "#888", lw: 0.25, r: 1 });
+        doc.text(tx + 1, base(k) - 0.15, "review", { pt: 7.5, color: "#555" });
+      }
+      if (it.hint) {
+        const H = it.hint, hlh = H.pt * PT_MM * 1.25, hroom = Math.max(1, Math.round(H.h / hlh));
+        let hl = pdfWrap("Hint: " + item.hint, "I", H.pt, H.w);
+        if (hl.length > hroom) hl = hl.slice(0, hroom - 1).concat(pdfFit(hl.slice(hroom - 1).join(" "), "I", H.pt, H.w));
+        hl.forEach((l, k) => doc.text(H.x, OdinPdf.mid(H.y + k * hlh, hlh, H.pt), l, { f: "I", pt: H.pt, color: "#333" }));
+      }
+      if (it.fig && it.fig.h > 2) doc.svg(shFig(item.fig, it.fig.w, it.fig.h), it.fig.x, it.fig.y, it.fig.w, it.fig.h);
+      it.choices.forEach(c => {
+        const bpt = (c.r * 1.05) / PT_MM, tx = c.bx + c.r + 1.6, tw = c.w - (c.bx - c.x) - c.r - 1.8;
+        doc.circle(c.bx, c.by, c.r - 0.175, { stroke: "#222", lw: 0.35 });
+        doc.text(c.bx, OdinPdf.mid(c.by - c.r, 2 * c.r, bpt), c.letter, { f: "B", pt: bpt, color: "#b4b4b4", align: "center" });
+        if (c.lines > 1) {
+          const clh = it.pt * PT_MM * 1.15; let cl = pdfWrap(c.text, "R", it.pt, tw);
+          if (cl.length > 2) cl = [cl[0], pdfFit(cl.slice(1).join(" "), "R", it.pt, tw)];
+          const top = c.y + (c.h - cl.length * clh) / 2;
+          cl.forEach((l, k) => doc.text(tx, OdinPdf.mid(top + k * clh, clh, it.pt), l, { pt: it.pt }));
+        } else doc.text(tx, OdinPdf.mid(c.y, c.h, it.pt), pdfFit(c.text, "R", it.pt, tw), { pt: it.pt });
+      });
+    });
+    const foot = pdfWrap(`Fill in bubbles completely with a pencil. Erase cleanly to change an answer. Do not write on the black squares. · ${cls.teacher} · Room ${cls.room}`, "R", 7, 164);
+    foot.slice(0, 2).forEach((l, k) => doc.text(108, OdinPdf.mid(261.6 + k * 2.9, 2.9, 7), l, { pt: 7, color: "#555", align: "center" }));
+  }
+  // The Learn it page before practice 1: the page header, the title, the steps, a worked example and a reminder.
+  function pdfLearnPage(doc, rec, cls) {
+    const sp = specOf(rec), Ln = sp.learn, s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
+    if (!Ln) return;
+    doc.page();
+    const X = 18, W = 179.9, lh = 12 * PT_MM * 1.4;
+    let y = pdfHead(doc, `Learn it · ${Ln.skill}`, `${state.names ? s.name : s.code} · week of ${weekLabel(rec.week)}`);
+    const hlh = 22 * PT_MM * 1.2; y += hlh * doc.para(X, y, W, [[Ln.title, "B"]], { pt: 22, lh: hlh }) + 4;
+    const slh = 13 * PT_MM * 1.4;
+    Ln.steps.forEach((t, k) => { doc.text(X + 5.5, OdinPdf.mid(y, slh, 13), `${k + 1}.`, { pt: 13, align: "right" }); y += slh * doc.para(X + 7, y, W - 7, [[t]], { pt: 13, lh: slh }) + 2.5; });
+    y += 1.5;
+    const ex = Ln.example;
+    if (ex) {   // measured first (dry), then drawn inside its rounded border
+      const IX = X + 5.4, IW = W - 10.8, fig = ex.fig ? shFig(ex.fig, 70, 28) : "";
+      const vb = (fig.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/) || []).slice(1).map(Number), fh = vb.length ? Math.min(28, (vb[1] * 70) / vb[0]) : 0;
+      const body = dry => {
+        let yy = y + 4.4; const P = (runs, pt = 12, l = lh) => { yy += l * doc.para(IX, yy, IW, runs, { pt, lh: l, dry }) + 2; };
+        if (!dry) doc.text(IX, OdinPdf.mid(yy, 4.4, 9), "WORKED EXAMPLE", { f: "B", pt: 9, color: "#444", spacing: 0.25 });
+        yy += 4.4 + 2;
+        if (ex.text) P([[ex.text, "I"]]);
+        P([[ex.stem, "B"]].concat(ex.say ? [[` (your teacher says “${ex.say}”)`]] : []));
+        if (fig) { if (!dry) doc.svg(fig, IX, yy, 70, 28); yy += fh + 2; }
+        P([["Answer: "], [ex.answer, "B"]]);
+        if (ex.why) P([[ex.why, "R", "#222"]]);
+        return yy - 2 + 4.4 - y;
+      };
+      const h = body(true);
+      doc.rect(X + 0.2, y + 0.2, W - 0.4, h - 0.4, { stroke: "#444", lw: 0.4, r: 3 });
+      body(false); y += h + 4;
+    }
+    if (Ln.tip) y += lh * doc.para(X, y, W, [["Remember:", "B"], [" " + Ln.tip]], { pt: 12, lh }) + 4;
+    if (Ln.also && Ln.also.length) y += lh * doc.para(X, y, W, [[`This week you'll also practice: ${Ln.also.join(", ")}.`]], { pt: 12, lh }) + 4;
+    doc.para(X, y, W, [["Next: Practice 1 has a hint for every question. Practice 2 is on your own."]], { pt: 12, lh });
+  }
+  // A page header like the printed one: two labels over a thin rule. Returns where the page's content starts.
+  function pdfHead(doc, left, right) {
+    const X = 18, W = 179.9, rw = Math.min(pdfWidth(right, "R", 9.5), W / 2);
+    doc.text(X, 19.4, pdfFit(left, "R", 9.5, W - rw - 8), { pt: 9.5, color: "#333" });
+    doc.text(X + W, 19.4, pdfFit(right, "R", 9.5, rw), { pt: 9.5, color: "#333", align: "right" });
+    doc.line(X, 22.4, X + W, 22.4, { stroke: "#999", lw: 0.3 });
+    return 26.4;
+  }
+  // The answer keys: one row per sheet, as many pages as it takes, with the table's header on each page.
+  function pdfKeysPages(doc, recs) {
+    const X = 18, W = 179.9, pt = 9.5, lh = pt * PT_MM * 1.3, cols = [46, 56, W - 102], pad = 2;
+    const left = `Answer keys · ${SUBJ[state.subject]} · week of ${weekLabel(pWeek())}`, right = `${DATA.teacher} · Room ${DATA.room}`;
+    let y = 0;
+    const row = (cells, bold) => {   // cells: [runs, runs, runs]; returns false (and draws nothing) if the row doesn't fit
+      const n = cells.map((runs, i) => Math.max(1, doc.para(0, 0, cols[i] - 2 * pad, runs, { pt, lh, dry: true }))), h = Math.max(...n) * lh + 2.8;
+      if (y + h > 262) return false;
+      let x = X;
+      cells.forEach((runs, i) => { doc.rect(x, y, cols[i], h, { stroke: "#999", lw: 0.25 }); doc.para(x + pad, y + 1.4, cols[i] - 2 * pad, bold ? runs.map(([t, , c]) => [t, "B", c]) : runs, { pt, lh }); x += cols[i]; });
+      y += h; return true;
+    };
+    const page = first => {
+      doc.page(); y = pdfHead(doc, left, right);
+      if (first) y += lh * doc.para(X, y, W, [[`Scanning scores sheets automatically. Use these keys to check by hand, or to read aloud the words for "Your teacher will say a word" questions.`]], { pt: 9.5, lh }) + 3;
+      row([[["Student"]], [["Sheet"]], [["Key"]]], true);
+    };
+    page(true);
+    let prev = null;
+    recs.forEach(r => {
+      const sp = specOf(r), says = sp.items.map((it, k) => (it.say ? `${k + 1}: “${it.say}”` : "")).filter(Boolean);
+      const key = [[sp.key.split("").map((k, j) => `${j + 1}${k}`).join(" "), "M"]].concat(says.length ? [["\nSay: " + says.join(", "), "R", "#333"]] : []);
+      const cells = name => [[[name]], [[`${sheetLabel(r)} · ${r.id}`]], key];
+      const name = whoIn(DATA, r.code, true);
+      if (!row(cells(r.code === prev ? "" : name))) { page(false); row(cells(name)); }
+      prev = r.code;
+    });
   }
 
   // ---------- scanning ----------
@@ -8753,8 +9176,20 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     if (a === "week") { const d = Number(t.dataset.d); state.pWeek = d === 0 ? mondayOf(ISO_TODAY) : addDaysISO(pWeek(), d); state.pNotice = null; state.sheetOpen = null; render(); }
     else if (a === "make") { t.disabled = true; makeSheets(pWeek()).then(r => { state.pNotice = r.made ? `Made sheets for ${r.made} student${r.made === 1 ? "" : "s"}: a pre-check, practice 1 with a Learn it page, practice 2 and a post-check each. ${SAVED_WHERE}` : "Every student with a focus already has sheets for this week."; render(); })
       .catch(err => { state.saveError = String(err.message || err); render(); }); }
-    else if (a === "print") { state.printSheets = { which: t.dataset.which, id: Number(t.dataset.id) || null }; render(); window.scrollTo({ top: 0 }); }
-    else if (a === "closeprint") { state.printSheets = null; render(); }
+    else if (a === "print") { state.printSheets = { which: t.dataset.which, id: Number(t.dataset.id) || null, code: t.dataset.code || null }; state.pdfNote = null; render(); window.scrollTo({ top: 0 }); }
+    else if (a === "closeprint") { state.printSheets = null; state.pdfNote = null; render(); }
+    else if (a === "learn") { if (state.printSheets) { state.printSheets.learn = t.checked; render(); } }
+    else if (a === "pdf") {   // 0.9.4: the print view's pages, or one sheet from its panel, as a PDF file
+      const ps = state.printSheets || { which: t.dataset.which, id: Number(t.dataset.id) || null, code: t.dataset.code || null };
+      const say = msg => { if (state.printSheets) state.pdfNote = msg; else state.pNotice = msg; render(); };
+      let bytes = null;
+      try { bytes = sheetsPdf(ps); } catch (err) { say("Odin couldn't make the PDF: " + (err.message || err)); return; }
+      if (!bytes) { say("There's nothing to save for this week."); return; }
+      const name = printFileName(ps);
+      t.disabled = true;
+      saveFile(name, bytes, "application/pdf").then(r => say(r === "saved" ? `Saved ${name}. Open it and print at 100% (actual size).` : r === "declined" ? "The PDF wasn't saved."
+        : r === "busy" ? "Another file is waiting to be saved. Answer that first, then try again." : "This copy of Odin can't save files."));
+    }
     else if (a === "open") { const id = Number(t.dataset.id); state.sheetOpen = state.sheetOpen === id ? null : id; state.handEntry = null; state.startPin = null; render(); const el = document.getElementById("sheet-panel"); if (el) el.scrollIntoView({ block: "nearest" }); }
     else if (a === "close") { state.sheetOpen = null; state.handEntry = null; state.startPin = null; render(); }
     else if (a === "hand") { const id = Number(t.dataset.id); state.handEntry = state.handEntry === id ? null : id; render(); }
