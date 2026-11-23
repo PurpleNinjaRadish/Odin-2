@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.9.5-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.10.0-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -21,6 +21,8 @@ To install it as an app with its own icon:
 On a phone, the bar at the bottom holds Class, Student, Focus, Practice and Fluency, and **More** has the other views. **Menu** (top right) has the class, Reading or Math, and Codes or Names.
 
 **Scan the sheets with a phone: DI-ana (new).** [DI-ana](https://github.com/PurpleNinjaRadish/DI-ana) (Diagnostic testing and Intervention automatic analysis) is a separate app that reads Odin's paper pre-checks, practice sheets and post-checks with the phone's camera: hold the phone over each sheet until it beeps. Try its demo here: **[DI-ana demo](https://purpleninjaradish.github.io/Odin-2/diana/)**; a walkthrough opens the first time (print its sample sheets, fill in a few bubbles, and scan them; or try pretend pictures). The Android app: [diana-android.apk](https://github.com/PurpleNinjaRadish/DI-ana/raw/android-build/diana-android.apk). DI-ana's demo has its own sheets: sheets printed from this Odin demo have other numbers. Odin's own **Scan sheets** now reads phone photos too.
+
+**New in 0.10: writing with AI, and tests and worksheets.** On the Fluency tab, **New passages** writes a reading passage with AI (or type your own). In DI-ana, **Make tests and worksheets** makes an answer sheet for any multiple-choice worksheet (from its PDF, where DI-ana counts the questions) or a test written with AI, each with an answer key sheet to bubble in and scan. In these demos the page calls the AI you choose itself (an AI on your own computer, a free tier, or a paid one); a key you type is kept only while the page is open. The AI is told only the grade, subject, skill and topic, never anything about a student.
 
 **Practice sheets on paper or as PDF (0.9.4).** On the **Practice** tab, under **View, print or save as PDF**, pick **Pre-checks**, **Practice packets**, **Post-checks** or **Answer keys**, then **Print** or **Save as PDF**. Tap a sheet in a student's row to save just that sheet, or all of that student's sheets. Print at 100% (actual size): a printed PDF scans back into Odin like any printed sheet.
 

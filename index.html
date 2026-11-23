@@ -559,6 +559,8 @@ fieldset.cs legend { padding: 0; margin-bottom: 6px; }
 .om-hint { font-style: italic; color: #333; overflow: hidden; }
 .om-fig { display: flex; align-items: flex-start; }
 .om-fig svg { display: block; overflow: visible; }
+.om-bub.on { background: #222; color: transparent; }
+.om-rule { background: #c4c4c4; }
 .om-bub { border: 0.35mm solid #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #b4b4b4; font-weight: 600; font-family: var(--f-body); line-height: 1; }
 .om-ch { display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
 .om-foot { font-size: 7pt; color: #555; text-align: center; }
@@ -3911,7 +3913,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.9.5-alpha";
+const ODIN_VERSION = "0.10.0-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -5293,6 +5295,13 @@ const SH_MARKS = [[14, 14], [201.9, 14], [201.9, 265.4], [14, 265.4]];   // cent
 const SH_CODE = { x0: 40, cy: 14, w: 3.6, h: 5, pitch: 4, n: 34 };        // 2 start bits + 24-bit sheet number + 8-bit check
 const SH_BODY = { x0: 14, x1: 201.9, y0: 41, y1: 257.5 };
 const SH_KIND = { pre: "Pre-check", practice: "Practice", post: "Post-check" };
+// 0.10: the answer letters. Odin's own sheets use A to D; a worksheet's answer sheet may have up to five choices.
+const SH_LETTERS = "ABCDE";
+// 0.10: sheets made from a set (kind "set"): a test or practice sheet written with AI, or the answer sheet for a printed
+// worksheet. rec.custom holds what the sheet shows: { set, setKind: "test" | "practice" | "worksheet", title, subject,
+// items: [{ stem, choices: [..] }] and an optional passage { title, text }, or answers: [number of choices per question],
+// keySheet: true for the teacher's answer key }. rec.key holds the answer key, with "?" where it isn't known yet.
+const SH_SET_KIND = { test: "Test", practice: "Practice sheet", worksheet: "Worksheet answers" };
 const SH_PASSAGE_SKILLS = ["LIT", "INF", "AG"];
 const SH_EPOCH = "2026-01-05";   // a Monday; week numbers rotate passages
 
@@ -5430,6 +5439,7 @@ function shLesson(rec, items) {
   return { title: les.title, skill: name, steps: les.steps, example, also: [], tip: items[0] && items[0].hint };
 }
 function shBuildSheet(rec) {
+  if (rec.kind === "set") return shBuildSetSheet(rec);
   const ck = rec.id + "|" + [rec.code, rec.kind, rec.part, rec.week, rec.skill, rec.band, rec.concepts, rec.spiral, rec.gen].join("|");
   if (shBuildSheet.cache.has(ck)) return shBuildSheet.cache.get(ck);
   const name = shSkillName(rec.subject, rec.skill), slot = rec.kind === "practice" ? "p" + rec.part : rec.kind;
@@ -5445,17 +5455,55 @@ function shBuildSheet(rec) {
     rec.kind === "practice" && rec.part === 1 ? "Use the hints." : rec.kind === "practice" ? (rec.spiral ? `Try these on your own. The last two review ${reviewName}.` : "Try these on your own.") : "",
     "Fill in one bubble for each question. Use a pencil."].filter(Boolean).join(" ");
   const spec = { id: rec.id, code: rec.code, subject: rec.subject, skill: rec.skill, skillName: name, week: rec.week, kind: rec.kind, part: rec.part || 0, band: rec.band, level: rec.level,
-    title, directions, template, readAloud, passage, items, total: items.length, key: items.map(it => "ABCD"[it.key]).join(""), hints: rec.kind === "practice" && rec.part === 1,
+    title, directions, template, readAloud, passage, items, total: items.length, key: items.map(it => SH_LETTERS[it.key]).join(""), hints: rec.kind === "practice" && rec.part === 1,
     learn: rec.kind === "practice" && rec.part === 1 ? shLesson(rec, items) : null };
   spec.layout = shLayout(spec);
   shBuildSheet.cache.set(ck, spec);
   return spec;
 }
 shBuildSheet.cache = new Map();
+// 0.10: a sheet from a set. Its questions (or, for a worksheet, just the number of choices) come with the record, so the
+// same sheet is drawn again in Odin, in DI-ana and on another computer. Up to 8 questions (6 with a passage) on a question
+// sheet; up to 60 on a worksheet's answer sheet.
+function shBuildSetSheet(rec) {
+  const C = rec.custom || {}, keyStr = String(rec.key || "");
+  const ck = "set|" + rec.id + "|" + rec.code + "|" + keyStr + "|" + shHash(JSON.stringify(C));
+  if (shBuildSheet.cache.has(ck)) return shBuildSheet.cache.get(ck);
+  const kidx = i => { const k = SH_LETTERS.indexOf(keyStr[i] || "?"); return k; };   // -1: not known yet
+  let items, template, passage = null;
+  if (Array.isArray(C.answers)) {
+    items = C.answers.map((n, i) => ({ stem: "", choices: Array.from({ length: Math.max(2, Math.min(5, n | 0)) }, () => ""), key: kidx(i) }));
+    template = "answers";
+  } else {
+    items = (C.items || []).map((it, i) => ({ stem: String(it.stem || ""), choices: (it.choices || []).map(String), key: kidx(i), hint: it.hint || "" }));
+    if (C.passage && C.passage.text) passage = { title: String(C.passage.title || ""), text: String(C.passage.text), poem: false, id: "set" };
+    const young = (rec.band | 0) <= 1;
+    template = passage ? (young ? "passage4" : "passage5") : (young && items.length <= 6 ? "grid6" : "grid8");
+  }
+  const name = String(C.title || "").trim() || "Sheet", what = SH_SET_KIND[C.setKind] || "Sheet";
+  const title = C.keySheet ? `Answer key · ${name}` : C.setKind === "worksheet" ? `Answers · ${name}` : `${what} · ${name}`;
+  const directions = C.keySheet ? (items.every(it => it.key >= 0) ? "The right answers are filled in. Keep this sheet away from students. Odin has the key, so scanning it is up to you."
+      : "Teacher: fill in the right answer to each question, then scan this sheet with the students' sheets. Keep it away from students.")
+    : C.setKind === "worksheet" ? "Answer the worksheet's questions here: fill in one bubble for each question. Use a pencil." : "Fill in one bubble for each question. Use a pencil.";
+  const spec = { id: rec.id, code: rec.code, subject: rec.subject || C.subject || "", skill: rec.skill || "", skillName: name, week: rec.week, kind: "set", part: 0, band: rec.band | 0, level: rec.level,
+    title, directions, template, readAloud: false, passage, items, total: items.length, key: keyStr, keyKnown: items.every(it => it.key >= 0), hints: C.setKind === "practice" && items.some(it => it.hint), learn: null,
+    set: C.set || null, setKind: C.setKind || "", keySheet: !!C.keySheet };
+  spec.layout = shLayout(spec);
+  shBuildSheet.cache.set(ck, spec);
+  return spec;
+}
+// 0.10: a set, as Odin's server sends it, as sheet records: its answer key sheet first, then each student's sheet.
+function shSetRecs(set) {
+  const custom = Object.assign({ set: set.id, setKind: set.kind, title: set.title, subject: set.subject || "" }, set.content || {});
+  const base = { kind: "set", week: set.week, band: set.band | 0, subject: set.subject || "", key: set.key };
+  return [Object.assign({}, base, { id: set.keySheet, code: "", custom: Object.assign({}, custom, { keySheet: true }) })]
+    .concat((set.sheets || []).map(x => Object.assign({}, base, { id: x.id, code: x.code, custom, status: x.status, right: x.right })));
+}
+function shHash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36); }
 function shScore(spec, answers) {
   const a = String(answers || ""), byTag = {};
   let right = 0;
-  spec.items.forEach((it, i) => { const ok = a[i] === "ABCD"[it.key]; if (ok) right++; const t = it.review ? "review" : it.tag || "other"; const e = byTag[t] || (byTag[t] = { right: 0, total: 0 }); e.total++; if (ok) e.right++; });
+  spec.items.forEach((it, i) => { const ok = it.key >= 0 && a[i] === SH_LETTERS[it.key]; if (ok) right++; const t = it.review ? "review" : it.tag || "other"; const e = byTag[t] || (byTag[t] = { right: 0, total: 0 }); e.total++; if (ok) e.right++; });
   return { right, total: spec.items.length, byTag };
 }
 
@@ -5495,14 +5543,25 @@ function shChoiceLayout(choices, x, y, w, pt, r, rowH) {
   if (room(w / n) < longest) cols = n === 4 && room(w / 2) >= longest ? 2 : 1;
   if (cols === 1 && room(w) < longest) lines = 2;
   const rows = Math.ceil(n / cols), cw = w / cols, h = rowH + (lines - 1) * pt * SH_PT * 1.15;
-  const cells = choices.map((c, i) => { const cx = x + (i % cols) * cw, cy = y + Math.floor(i / cols) * h; return { x: cx, y: cy, w: cw, h, bx: cx + r + 1.2, by: cy + h / 2, r, letter: "ABCD"[i], text: c, lines }; });
+  const cells = choices.map((c, i) => { const cx = x + (i % cols) * cw, cy = y + Math.floor(i / cols) * h; return { x: cx, y: cy, w: cw, h, bx: cx + r + 1.2, by: cy + h / 2, r, letter: SH_LETTERS[i], text: c, lines }; });
   return { cells, height: rows * h, cols };
 }
 function shLayout(spec) {
   const L = { template: spec.template, items: [], overflow: [] }, B = SH_BODY, BH = B.y1 - B.y0;
   const T = { grid8: { cols: 2, rows: 4, pt: 11, r: 2.4, rowH: 6.6 }, grid6: { cols: 2, rows: 3, pt: 14, r: 2.9, rowH: 8 },
     passage5: { pt: 10.5, ppt: 10.5, r: 2.3, rowH: 6.2 }, passage4: { pt: 13, ppt: 13, r: 2.9, rowH: 8 } }[spec.template];
-  if (spec.template.startsWith("grid")) {
+  if (spec.template === "answers") {
+    // a worksheet's answer sheet: numbered rows of bubbles in one to three columns
+    const n = spec.items.length, cols = n <= 20 ? 1 : n <= 40 ? 2 : 3, rows = Math.ceil(n / cols), BW = B.x1 - B.x0;
+    const rowH = Math.max(7, Math.min(11, BH / rows)), r = rowH >= 9 ? 2.7 : 2.4, pitch = r * 2 + 3.4, colW = BW / cols;
+    spec.items.forEach((it, i) => {
+      const col = Math.floor(i / rows), row = i % rows, x = B.x0 + col * colW, y = B.y0 + row * rowH, cy = y + rowH / 2;
+      const choices = it.choices.map((c, k) => { const bx = x + 15 + r + k * pitch; return { x: bx - r - 1, y: cy - rowH / 2, w: pitch, h: rowH, bx, by: cy, r, letter: SH_LETTERS[k], text: "", lines: 1 }; });
+      L.items.push({ n: i + 1, x, y, w: colW, h: rowH, pt: 11, lh: rowH, num: { x: x + 9, y: cy }, stem: { x: x, y, w: 0, h: 0, lines: [] }, hint: null, fig: null, choices, ccols: choices.length, row: true });
+    });
+    L.cols = cols; L.rows = rows; L.colW = colW; L.rowH = rowH;
+    if (rows * rowH > BH + 0.5) L.overflow.push("answers");
+  } else if (spec.template.startsWith("grid")) {
     const gap = 5, colW = (B.x1 - B.x0 - gap) / T.cols, rowH = BH / T.rows;
     spec.items.forEach((it, i) => {
       const col = i % T.cols, row = Math.floor(i / T.cols), x = B.x0 + col * (colW + gap), y = B.y0 + row * rowH;
@@ -5611,7 +5670,7 @@ function shFigLabel(f) {
     grid: `a rectangle of unit squares, ${f.w} by ${f.h}`, rect: `a rectangle ${f.l} ${f.u} by ${f.w} ${f.u}`, clock: "a clock", coins: "coins", bars: "a bar graph of votes", shape: `a ${f.k}`, cubes: `a ${f.la} and a ${f.lb} measured with cubes`,
     linefig: "a figure", angle: "an angle", coord: "a coordinate grid with point A" }[f.t] || "a figure";
 }
-if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { SHEET_GEN, SH_PAGE, SH_MARK, SH_MARKS, SH_CODE, SH_BODY, shPlanFor, shRecordsFor, shBuildSheet, shWeekItems, shScore, shCodeBits, shCodeRead, shCodeCells, shLayout, shFig, shConcepts, shWrap, shPassagesFor });
+if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { SH_LETTERS, SH_SET_KIND, shBuildSetSheet, shSetRecs, shHash, SHEET_GEN, SH_PAGE, SH_MARK, SH_MARKS, SH_CODE, SH_BODY, shPlanFor, shRecordsFor, shBuildSheet, shWeekItems, shScore, shCodeBits, shCodeRead, shCodeCells, shLayout, shFig, shConcepts, shWrap, shPassagesFor });
 
 // ---------- PDF: Odin writes its own PDF files (0.9.4) ----------
 // A small, dependency-free PDF writer, so the school server (offline), the demo and the online preview can all save a sheet
@@ -5841,8 +5900,11 @@ function pdfArc(x1, y1, rx, ry, rotDeg, large, sweep, x2, y2) {
 // ===== Odin 0.9.5: one practice sheet as a PDF page (pdf.js), drawn from the same millimetre layout as the printed page =====
 // Shared by Odin (Save as PDF) and DI-ana (its demo's sample sheets), so a sheet from either scans the same way.
 // o.names: print the student's name (otherwise their code); o.week: the week as words, such as "Oct 5–9, 2026".
+// 0.10: sheets from a set (a test, a practice sheet or a worksheet's answer sheet) and a set's answer key sheet, which has
+// the right answers filled in when they're known, and empty bubbles for the teacher to fill in when they aren't.
 function shPdfSheetPage(doc, rec, cls, o = {}) {
   const sp = shBuildSheet(rec), L = sp.layout, bits = shCodeBits(rec.id), s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
+  const keyPage = !!sp.keySheet;
   doc.page();
   SH_MARKS.forEach(([x, y]) => doc.rect(x - SH_MARK / 2, y - SH_MARK / 2, SH_MARK, SH_MARK, { fill: "#000" }));
   shCodeCells().forEach((c, i) => { if (bits[i]) doc.rect(c.x, c.y, c.w, c.h, { fill: "#000" }); });
@@ -5853,12 +5915,17 @@ function shPdfSheetPage(doc, rec, cls, o = {}) {
   // Name: ____  Date: ____            Score: _____ / 8
   const nb = 31.4, gap = 1.6, nm = pdfFit(o.names ? s.name : s.code, "B", 10.5, 62);
   let x = 14;
+  if (keyPage) {
+    doc.text(14, nb, "For the teacher only", { f: "B", pt: 10.5 });
+    doc.text(201.9, nb, `${sp.total} questions${sp.keyKnown ? " · the right answers are filled in" : ""}`, { pt: 10.5, color: "#333", align: "right" });
+  } else {
   doc.text(x, nb, "Name:", { pt: 10.5 }); x += pdfWidth("Name: ", "R", 10.5);
   doc.text(x, nb, nm, { f: "B", pt: 10.5 }); x += pdfWidth(nm, "B", 10.5) + gap;
   doc.line(x, nb + 0.3, x + 38, nb + 0.3, { lw: 0.3 }); x += 38 + gap;
   doc.text(x, nb, "Date:", { pt: 10.5 }); x += pdfWidth("Date:", "R", 10.5) + gap;
   doc.line(x, nb + 0.3, x + 26, nb + 0.3, { lw: 0.3 });
   doc.text(201.9, nb, `Score: _____ / ${sp.total}`, { pt: 10.5, color: "#333", align: "right" });
+  }
   const dlh = 9.5 * SH_PT * 1.25;
   pdfWrap(sp.directions, "R", 9.5, 187.9).forEach((l, i) => doc.text(14, OdinPdf.mid(33.6 + i * dlh, dlh, 9.5), l, { pt: 9.5, color: "#222" }));
   if (L.passage) {
@@ -5867,6 +5934,10 @@ function shPdfSheetPage(doc, rec, cls, o = {}) {
     doc.text(P.x + 3.8, P.y + 5.4, pdfFit(P.title, "B", 10.5, inner), { f: "B", pt: 10.5 });
     const room = Math.max(1, Math.floor((P.h - 7.2 - 1.9) / P.lh + 0.01));
     pdfWrap(sp.passage.text, "R", P.pt, inner).slice(0, room).forEach((l, i) => doc.text(P.x + 3.8, OdinPdf.mid(P.y + 7.2 + i * P.lh, P.lh, P.pt), l, { pt: P.pt }));
+  }
+  if (L.template === "answers") {   // light lines between columns and every five rows, to keep the place on a long answer sheet
+    for (let c = 1; c < L.cols; c++) doc.line(SH_BODY.x0 + c * L.colW - 3, SH_BODY.y0, SH_BODY.x0 + c * L.colW - 3, SH_BODY.y0 + L.rows * L.rowH, { lw: 0.25, stroke: "#bbb" });
+    for (let r = 5; r < L.rows; r += 5) doc.line(SH_BODY.x0, SH_BODY.y0 + r * L.rowH, SH_BODY.x1, SH_BODY.y0 + r * L.rowH, { lw: 0.2, stroke: "#ccc" });
   }
   L.items.forEach((it, i) => {
     const item = sp.items[i], r = Math.min(2.6, it.lh * 0.62), npt = Math.max(7, it.pt - 3);
@@ -5891,10 +5962,14 @@ function shPdfSheetPage(doc, rec, cls, o = {}) {
       hl.forEach((l, k) => doc.text(H.x, OdinPdf.mid(H.y + k * hlh, hlh, H.pt), l, { f: "I", pt: H.pt, color: "#333" }));
     }
     if (it.fig && it.fig.h > 2) doc.svg(shFig(item.fig, it.fig.w, it.fig.h), it.fig.x, it.fig.y, it.fig.w, it.fig.h);
-    it.choices.forEach(c => {
+    it.choices.forEach((c, k) => {
       const bpt = (c.r * 1.05) / SH_PT, tx = c.bx + c.r + 1.6, tw = c.w - (c.bx - c.x) - c.r - 1.8;
-      doc.circle(c.bx, c.by, c.r - 0.175, { stroke: "#222", lw: 0.35 });
-      doc.text(c.bx, OdinPdf.mid(c.by - c.r, 2 * c.r, bpt), c.letter, { f: "B", pt: bpt, color: "#b4b4b4", align: "center" });
+      if (keyPage && item.key === k) doc.circle(c.bx, c.by, c.r - 0.175, { fill: "#222", stroke: "#222", lw: 0.35 });   // the key: filled, so scanning this sheet reads it
+      else {
+        doc.circle(c.bx, c.by, c.r - 0.175, { stroke: "#222", lw: 0.35 });
+        doc.text(c.bx, OdinPdf.mid(c.by - c.r, 2 * c.r, bpt), c.letter, { f: "B", pt: bpt, color: "#b4b4b4", align: "center" });
+      }
+      if (!c.text) return;
       if (c.lines > 1) {
         const clh = it.pt * SH_PT * 1.15; let cl = pdfWrap(c.text, "R", it.pt, tw);
         if (cl.length > 2) cl = [cl[0], pdfFit(cl.slice(1).join(" "), "R", it.pt, tw)];
@@ -5903,7 +5978,7 @@ function shPdfSheetPage(doc, rec, cls, o = {}) {
       } else doc.text(tx, OdinPdf.mid(c.y, c.h, it.pt), pdfFit(c.text, "R", it.pt, tw), { pt: it.pt });
     });
   });
-  const foot = pdfWrap(`Fill in bubbles completely with a pencil. Erase cleanly to change an answer. Do not write on the black squares. · ${cls.teacher} · Room ${cls.room}`, "R", 7, 164);
+  const foot = pdfWrap(`${keyPage ? "Answer key: scan it with the students' sheets, or keep it to check by hand." : "Fill in bubbles completely with a pencil. Erase cleanly to change an answer."} Do not write on the black squares. · ${cls.teacher} · Room ${cls.room}`, "R", 7, 164);
   foot.slice(0, 2).forEach((l, k) => doc.text(108, OdinPdf.mid(261.6 + k * 2.9, 2.9, 7), l, { pt: 7, color: "#555", align: "center" }));
 }
 
@@ -6099,7 +6174,7 @@ function scReadBubbles(img, H, layout, black, white) {
     // judge each answer against its own other bubbles: a light but clear mark counts; two similar marks do not
     if (top < SC_MIN) { answers.push("-"); flags.push({ item: i, kind: "blank" }); return; }
     if (second >= SC_MIN && second > top * SC_TWO && second > rest * SC_RATIO) { answers.push("*"); flags.push({ item: i, kind: "two" }); return; }
-    answers.push("ABCD"[k1]);
+    answers.push(SH_LETTERS[k1]);
     const clear = top >= SC_RATIO * Math.max(second, 0.04);
     if (top < SC_FILL && !(clear && top >= SC_LIGHT)) flags.push({ item: i, kind: "light" });
     else if (second >= Math.max(SC_LIGHT, top * 0.4)) flags.push({ item: i, kind: "erased" });
@@ -6157,7 +6232,7 @@ function scSynth(spec, answers, opt = {}) {
     it.choices.forEach((c, k) => {
       disk(c.bx, c.by, c.r, 60, true); rect(c.bx - 0.6, c.by - 0.9, 1.2, 1.8, 190); rect(c.bx + c.r + 2, c.by - 1.2, Math.min(c.w - 2 * c.r - 4, c.text.length * shCharW(it.pt)), 2.4, 170);
       const a = answers[i];
-      if (a === "ABCD"[k] || (a === "*" && k < 2)) disk(c.bx + (R() - 0.5) * 0.6, c.by + (R() - 0.5) * 0.6, c.r * (0.8 + R() * 0.15), opt.light ? 150 : 70 + Math.floor(R() * 40), false);
+      if (a === SH_LETTERS[k] || (a === "*" && k < 2)) disk(c.bx + (R() - 0.5) * 0.6, c.by + (R() - 0.5) * 0.6, c.r * (0.8 + R() * 0.15), opt.light ? 150 : 70 + Math.floor(R() * 40), false);
     });
   });
   // scanner geometry: rotation, scale, offset, then noise
@@ -6548,12 +6623,22 @@ function flPassageFor(cls, code, week) {
   if (now && FL_BY_ID[now.passage]) return { passage: FL_BY_ID[now.passage], chosen: false };
   const plan = F.plans.find(p => p.code === code && p.week === week && p.passage);
   if (plan && FL_BY_ID[plan.passage]) return { passage: FL_BY_ID[plan.passage], chosen: true };
-  const band = flBandAt(cls, code, week), list = FL_PASSAGES.filter(p => p.band === band);
+  const band = flBandAt(cls, code, week), list = FL_PASSAGES.filter(p => p.band === band && !p.added);   // the school's added passages only when chosen
   const used = new Set(runs.filter(r => r.week < week).map(r => r.passage));
   const off = (flHash(code) + flWeekNo(week)) % list.length;
   for (let k = 0; k < list.length; k++) { const p = list[(off + k) % list.length]; if (!used.has(p.id)) return { passage: p, chosen: false }; }
   return { passage: list[off], chosen: false };
 }
+// 0.10: passages the school added (written with AI or typed in) join Odin's own, marked "added". Odin only gives them to a
+// student when the teacher chooses one, so adding a passage never changes the passages students already have.
+function flAddPassages(list) {
+  (list || []).forEach(p => {
+    if (!p || !/^A[0-5]-\d{1,4}$/.test(p.id) || FL_BY_ID[p.id]) return;
+    const q = { id: p.id, band: p.band, title: p.title, text: p.text, topic: p.topic || "", source: p.source || "", added: true };
+    FL_PASSAGES.push(q); FL_BY_ID[q.id] = q; FL_WORDS_CACHE.delete(q.id);
+  });
+}
+function flDropPassage(id) { const i = FL_PASSAGES.findIndex(p => p.id === id && p.added); if (i >= 0) FL_PASSAGES.splice(i, 1); if (FL_BY_ID[id] && FL_BY_ID[id].added) delete FL_BY_ID[id]; FL_WORDS_CACHE.delete(id); }
 function flWeekSummary(cls, code, week) {
   const runs = flF(cls).runs.filter(r => r.code === code && r.week === week).sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.id || 0) - (b.id || 0));
   const last = k => runs.filter(r => r.kind === k).slice(-1)[0] || null;
@@ -6625,6 +6710,188 @@ const FL_ICON = {
 };
 const flIcon = (name, size) => `<svg viewBox="0 0 24 24" width="${size || 24}" height="${size || 24}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${FL_ICON[name] || ""}</svg>`;
 if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { flAlign, flSegment, flScore, flSpoken, flWords, flSame, flGoal, flBadges, flPassageFor, flBandFor, flWeekSummary, flHfwShare, flSkips });
+
+// =====================================================================================================
+// Odin 0.10: AI writing, shared by Odin and DI-ana. It writes new reading passages (for fluency practice) and new
+// multiple-choice questions (for tests and practice sheets) with whichever AI the school chooses: one running on the
+// school's own computer (Ollama, LM Studio), a free tier (Google Gemini, Groq, OpenRouter: each needs a free key) or a paid
+// service (Claude, OpenAI, or any service that works like OpenAI's).
+//
+// The AI is only ever told the grade, the subject, the skill and the teacher's topic. Never anything about a student:
+// aiGuard() refuses a request that has a student's name or code in it, here and again on Odin's server.
+// The teacher reads and can change everything the AI writes before it is saved or printed.
+//
+// At school, Odin's server holds the key and makes the call (api/ai/chat), so phones and browsers never hold keys.
+// In a demo, aiChat() calls the service straight from the page with a key kept only while the page is open.
+// =====================================================================================================
+const AI_PROVIDERS = [
+  { id: "ollama", name: "Ollama, on a computer at school", kind: "local", api: "openai", url: "http://localhost:11434/v1", model: "llama3.1:8b", key: false,
+    help: "Free and private: the AI runs on the school's own computer and nothing leaves it. Install Ollama, run \"ollama pull llama3.1:8b\", and use that computer's address." },
+  { id: "lmstudio", name: "LM Studio, on a computer at school", kind: "local", api: "openai", url: "http://localhost:1234/v1", model: "", key: false,
+    help: "Free and private: load a model in LM Studio, start its server, and type the model's name as LM Studio shows it." },
+  { id: "gemini", name: "Google Gemini (free tier)", kind: "free", api: "gemini", url: "https://generativelanguage.googleapis.com/v1beta", model: "gemini-2.5-flash-lite", key: true,
+    keyUrl: "https://aistudio.google.com/apikey", help: "A free key from Google AI Studio. The free tier has daily limits, and Google may use what is sent to improve its products: only grade, skill and topic are sent." },
+  { id: "groq", name: "Groq (free tier)", kind: "free", api: "openai", url: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile", key: true,
+    keyUrl: "https://console.groq.com/keys", help: "A free key from Groq. Fast, with daily limits." },
+  { id: "openrouter", name: "OpenRouter (free models)", kind: "free", api: "openai", url: "https://openrouter.ai/api/v1", model: "meta-llama/llama-3.3-70b-instruct:free", key: true,
+    keyUrl: "https://openrouter.ai/keys", help: "A free key from OpenRouter. Models whose names end in :free cost nothing, with daily limits." },
+  { id: "anthropic", name: "Claude (paid)", kind: "paid", api: "anthropic", url: "https://api.anthropic.com/v1", model: "claude-haiku-5-5", key: true,
+    keyUrl: "https://console.anthropic.com/", help: "A paid key from Anthropic's console." },
+  { id: "openai", name: "OpenAI (paid)", kind: "paid", api: "openai", url: "https://api.openai.com/v1", model: "gpt-4.1-mini", key: true,
+    keyUrl: "https://platform.openai.com/api-keys", help: "A paid key from OpenAI." },
+  { id: "custom", name: "Another service that works like OpenAI's", kind: "custom", api: "openai", url: "", model: "", key: "optional",
+    help: "Any service with an OpenAI-style chat API: type its address (ending in /v1), the model's name and, if it needs one, a key." }
+];
+const AI_BY_ID = Object.fromEntries(AI_PROVIDERS.map(p => [p.id, p]));
+const AI_KIND_WORD = { local: "local, private", free: "free tier", paid: "paid", custom: "other" };
+const AI_WORDS = [45, 95, 135, 170, 200, 225];   // fluency passages at each level, as long as Odin's own
+const aiGradeWord = band => (band <= 0 ? "kindergarten" : `grade ${band}`);
+
+// ---------- what the AI is asked ----------
+const AI_SYSTEM = "You write classroom materials for elementary school students in the United States. Everything you write is for children: kind, accurate, " +
+  "free of anything scary, violent, romantic, political or about real brands and celebrities. You never invent facts about real people. Reply with JSON only, no other text.";
+
+// o: { subject: "math" | "reading", band: 0 to 5, skill: "the skill's name", topic, n: 4 to 8, choices: 3 or 4, kind: "test" | "practice", passage: bool }
+function aiPromptQuestions(o) {
+  const n = Math.max(2, Math.min(o.passage ? 6 : 8, o.n | 0 || 6)), k = o.choices === 3 ? 3 : 4, letters = "ABCD".slice(0, k).split("").join(", ");
+  const grade = aiGradeWord(o.band | 0), words = Math.round((AI_WORDS[o.band | 0] || 150) * 0.8);
+  const lines = [
+    `Write ${n} multiple-choice questions for a ${o.kind === "practice" ? "practice sheet" : "short test"} for ${grade} students.`,
+    `Subject: ${o.subject === "math" ? "math" : "reading"}. Skill: ${o.skill}.${o.topic ? ` Topic or theme: ${o.topic}.` : ""}`,
+    o.passage ? `First write one short ${o.subject === "math" ? "word-problem story" : "passage"} of about ${words} words that ${grade} students can read, then ask every question about it.` : "",
+    `Each question has exactly ${k} answer choices (${letters}) and exactly one right answer. Wrong choices should be believable mistakes, not silly.`,
+    "Questions and choices must make sense without pictures, tables or diagrams. No \"all of the above\" or \"none of the above\".",
+    `Keep each question under ${o.band <= 1 ? 90 : 140} characters and each choice under ${o.band <= 1 ? 25 : 40} characters. Use words ${grade} students know.`,
+    o.kind === "practice" ? "Add a short hint (under 80 characters) to each question that helps without giving the answer away." : "",
+    "Mix up which letter is right.",
+    "Reply with JSON in exactly this shape:",
+    `{"title": "a short title for the sheet", ${o.passage ? '"passage": {"title": "...", "text": "..."}, ' : ""}"questions": [{"question": "...", "choices": [${"\"...\"".repeat(k).split("\"\"").join("\", \"")}], "answer": "A"${o.kind === "practice" ? ', "hint": "..."' : ""}}]}`
+  ];
+  return { system: AI_SYSTEM, user: lines.filter(Boolean).join("\n"), maxTokens: 2500 };
+}
+// o: { band: 0 to 5, topic, genre: "story" | "information" }
+function aiPromptPassage(o) {
+  const band = Math.max(0, Math.min(5, o.band | 0)), words = AI_WORDS[band], grade = aiGradeWord(band);
+  const lines = [
+    `Write a ${o.genre === "information" ? "short informational text" : "short story"} for ${grade} students to read aloud for fluency practice.`,
+    o.topic ? `Topic: ${o.topic}.` : "Pick a topic children like: animals, school, family, sports, nature, food or friends.",
+    `It must be between ${Math.round(words * 0.9)} and ${Math.round(words * 1.1)} words long, at a ${grade} reading level.`,
+    band <= 1 ? "Use mostly high-frequency sight words and short, simple sentences." : "Use sentences of different lengths, and a few words that stretch a reader at this level.",
+    "Write every number as words (\"seven\", not \"7\"). Don't use titles like Mr., Mrs., Ms. or Dr., abbreviations, or the symbols & % $ #.",
+    "Use plain punctuation. Put a blank line between paragraphs.",
+    "Reply with JSON in exactly this shape:",
+    "{\"title\": \"...\", \"text\": \"...\"}"
+  ];
+  return { system: AI_SYSTEM, user: lines.filter(Boolean).join("\n"), maxTokens: 1200 };
+}
+
+// ---------- reading what the AI wrote ----------
+// The first JSON object in the reply (models sometimes wrap it in ``` fences or add a sentence).
+function aiJSON(text) {
+  const t = String(text || "").replace(/```(?:json)?/gi, "");
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  if (a < 0 || b <= a) throw new Error("The AI didn't answer with the expected form. Try again, or try another model.");
+  try { return JSON.parse(t.slice(a, b + 1)); } catch (e) { throw new Error("The AI's answer couldn't be read. Try again, or try another model."); }
+}
+const aiClean = s => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
+// Returns { title, passage, items: [{ stem, choices, key, hint }], warnings }; throws when nothing usable came back.
+function aiParseQuestions(text, o) {
+  const j = aiJSON(text), qs = Array.isArray(j.questions) ? j.questions : Array.isArray(j.items) ? j.items : [];
+  const k = o && o.choices === 3 ? 3 : 4, warnings = [], items = [];
+  let skipped = 0;
+  qs.forEach((q, i) => {
+    const stem = aiClean(q.question || q.stem), choices = (Array.isArray(q.choices) ? q.choices : []).map(c => aiClean(c).replace(/^[A-E][.)]\s+/, "")).filter(Boolean);
+    let key = typeof q.answer === "number" ? q.answer : "ABCDE".indexOf(aiClean(q.answer).toUpperCase().charAt(0));
+    if (key < 0 && typeof q.answer === "string") key = choices.findIndex(c => c.toLowerCase() === aiClean(q.answer).toLowerCase());
+    if (!stem || choices.length < 2 || key < 0 || key >= choices.length) { skipped++; return; }
+    if (new Set(choices.map(c => c.toLowerCase())).size < choices.length) warnings.push(`Question ${items.length + 1} has the same choice twice: check it.`);
+    if (choices.length !== k) warnings.push(`Question ${items.length + 1} has ${choices.length} choices.`);
+    items.push({ stem, choices: choices.slice(0, 5), key: Math.min(key, 4), hint: aiClean(q.hint).slice(0, 120) });
+  });
+  if (skipped) warnings.unshift(skipped === 1 ? "One question the AI wrote wasn't complete, so it was left out." : `${skipped} questions the AI wrote weren't complete, so they were left out.`);
+  if (!items.length) throw new Error("The AI didn't write any usable questions. Try again, or try another model.");
+  const p = j.passage && aiClean(j.passage.text) ? { title: aiClean(j.passage.title).slice(0, 80) || "Read this", text: String(j.passage.text).replace(/\r/g, "").trim() } : null;
+  if (o && o.passage && !p) warnings.push("The AI didn't write the passage. The questions may need it: try again.");
+  return { title: aiClean(j.title).slice(0, 80) || (o && o.skill) || "Questions", passage: p, items: items.slice(0, p ? 6 : 8), warnings };
+}
+// Returns { title, text, words, warnings }. Numbers are written as words, so the speech recognizer and the page agree.
+function aiParsePassage(text, o) {
+  const j = aiJSON(text);
+  const body = String(j.text || j.passage || "").trim();
+  if (!body) throw new Error("The AI didn't write a passage. Try again, or try another model.");
+  return aiCleanPassage(j.title, body, o && o.band);
+}
+// A passage's title and text made ready for fluency practice (AI or typed in): tidy spaces and paragraphs, numbers as words,
+// and warnings about what the voice and the recognizer may not match.
+function aiCleanPassage(title, text, band) {
+  const warnings = [];
+  let body = String(text || "").replace(/\r/g, "").replace(/[ \t]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{2,}/g, "\n\n").replace(/([^\n])\n(?!\n)/g, "$1 ").trim();
+  if (typeof flNumWords === "function") body = body.replace(/([.!?]["”’]?\s+)?(?<![\d.,])\b(\d{1,3})\b(?![.,]\d)/g, (m, start, d, off) => {
+    const w = flNumWords(Number(d)).join(" ").replace(/(ty) (one|two|three|four|five|six|seven|eight|nine)$/, "$1-$2");
+    return (start || "") + (start || off === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w);
+  });
+  if (/\d/.test(body)) warnings.push("It still has a number written in digits: write it as words.");
+  if (/\b(Mr|Mrs|Ms|Dr|St)\./.test(body)) warnings.push("It has a title like Mr. or Dr.: the voice may not match it. Change it to a name.");
+  if (/[&%$#@]/.test(body)) warnings.push("It has a symbol (& % $ # @): write it as a word.");
+  const words = body.split(/\s+/).filter(Boolean).length, want = AI_WORDS[Math.max(0, Math.min(5, band | 0))];
+  if (words < want * 0.75 || words > want * 1.3) warnings.push(`It has ${words} words; Odin's passages at this level have about ${want}.`);
+  return { title: aiClean(title).slice(0, 60) || "A new passage", text: body, words, warnings };
+}
+// ---------- never anything about a student ----------
+// roster: [{ code, name }]. Throws if any of the texts has a student's code, full name, or first or last name as a word.
+function aiGuard(texts, roster) {
+  const all = (Array.isArray(texts) ? texts : [texts]).map(t => String(t || "")).join("\n");
+  const hit = (roster || []).find(s => {
+    if (s.code && new RegExp(`\\b${String(s.code).replace(/[^\w-]/g, "")}\\b`, "i").test(all)) return true;
+    return String(s.name || "").split(/[\s,.]+/).filter(w => w.length >= 3).some(w => new RegExp(`\\b${w.replace(/[^\p{L}'-]/gu, "")}\\b`, "u").test(all));
+  });
+  if (hit) throw new Error("Leave students' names and codes out: the AI is never told anything about a student. Change the topic and try again.");
+  return true;
+}
+
+// ---------- calling the AI straight from the page (demos; at school Odin's server calls it) ----------
+// cfg: { provider, url, model, key }. Resolves the AI's text; rejects with an Error whose message a teacher can act on.
+async function aiChat(cfg, prompt, opt = {}) {
+  const P = AI_BY_ID[cfg.provider] || AI_BY_ID.custom, base = String(cfg.url || P.url || "").replace(/\/+$/, ""), model = String(cfg.model || P.model || "").trim();
+  if (!base) throw new Error("Type the AI's address first.");
+  if (!model) throw new Error("Type the model's name first.");
+  if (P.key === true && !cfg.key) throw new Error(`${P.name} needs a key. Get one at ${P.keyUrl || "the service's site"}.`);
+  const fetchFn = opt.fetch || fetch, max = prompt.maxTokens || 2000;
+  let url, headers = { "Content-Type": "application/json" }, body;
+  if (P.api === "anthropic") {
+    url = base + "/messages";
+    Object.assign(headers, { "x-api-key": cfg.key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" });
+    body = { model, max_tokens: max, system: prompt.system, messages: [{ role: "user", content: prompt.user }] };
+  } else if (P.api === "gemini") {
+    url = `${base}/models/${encodeURIComponent(model)}:generateContent`;
+    headers["x-goog-api-key"] = cfg.key;
+    body = { systemInstruction: { parts: [{ text: prompt.system }] }, contents: [{ role: "user", parts: [{ text: prompt.user }] }], generationConfig: { temperature: 0.8, maxOutputTokens: max, responseMimeType: "application/json" } };
+  } else {
+    url = base + "/chat/completions";
+    if (cfg.key) headers.Authorization = "Bearer " + cfg.key;
+    body = { model, temperature: 0.8, max_tokens: max, messages: [{ role: "system", content: prompt.system }, { role: "user", content: prompt.user }] };
+  }
+  let r;
+  try { r = await fetchFn(url, { method: "POST", headers, body: JSON.stringify(body) }); }
+  catch (e) { throw new Error(P.kind === "local" ? `Can't reach the AI at ${base}. Is it running? A page can reach Ollama only when Ollama allows it (OLLAMA_ORIGINS).` : `Can't reach ${P.name}. Check the internet connection.`); }
+  const raw = await r.text();
+  if (!r.ok) throw new Error(aiError(r.status, raw, P));
+  return aiText(P.api, raw);
+}
+function aiText(api, raw) {
+  let j; try { j = JSON.parse(raw); } catch (e) { throw new Error("The AI's answer couldn't be read."); }
+  const t = api === "anthropic" ? (j.content || []).map(c => c.text || "").join("") : api === "gemini" ? (((j.candidates || [])[0] || {}).content || { parts: [] }).parts.map(p => p.text || "").join("")
+    : (((j.choices || [])[0] || {}).message || {}).content || "";
+  if (!t) throw new Error("The AI sent back nothing. Try again, or try another model.");
+  return t;
+}
+function aiError(status, raw, P) {
+  let msg = ""; try { const j = JSON.parse(raw); msg = (j.error && (j.error.message || j.error)) || j.message || ""; } catch (e) {}
+  const why = status === 401 || status === 403 ? "The key wasn't accepted." : status === 404 ? "That model or address wasn't found: check the model's name." : status === 429 ? "Too many requests for now (free tiers have limits). Wait a little, or try another service." : `${P.name} answered ${status}.`;
+  return why + (msg ? ` (${String(msg).slice(0, 160)})` : "");
+}
+
+if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { AI_PROVIDERS, AI_BY_ID, AI_WORDS, AI_SYSTEM, aiPromptQuestions, aiPromptPassage, aiJSON, aiParseQuestions, aiParsePassage, aiCleanPassage, aiGuard, aiChat, aiText, aiError });
 
 </script>
 <script>
@@ -8851,6 +9118,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
               <td class="n">${a && b && a.status === "done" && b.status === "done" ? `${p100(a.right, a.total)}% → ${p100(b.right, b.total)}%` : "–"}</td></tr>`; }).join("")}
         </tbody></table></div></div>` : ""}
       ${made.length ? missedPanel(all) : ""}
+      ${setsPanel()}
     </section>`;
   }
   function sheetChip(x) {
@@ -8913,27 +9181,32 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   // ---------- printing: exact-size pages with corner squares, the sheet code and bubbles ----------
   const mm = v => (+v).toFixed(2) + "mm";
   function sheetPageHTML(rec, cls) {
-    const sp = specOf(rec), L = sp.layout, bits = shCodeBits(rec.id), s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
+    const sp = specOf(rec), L = sp.layout, bits = shCodeBits(rec.id), s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code }, keyPage = !!sp.keySheet;
     const box = (x, y, w, h, cls2, inner = "", st = "") => `<div class="${cls2}" style="left:${mm(x)};top:${mm(y)};${w != null ? `width:${mm(w)};` : ""}${h != null ? `height:${mm(h)};` : ""}${st}">${inner}</div>`;
     let h = SH_MARKS.map(([x, y]) => box(x - SH_MARK / 2, y - SH_MARK / 2, SH_MARK, SH_MARK, "om-mark")).join("");
     h += shCodeCells().map((c, i) => (bits[i] ? box(c.x, c.y, c.w, c.h, "om-bit") : "")).join("");
     h += box(40, 16.7, 136, 2.6, "om-sid", `Odin sheet ${rec.id} · keep this strip clean`);
     h += box(14, 20.2, 136, 6.5, "om-title", esc(sp.title)) + box(150, 21.2, 51.9, 5, "om-wk", `Week of ${esc(weekLabel(rec.week))}`);
-    h += box(14, 27.4, 187.9, 5.2, "om-line", `Name: <b>${esc(state.names ? s.name : s.code)}</b> <span class="om-blank"></span> Date: <span class="om-blank sm"></span><span class="om-score">Score: _____ / ${sp.total}</span>`);
+    h += box(14, 27.4, 187.9, 5.2, "om-line", keyPage ? `<b>For the teacher only</b><span class="om-score">${sp.total} questions${sp.keyKnown ? " · the right answers are filled in" : ""}</span>`
+      : `Name: <b>${esc(state.names ? s.name : s.code)}</b> <span class="om-blank"></span> Date: <span class="om-blank sm"></span><span class="om-score">Score: _____ / ${sp.total}</span>`);
     h += box(14, 33.6, 187.9, 6, "om-dir", esc(sp.directions));
     if (L.passage) { const P = L.passage; h += box(P.x, P.y, P.w, P.h, "om-pass", `<div class="om-ptitle">${esc(P.title)}</div><div class="om-ptext ${P.poem ? "poem" : ""}" style="font-size:${P.pt}pt;line-height:${mm(P.lh)}">${esc(sp.passage.text)}</div>`); }
+    if (L.template === "answers") {   // 0.10: a worksheet's answer sheet: light lines between columns and every five rows
+      for (let c = 1; c < L.cols; c++) h += box(SH_BODY.x0 + c * L.colW - 3, SH_BODY.y0, 0.25, L.rows * L.rowH, "om-rule");
+      for (let r = 5; r < L.rows; r += 5) h += box(SH_BODY.x0, SH_BODY.y0 + r * L.rowH, SH_BODY.x1 - SH_BODY.x0, 0.2, "om-rule");
+    }
     L.items.forEach((it, i) => {
       const item = sp.items[i], r = Math.min(2.6, it.lh * 0.62);
       h += box(it.num.x - r, it.num.y - r, 2 * r, 2 * r, "om-num", String(it.n), `font-size:${Math.max(7, it.pt - 3)}pt`);
       h += box(it.stem.x, it.stem.y, it.stem.w, it.stem.h + 0.4, "om-stem", esc(item.stem) + (item.review ? ` <i class="om-rev">review</i>` : ""), `font-size:${it.pt}pt;line-height:${mm(it.lh)}`);
       if (it.hint) h += box(it.hint.x, it.hint.y, it.hint.w, it.hint.h + 0.4, "om-hint", esc("Hint: " + item.hint), `font-size:${it.hint.pt}pt;line-height:${mm(it.hint.pt * SH_PT * 1.25)}`);
       if (it.fig && it.fig.h > 2) h += box(it.fig.x, it.fig.y, it.fig.w, it.fig.h, "om-fig", shFig(item.fig, it.fig.w, it.fig.h));
-      it.choices.forEach(c => {
-        h += box(c.bx - c.r, c.by - c.r, 2 * c.r, 2 * c.r, "om-bub", c.letter, `font-size:${(c.r * 1.05).toFixed(2)}mm`);
-        h += box(c.bx + c.r + 1.6, c.y, c.w - (c.bx - c.x) - c.r - 1.8, c.h, "om-ch", esc(c.text), `font-size:${it.pt}pt;${c.lines > 1 ? `white-space:normal;line-height:1.15` : ""}`);
+      it.choices.forEach((c, k) => {
+        h += box(c.bx - c.r, c.by - c.r, 2 * c.r, 2 * c.r, keyPage && item.key === k ? "om-bub on" : "om-bub", c.letter, `font-size:${(c.r * 1.05).toFixed(2)}mm`);
+        if (c.text) h += box(c.bx + c.r + 1.6, c.y, c.w - (c.bx - c.x) - c.r - 1.8, c.h, "om-ch", esc(c.text), `font-size:${it.pt}pt;${c.lines > 1 ? `white-space:normal;line-height:1.15` : ""}`);
       });
     });
-    h += box(26, 261.6, 164, 5, "om-foot", `Fill in bubbles completely with a pencil. Erase cleanly to change an answer. Do not write on the black squares. · ${esc(cls.teacher)} · Room ${esc(cls.room)}`);
+    h += box(26, 261.6, 164, 5, "om-foot", `${keyPage ? "Answer key: scan it with the students' sheets, or keep it to check by hand." : "Fill in bubbles completely with a pencil. Erase cleanly to change an answer."} Do not write on the black squares. · ${esc(cls.teacher)} · Room ${esc(cls.room)}`);
     return `<div class="om-page" data-sheet="${rec.id}">${h}</div>`;
   }
   function learnPageHTML(rec, cls) {
@@ -8964,6 +9237,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   // or student (all of student ps.code's sheets this week). ps.learn === false leaves out the Learn it pages.
   function printSet(ps) {
     if (ps.which === "one") { const f = sheetFind(ps.id); return f ? [f] : []; }
+    if (ps.which === "set") { const f = setFind(ps.id); return f ? shSetRecs(f.set).map(rec => ({ rec, cls: f.cls })) : []; }   // 0.10: its answer key sheet, then each student's
     const slot = r => SHEET_SLOTS.findIndex(([k, p]) => k === r.kind && p === (r.part || 0));
     return DATA.sheets.filter(r => r.subject === state.subject && r.week === pWeek() && (ps.which !== "student" || r.code === ps.code)
       && ({ pre: "pre", post: "post", packet: "practice" }[ps.which] || r.kind) === r.kind)
@@ -8973,6 +9247,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function printWhat(ps, set) {
     const n = set.length, s = (one, many) => `${n} ${n === 1 ? one : many}`;
     if (ps.which === "one") return set.length ? sheetLabel(set[0].rec) + " for " + whoIn(set[0].cls, set[0].rec.code, true) : "one sheet";
+    if (ps.which === "set") { const f = setFind(ps.id), m = n - 1; return f ? `${f.set.title}: the answer key sheet and ${m} student sheet${m === 1 ? "" : "s"}` : "a set"; }
     if (ps.which === "student") return `${whoIn(DATA, ps.code, true)}'s sheets (${n})`;
     return { pre: s("pre-check", "pre-checks"), post: s("post-check", "post-checks"), packet: s("practice sheet", "practice sheets") + " (practice 1 and practice 2)", keys: "answer keys for " + s("sheet", "sheets") }[ps.which];
   }
@@ -8980,6 +9255,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function printFileName(ps) {
     const tail = `${state.subject}-${pWeek()}.pdf`;
     if (ps.which === "one") return `odin-sheet-${ps.id}.pdf`;
+    if (ps.which === "set") return `odin-set-${ps.id}.pdf`;
     if (ps.which === "student") return `odin-sheets-${ps.code}-${tail}`;
     return `odin-${{ pre: "pre-checks", post: "post-checks", packet: "practice-packets", keys: "answer-keys" }[ps.which]}-${tail}`;
   }
@@ -8999,7 +9275,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
           ${CAN_PRINT ? `<button class="btn" data-v3="print">Print</button>` : ""}
           ${canSavePdf() && set.length ? `<button class="btn ${CAN_PRINT ? "ghost" : ""}" data-p4="pdf">Save as PDF</button>` : ""}
           <button class="btn ghost" data-p4="closeprint">Back</button>
-          <span class="small muted">${esc(printWhat(ps, set))} · ${SUBJ[subj]} · week of ${weekLabel(wk)}</span>
+          <span class="small muted">${esc(printWhat(ps, set))} · ${ps.which === "set" ? (set.length ? "week of " + weekLabel(set[0].rec.week) : "") : `${SUBJ[subj]} · week of ${weekLabel(wk)}`}</span>
           ${learnable ? `<label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-p4="learn" ${ps.learn !== false ? "checked" : ""}> Include the Learn it page${ps.which === "one" ? "" : "s"}</label>` : ""}
         </div>
         ${state.pdfNote ? `<div class="notice" role="status"><b>${esc(state.pdfNote)}</b></div>` : ""}
@@ -9013,7 +9289,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
 
   // ---------- 0.9.4: the same pages as a PDF, drawn from the same millimetre layout, so a printed PDF scans like a printed page ----------
   function sheetsPdf(ps) {
-    const set = printSet(ps), doc = new OdinPdf(`Odin · ${printWhat(ps, set)} · ${SUBJ[state.subject]} · week of ${weekLabel(pWeek())}`);
+    const set = printSet(ps), doc = new OdinPdf(ps.which === "set" ? `Odin · ${printWhat(ps, set)}` : `Odin · ${printWhat(ps, set)} · ${SUBJ[state.subject]} · week of ${weekLabel(pWeek())}`);
     if (ps.which === "keys") { if (set.length) pdfKeysPages(doc, set.map(x => x.rec)); }
     else set.forEach(({ rec, cls }) => { if (withLearn(ps, rec)) pdfLearnPage(doc, rec, cls); pdfSheetPage(doc, rec, cls); });
     return doc.pages.length ? doc.bytes() : null;
@@ -10048,6 +10324,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       ${open ? flStudentPanel(open, wk) : ""}
       ${state.flExam ? viewExam() : ""}
       ${state.flReview ? viewReview() : ""}
+      ${flAddedPanel()}
     </section>`;
   }
   function flStudentPanel(code, wk) {
@@ -10061,7 +10338,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
         <div class="p4bar"><input id="fl-pin-in" class="pin" inputmode="numeric" maxlength="4" value="${state.flStart.pin}" aria-label="Exit code"><button class="btn" data-fl="go">Start ${esc(FL_KIND[state.flStart.kind].toLowerCase())}</button><button class="btn ghost" data-fl="nostart">Cancel</button></div></div>` : ""}
       <div class="p4bar"><span class="small muted" style="align-self:center">Teacher scores:</span>${["pre", "practice", "post"].map(k => `<button class="btn ghost sm" data-fl="exam" data-kind="${k}">${esc(FL_KIND[k])}</button>`).join("")}<button class="btn ghost sm" data-fl="print" data-p="${P.id}">Print the passage</button></div>
       <div class="p4bar"><label class="small">Level <select id="fl-band" aria-label="Reading level for fluency">${[0, 1, 2, 3, 4, 5].map(b => `<option value="${b}" ${b === band ? "selected" : ""}>${b === 0 ? "Kindergarten" : "Grade " + b}</option>`).join("")}</select></label>
-        <label class="small">Passage this week <select id="fl-pass" aria-label="Passage this week" ${sum.runs.length ? "disabled" : ""}>${FL_PASSAGES.filter(x => x.band === P.band).map(x => `<option value="${x.id}" ${x.id === P.id ? "selected" : ""}>${esc(x.title)}${runs.some(r => r.passage === x.id && r.week !== wk) ? " (read before)" : ""}</option>`).join("")}</select></label>
+        <label class="small">Passage this week <select id="fl-pass" aria-label="Passage this week" ${sum.runs.length ? "disabled" : ""}>${FL_PASSAGES.filter(x => x.band === P.band).map(x => `<option value="${x.id}" ${x.id === P.id ? "selected" : ""}>${esc(x.title)}${x.added ? " (added)" : ""}${runs.some(r => r.passage === x.id && r.week !== wk) ? " (read before)" : ""}</option>`).join("")}</select></label>
         ${sum.runs.length ? `<span class="small muted" style="align-self:center">This week's readings keep their passage; a new level starts next week.</span>` : ""}</div>
       <div class="flchart">${flChart(DATA, code)}</div>
       <div><b class="small">Badges</b><div class="flbadges">${FL_BADGES.map(b => `<span class="flbadge ${badges[b.id] ? "" : "off"}" title="${esc(b.desc)}">${flIcon(b.icon, 20)}<b>${esc(b.name)}</b>${badges[b.id] && badges[b.id].n > 1 ? `<small>×${badges[b.id].n}</small>` : ""}</span>`).join("")}</div></div>
@@ -10179,6 +10456,210 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   // test hook (no student data): the reading screen's state, for the automated tests
   window.__odinDebug = Object.assign(window.__odinDebug || {}, { flRuns: code => flRunsOf(DATA, code).map(r => ({ ...r })), fl: () => ({ on: FL.on, step: FL.step, ptr: FL.ptr, passage: FL.passage ? FL.passage.id : null, listen: FL.listen, marks: FL.on ? flMarksNow().map(m => m || "_").join("") : "", result: FL.result || null, caption: FL.caption || "", status: FLS.status, why: FLS.why || "", helped: FL.helped ? [...FL.helped] : [],
     ready: FL.on ? !FL.awaitReady : null, voice: FL.vox ? { ...FL.vox } : null, settling: !!FL.settling, t0: FL.t0 || 0, tBegin: FL.tBegin || 0 }) });
+
+  // =====================================================================================================
+  // Odin 0.10: AI that writes new reading passages (Fluency tab) and the school's AI settings; the tests, practice sheets
+  // and worksheet answer sheets made in DI-ana (Practice tab). The AI is told only the level, the kind of text and the
+  // teacher's topic, never anything about a student, and the teacher reads everything before it is saved.
+  // =====================================================================================================
+  const AIX = { cfg: { provider: "ollama", url: "", model: "", key: "" }, server: null, loading: false, msg: null, ok: null, open: false };
+  (function () { const c = LS.get("odin-ai", null); if (c && AI_BY_ID[c.provider]) Object.assign(AIX.cfg, { provider: c.provider, url: String(c.url || ""), model: String(c.model || "") }); })();
+  const aiSaveLocal = () => LS.set("odin-ai", { provider: AIX.cfg.provider, url: AIX.cfg.url, model: AIX.cfg.model });   // never the key
+  const aiRoster = () => CLASSES.flatMap(c => c.students.map(s => ({ code: s.code, name: s.name })));
+  // Ask the school's AI (on the server, Odin's server makes the call; in a demo, this page calls the service itself).
+  async function aiAsk(prompt) {
+    aiGuard([prompt.system, prompt.user], aiRoster());
+    if (SERVER) return (await postJSON("api/ai/chat", { system: prompt.system, user: prompt.user, maxTokens: prompt.maxTokens })).text;
+    return aiChat(AIX.cfg, prompt);
+  }
+  function aiLoadServer() {
+    if (!SERVER || AIX.loading) return;
+    AIX.loading = true;
+    fetch("api/ai/settings", { credentials: "same-origin" }).then(r => r.json()).then(j => { AIX.server = j; Object.assign(AIX.cfg, { provider: j.provider, url: j.url, model: j.model, key: "" }); })
+      .catch(e => { AIX.msg = "Couldn't read the AI settings: " + (e.message || e); }).finally(() => { AIX.loading = false; render(); });
+  }
+  const aiNow = () => { const P = AI_BY_ID[AIX.cfg.provider] || AI_BY_ID.custom; return { P, url: AIX.cfg.url || P.url, model: AIX.cfg.model || P.model }; };
+  function aiSummary() {
+    if (SERVER) { const S = AIX.server || SCHOOL.ai || {}; if (S.off) return "AI is turned off on this server."; if (!S.set) return "No AI chosen yet."; const P = AI_BY_ID[S.provider] || AI_BY_ID.custom; return `${P.name}${S.model ? ` · ${S.model}` : ""}`; }
+    const { P, model } = aiNow(); return `${P.name}${model ? ` · ${model}` : ""}${P.key === true && !AIX.cfg.key ? " · needs a key" : ""}`;
+  }
+  // The settings: which AI, its address, the model and the key. On the server, only Odin's server keeps the key.
+  function aiSettingsHTML() {
+    if (SERVER && !AIX.server) { aiLoadServer(); return `<p class="small muted">Reading the AI settings…</p>`; }
+    const S = AIX.server || {}, { P, url, model } = aiNow(), locked = SERVER && (S.locked || S.off);
+    const kinds = [["local", "On a computer at school (free, private)"], ["free", "Free tier (a free key, with daily limits)"], ["paid", "Paid (a key from the service)"], ["custom", "Other"]];
+    return `<div class="aiset" style="display:grid;gap:8px">
+      ${SERVER && S.off ? `<p class="small"><b>AI is turned off on this server</b> (ODIN_AI=off).</p>` : ""}
+      ${SERVER && S.locked && !S.off ? `<p class="small"><b>Set by the server's administrator:</b> ${esc(P.name)} · ${esc(model)}.</p>` : ""}
+      ${locked ? "" : `<label class="small">AI <select id="ai-provider">${kinds.map(([k, label]) => `<optgroup label="${esc(label)}">${AI_PROVIDERS.filter(p => p.kind === k).map(p => `<option value="${p.id}" ${p.id === P.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</optgroup>`).join("")}</select></label>
+      <p class="small muted" style="max-width:80ch">${esc(P.help)}${P.keyUrl ? ` <a href="${P.keyUrl}" target="_blank" rel="noopener">Get a key</a>.` : ""}</p>
+      <div class="p4bar"><label class="small">Address <input id="ai-url" size="34" value="${esc(url)}" placeholder="https://…/v1" spellcheck="false"></label>
+        <label class="small">Model <input id="ai-model" size="26" value="${esc(model)}" placeholder="the model's name" spellcheck="false"></label>
+        ${P.key ? `<label class="small">Key <input id="ai-key" type="password" size="26" autocomplete="off" value="${SERVER ? "" : esc(AIX.cfg.key)}" placeholder="${SERVER ? (S.hasKey && S.provider === P.id ? `saved on Odin's server${S.keyEnd ? ` (…${esc(S.keyEnd)})` : ""}` : "kept on Odin's server only") : "kept only while this page is open"}"></label>` : ""}</div>
+      <p class="small muted" style="max-width:80ch">${SERVER ? "Odin's server keeps the key and makes the call, so no phone or browser ever holds it. If this server isn't on the internet, choose an AI on a school computer (Ollama or LM Studio)." : "In this demo, this page calls the AI itself. A key you type is kept only while the page is open: it's never saved."} Model names change: if one isn't found, check the service's list of models.</p>`}
+      <div class="p4bar">${locked ? "" : `<button class="btn sm" data-ai="save">${SERVER ? "Save" : "Use these settings"}</button>${SERVER && S.hasKey && S.provider === P.id ? `<button class="btn ghost sm" data-ai="clearkey">Remove the key</button>` : ""}`}
+        ${SERVER && S.off ? "" : `<button class="btn ghost sm" data-ai="test" ${AIX.busy ? "disabled" : ""}>Test it</button>`}</div>
+      ${AIX.msg ? `<p class="small ${AIX.ok === false ? "warn" : ""}" role="status">${esc(AIX.msg)}</p>` : ""}
+    </div>`;
+  }
+  function aiReadForm() {
+    const d = document.getElementById("ai-details"); if (d) AIX.open = d.open;   // kept open (or closed) when the page is drawn again
+    const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : null; };
+    const p = v("ai-provider"); if (p && AI_BY_ID[p]) AIX.cfg.provider = p;
+    const u = v("ai-url"), m = v("ai-model"), k = v("ai-key");
+    if (u != null) AIX.cfg.url = u; if (m != null) AIX.cfg.model = m; if (k != null && (k || !SERVER)) AIX.cfg.key = k;
+  }
+  async function aiSave(clearKey) {
+    aiReadForm();
+    if (!SERVER) { aiSaveLocal(); AIX.msg = "This page uses " + aiSummary() + "."; AIX.ok = true; return render(); }
+    try {
+      const body = { provider: AIX.cfg.provider, url: AIX.cfg.url, model: AIX.cfg.model };
+      if (AIX.cfg.key) body.key = AIX.cfg.key; if (clearKey) body.clearKey = true;
+      const r = await postJSON("api/ai/settings", body);
+      AIX.server = r; AIX.cfg.key = ""; SCHOOL.ai = { provider: r.provider, model: r.model, set: r.set, locked: r.locked, off: r.off, hasKey: r.hasKey };
+      AIX.msg = clearKey ? "The key is removed." : "Saved: Odin uses " + aiSummary() + "."; AIX.ok = true;
+    } catch (e) { AIX.msg = String(e.message || e); AIX.ok = false; }
+    render();
+  }
+  async function aiTest() {
+    aiReadForm(); AIX.busy = true; AIX.msg = "Asking the AI…"; AIX.ok = null; render();
+    try {
+      const t = await aiAsk({ system: AI_SYSTEM, user: 'Reply with this JSON and nothing else: {"ok": true}', maxTokens: 60 });
+      aiJSON(t); AIX.msg = "It works: the AI answered."; AIX.ok = true;
+    } catch (e) { AIX.msg = String(e.message || e); AIX.ok = false; }
+    AIX.busy = false; render();
+  }
+  document.addEventListener("change", e => { if (e.target.id === "ai-provider") { aiReadForm(); const P = AI_BY_ID[e.target.value]; AIX.cfg.url = P.url; AIX.cfg.model = P.model; if (!SERVER) AIX.cfg.key = ""; AIX.msg = null; render(); } });
+
+  // ---------- Fluency: passages the school adds ----------
+  const ADDED_KEY = "odin-k5-passages";
+  flAddPassages(SERVER ? SCHOOL.passages : LS.get(ADDED_KEY, []));
+  const addedPassages = () => FL_PASSAGES.filter(p => p.added);
+  const saveAddedLocal = () => { if (!SERVER) LS.set(ADDED_KEY, addedPassages().map(p => ({ id: p.id, band: p.band, title: p.title, text: p.text, topic: p.topic, source: p.source }))); };
+  const passageUsed = id => CLASSES.some(c => flF(c).runs.some(r => r.passage === id) || flF(c).plans.some(p => p.passage === id));
+  Object.assign(state, { flNew: null });
+  const flNewDefault = () => ({ band: Math.max(0, Math.min(5, DATA.grade)), genre: "story", topic: "", busy: false, err: null, draft: null, src: "" });
+  function flAddedPanel() {
+    if (STUDENT_APP) return "";
+    const N = state.flNew || flNewDefault(), list = addedPassages(), D = N.draft;
+    return `<div class="panel" id="fl-added" style="display:grid;gap:10px;margin-top:14px">
+      <div class="head"><h3>New passages</h3><span class="muted small">Write one with AI, or type or paste your own</span></div>
+      <p class="small" style="max-width:86ch">The AI is told only the level, the kind of text and your topic, never anything about a student, and Odin won't send a topic with a student's name or code in it. Read every passage before you save it. New passages go to a student only when you choose one in the student's panel (<b>Passage this week</b>).</p>
+      <div class="p4bar"><label class="small">Level <select id="fln-band">${[0, 1, 2, 3, 4, 5].map(b => `<option value="${b}" ${b === N.band ? "selected" : ""}>${b === 0 ? "Kindergarten" : "Grade " + b}</option>`).join("")}</select></label>
+        <label class="small">Kind <select id="fln-genre"><option value="story" ${N.genre === "story" ? "selected" : ""}>Story</option><option value="information" ${N.genre === "information" ? "selected" : ""}>Informational</option></select></label>
+        <label class="small">Topic <input id="fln-topic" size="28" maxlength="80" value="${esc(N.topic)}" placeholder="a class garden, volcanoes, soccer…"></label>
+        <button class="btn" data-ai="write" ${N.busy ? "disabled" : ""}>${N.busy ? "Writing…" : "Write it with AI"}</button>
+        <button class="btn ghost" data-ai="type">Type or paste one</button></div>
+      <details ${AIX.open ? "open" : ""} id="ai-details"><summary class="small">AI settings · ${esc(aiSummary())}</summary>${AIX.open ? aiSettingsHTML() : ""}</details>
+      ${N.err ? `<div class="notice warn" role="alert"><b>${esc(N.err)}</b></div>` : ""}
+      ${D ? `<div class="flnew" style="display:grid;gap:8px">
+          <div class="p4bar"><label class="small" style="flex:1">Title <input id="fln-title" maxlength="60" value="${esc(D.title)}" style="width:100%"></label></div>
+          <label class="small">Passage <span class="muted">(a blank line starts a new paragraph)</span><textarea id="fln-text" rows="${N.band <= 1 ? 8 : 12}" style="width:100%;font:inherit;font-size:15px;line-height:1.5">${esc(D.text)}</textarea></label>
+          <p class="small"><span id="fln-count">${D.words}</span> words · ${flLevel(N.band).toLowerCase()}, where Odin's passages have about ${AI_WORDS[N.band]}${N.src ? ` · from ${esc(N.src)}` : ""}</p>
+          ${D.warnings.length ? `<ul class="small">${D.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : ""}
+          <div class="p4bar"><button class="btn" data-ai="psave">Save passage</button><button class="btn ghost" data-ai="pcheck">Check it again</button>${N.src.startsWith("AI") ? `<button class="btn ghost" data-ai="write">Write another</button>` : ""}<button class="btn ghost" data-ai="pdrop">Discard</button></div>
+        </div>` : ""}
+      ${list.length ? `<div class="scroller"><table class="ref"><thead><tr><th>Passage</th><th>Level</th><th>Words</th><th>Topic</th><th>From</th><th></th></tr></thead><tbody>
+        ${list.map(p => `<tr><td>${esc(p.title)} <span class="code">${p.id}</span></td><td>${p.band === 0 ? "K" : p.band}</td><td class="n">${flPassageWords(p.id).length}</td><td class="small">${esc(p.topic || "")}</td><td class="small">${esc(p.source || "")}</td>
+          <td><button class="linkbtn" data-fl="print" data-p="${p.id}">Print</button> · <button class="linkbtn" data-ai="pdel" data-id="${p.id}">Delete</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="small muted">No passages added yet.</p>`}
+    </div>`;
+  }
+  function flNewRead() {
+    const N = state.flNew = state.flNew || flNewDefault(), v = id => document.getElementById(id);
+    if (v("fln-band")) N.band = Number(v("fln-band").value); if (v("fln-genre")) N.genre = v("fln-genre").value; if (v("fln-topic")) N.topic = v("fln-topic").value.trim();
+    if (N.draft && v("fln-title")) { N.draft.title = v("fln-title").value; N.draft.text = v("fln-text").value; }
+    return N;
+  }
+  async function flWrite() {
+    const N = flNewRead(); N.err = null; N.busy = true; render();
+    try {
+      const t = await aiAsk(aiPromptPassage({ band: N.band, topic: N.topic, genre: N.genre }));
+      N.draft = aiParsePassage(t, { band: N.band }); N.src = "AI: " + aiSummary();
+    } catch (e) { N.err = String(e.message || e); }
+    N.busy = false; render();
+    const el = document.getElementById("fl-added"); if (el) el.scrollIntoView({ block: "nearest" });
+  }
+  async function flSaveNew() {
+    const N = flNewRead(), D = aiCleanPassage(N.draft.title, N.draft.text, N.band);
+    N.draft = D;
+    if (D.words < 20) { N.err = "A passage needs at least 20 words."; return render(); }
+    try { aiGuard([D.title, D.text], aiRoster()); } catch (e) { N.err = "This passage has a student's name or code in it. Change it before saving."; return render(); }
+    let id;
+    const src = N.src || "typed in";
+    if (SERVER) { try { id = (await postJSON("api/passages", { band: N.band, title: D.title, text: D.text, topic: N.topic, source: src.slice(0, 120) })).id; } catch (e) { N.err = String(e.message || e); return render(); } }
+    else { let n = 0; addedPassages().filter(p => p.band === N.band).forEach(p => { n = Math.max(n, Number(p.id.split("-")[1])); }); id = `A${N.band}-${n + 1}`; }
+    flAddPassages([{ id, band: N.band, title: D.title, text: D.text, topic: N.topic, source: src.slice(0, 120) }]); saveAddedLocal();
+    state.flNew = null; state.flNotice = `Saved “${D.title}” (${id}), a ${flLevel(N.band).toLowerCase()} passage. To give it to a student, open their panel and choose it under Passage this week. ${SAVED_WHERE}`;
+    render(); window.scrollTo({ top: 0 });
+  }
+  async function flDeleteAdded(id) {
+    if (passageUsed(id)) { state.flNotice = "Students have read this passage or have it planned, so it is kept."; return render(); }
+    if (SERVER && !(await sync("api/passages/delete", { id }))) return;
+    flDropPassage(id); saveAddedLocal(); state.flNotice = "The passage is deleted."; render();
+  }
+
+  // ---------- Practice: tests, practice sheets and worksheet answer sheets (made and scanned in DI-ana) ----------
+  Object.assign(state, { setOpen: null, setDel: null });
+  const SET_WORD = { test: "Test", practice: "Practice sheet", worksheet: "Worksheet answers" };
+  const setsHere = () => (DATA.sets || []).filter(s => !s.subject || s.subject === state.subject).slice().sort((a, b) => b.week.localeCompare(a.week) || b.id - a.id);
+  const setDone = s => s.sheets.filter(x => x.status === "done");
+  function setsPanel() {
+    const list = setsHere();
+    return `<div class="panel" id="sets-panel" style="display:grid;gap:10px">
+      <div class="head"><h3>Tests and worksheets</h3><span class="muted small">Made and scanned in DI-ana</span></div>
+      <p class="small" style="max-width:86ch">In <a href="https://github.com/PurpleNinjaRadish/DI-ana" target="_blank" rel="noopener">DI-ana</a>, make a test or practice sheet with AI (you read and change every question first), or an answer sheet for a worksheet you have as a PDF: students answer the worksheet's questions by bubbling them on Odin's answer sheet. Each set prints with an answer key sheet: fill in the key's bubbles and scan it with the students' sheets, and DI-ana scores them all.</p>
+      ${list.length ? `<div class="scroller"><table class="ref p4t"><thead><tr><th>Week</th><th>Title</th><th>Kind</th><th>Questions</th><th>Answer key</th><th>Done</th><th>Average</th><th></th></tr></thead><tbody>
+        ${list.map(s => { const d = setDone(s), sc = d.filter(x => x.right != null), avg = sc.length ? Math.round(sc.reduce((t, x) => t + (100 * x.right) / s.total, 0) / sc.length) : null, open = state.setOpen === s.id;
+          return `<tr class="${open ? "p4open" : ""}"><td>${weekLabel(s.week)}</td><td>${esc(s.title)}</td><td>${SET_WORD[s.kind] || s.kind}</td><td class="n">${s.total}</td>
+            <td>${s.key.includes("?") ? `<span class="warn">not yet</span>` : "known"}</td><td class="n">${d.length} of ${s.sheets.length}</td><td class="n">${avg == null ? "–" : avg + "%"}</td>
+            <td><button class="btn ghost sm" data-ai="setopen" data-id="${s.id}" aria-expanded="${open}">${open ? "Close" : "Open"}</button></td></tr>`; }).join("")}
+      </tbody></table></div>` : `<p class="small muted">None yet.</p>`}
+      ${state.setOpen && list.some(s => s.id === state.setOpen) ? setPanel(list.find(s => s.id === state.setOpen)) : ""}
+    </div>`;
+  }
+  function setPanel(s) {
+    const C = s.content || {}, unknown = s.key.includes("?");
+    return `<div class="panel" style="display:grid;gap:10px">
+      <div class="head"><h3>${esc(s.title)}</h3><span class="muted small">${SET_WORD[s.kind] || s.kind} · ${s.total} questions · ${s.source ? esc(s.source) + " · " : ""}answer key sheet ${s.keySheet}</span></div>
+      ${unknown ? `<p class="small"><b>The answer key isn't known yet.</b> Fill in the bubbles on the answer key sheet and scan it with DI-ana, with or after the students' sheets: their scores appear then.</p>` : `<p class="small">Answer key: <span class="mono">${s.key.split("").map((k, i) => `${i + 1}${k}`).join(" ")}</span></p>`}
+      <div class="p4bar">${CAN_PRINT ? `<button class="btn" data-p4="print" data-which="set" data-id="${s.id}">Print</button>` : ""}${canSavePdf() ? `<button class="btn ${CAN_PRINT ? "ghost" : ""}" data-p4="pdf" data-which="set" data-id="${s.id}">Save as PDF</button>` : ""}
+        <button class="btn ghost" data-ai="setdel" data-id="${s.id}">Delete</button></div>
+      ${C.items ? `<details><summary class="small">The questions</summary><ol class="small">${C.items.map((it, i) => `<li>${esc(it.stem)}<br><span class="muted">${it.choices.map((c, k) => `${SH_LETTERS[k]}. ${esc(c)}${s.key[i] === SH_LETTERS[k] ? " ✓" : ""}`).join(" · ")}</span></li>`).join("")}</ol></details>` : ""}
+      <div class="scroller"><table class="ref"><thead><tr><th>Student</th><th>Sheet</th><th>Answers</th><th>Score</th><th>How</th></tr></thead><tbody>
+        ${s.sheets.map(x => `<tr><td>${whoIn(DATA, x.code)}</td><td class="n">${x.id}</td><td class="mono small">${x.status === "done" ? esc(x.answers || "") : "–"}</td>
+          <td class="n">${x.status !== "done" ? "–" : x.right == null ? `<span class="muted">waiting for the key</span>` : `${x.right} / ${s.total} (${p100(x.right, s.total)}%)`}</td><td class="small">${SRC_WORD[x.source] || ""}</td></tr>`).join("")}</tbody></table></div>
+      ${state.setDel === s.id ? `<div class="notice warn" style="display:grid;gap:8px"><b>Delete “${esc(s.title)}” and its ${setDone(s).length} results?</b><div class="p4bar"><button class="btn" data-ai="setdelyes" data-id="${s.id}">Delete</button><button class="btn ghost" data-ai="setdelno">Keep it</button></div></div>` : ""}
+    </div>`;
+  }
+  const setFind = id => { for (const c of CLASSES) { const s = (c.sets || []).find(x => x.id === id); if (s) return { set: s, cls: c }; } return null; };
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-ai]"); if (!t) return;
+    const a = t.dataset.ai;
+    if (a === "save") aiSave(false);
+    else if (a === "clearkey") aiSave(true);
+    else if (a === "test") aiTest();
+    else if (a === "write") flWrite();
+    else if (a === "type") { const N = flNewRead(); N.err = null; N.src = "typed in"; N.draft = { title: "", text: "", words: 0, warnings: [] }; render(); const el = document.getElementById("fln-title"); if (el) el.focus(); }
+    else if (a === "pcheck") { const N = flNewRead(); N.draft = aiCleanPassage(N.draft.title, N.draft.text, N.band); render(); }
+    else if (a === "psave") flSaveNew();
+    else if (a === "pdrop") { state.flNew = null; render(); }
+    else if (a === "pdel") flDeleteAdded(t.dataset.id);
+    else if (a === "setopen") { const id = Number(t.dataset.id); state.setOpen = state.setOpen === id ? null : id; state.setDel = null; render(); }
+    else if (a === "setdel") { state.setDel = Number(t.dataset.id); render(); }
+    else if (a === "setdelno") { state.setDel = null; render(); }
+    else if (a === "setdelyes") { const id = Number(t.dataset.id); sync("api/sets/delete", { classId: DATA.id, id }).then(ok => { if (!ok) return; DATA.sets = (DATA.sets || []).filter(s => s.id !== id); state.setOpen = null; state.setDel = null; state.pNotice = "Deleted."; render(); }); }
+  });
+  document.addEventListener("toggle", e => { if (e.target.id === "ai-details") { const o = e.target.open; if (o !== AIX.open) { AIX.open = o; render(); } } }, true);
+  document.addEventListener("input", e => {
+    if (e.target.id === "fln-text" && state.flNew && state.flNew.draft) { const n = e.target.value.split(/\s+/).filter(Boolean).length, el = document.getElementById("fln-count"); if (el) el.textContent = String(n); state.flNew.draft.text = e.target.value; }
+    if (e.target.id === "fln-title" && state.flNew && state.flNew.draft) state.flNew.draft.title = e.target.value;
+    if (e.target.id === "fln-topic") (state.flNew = state.flNew || flNewDefault()).topic = e.target.value;
+  });
+  document.addEventListener("change", e => {
+    if (e.target.id === "fln-band" || e.target.id === "fln-genre") flNewRead();
+  });
+  window.__odinDebug = Object.assign(window.__odinDebug || {}, { ai: () => ({ provider: AIX.cfg.provider, url: AIX.cfg.url, model: AIX.cfg.model, hasKey: !!AIX.cfg.key, server: AIX.server }), added: () => addedPassages().map(p => ({ id: p.id, band: p.band, title: p.title })) });
 
   // =====================================================================================================
   // Odin 0.6: Odin as an app on phones and tablets. Installable from the browser (no app store), a phone layout
