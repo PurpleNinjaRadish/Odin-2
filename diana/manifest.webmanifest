@@ -1,7 +1,7 @@
 {
- "name": "DI-ana demo \u00b7 Odin's sheet scanner",
+ "name": "DI-ana demo \u00b7 Diagnostic testing and Intervention automatic analysis",
  "short_name": "DI-ana",
- "description": "Reads Odin's paper sheets with the camera. A demo with invented students.",
+ "description": "Reads Odin's paper pre-checks, practice sheets and post-checks with the camera and sends only the answers to Odin. A demo with invented students.",
  "id": "./",
  "start_url": "./",
  "scope": "./",
