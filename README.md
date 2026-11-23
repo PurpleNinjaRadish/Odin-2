@@ -2,7 +2,7 @@
 
 **Open the demo: [purpleninjaradish.github.io/Odin-2](https://purpleninjaradish.github.io/Odin-2/)**
 
-Odin, the Secure Student Analyzer, version 0.9.4-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
+Odin, the Secure Student Analyzer, version 0.9.5-alpha. Every student and teacher in this demo is invented. Never enter real student information here: the real Odin runs offline on the Project Cerberus server at school.
 
 ## Test it on another device
 
@@ -19,6 +19,8 @@ To install it as an app with its own icon:
 | Computer | In Chrome or Edge, click the install button at the right of the address bar |
 
 On a phone, the bar at the bottom holds Class, Student, Focus, Practice and Fluency, and **More** has the other views. **Menu** (top right) has the class, Reading or Math, and Codes or Names.
+
+**Scan the sheets with a phone: DI-ana (new).** [DI-ana](https://github.com/PurpleNinjaRadish/DI-ana) is a separate app that reads Odin's paper pre-checks, practice sheets and post-checks with the phone's camera: hold the phone over each sheet until it beeps. Try its demo here: **[DI-ana demo](https://purpleninjaradish.github.io/Odin-2/diana/)** (print its sample sheets, fill in a few bubbles, and scan them; or try pretend pictures). The Android app: [diana-android.apk](https://github.com/PurpleNinjaRadish/DI-ana/raw/android-build/diana-android.apk). DI-ana's demo has its own sheets: sheets printed from this Odin demo have other numbers. Odin's own **Scan sheets** now reads phone photos too.
 
 **Practice sheets on paper or as PDF (0.9.4).** On the **Practice** tab, under **View, print or save as PDF**, pick **Pre-checks**, **Practice packets**, **Post-checks** or **Answer keys**, then **Print** or **Save as PDF**. Tap a sheet in a student's row to save just that sheet, or all of that student's sheets. Print at 100% (actual size): a printed PDF scans back into Odin like any printed sheet.
 
@@ -62,7 +64,7 @@ On Android, the **Odin app** (for teachers) adds the microphone to fluency pract
 
 ![QR code for the Odin app for Android](qr-android.png)
 
-**Already have the app?** Install this one over it (version 0.9.4). For students' devices, use the **Odin Student** app above, or this app set to **Students**.
+**Already have the app?** Install this one over it (version 0.9.5). For students' devices, use the **Odin Student** app above, or this app set to **Students**.
 
 1. Open the download. Android asks to allow installing apps from this source (the browser or Files): allow it, then **Install**. If Google Play Protect warns about an unknown app, choose **More details**, then **Install anyway**: it is a test build, signed with a test key, not from the Play Store.
 2. Open **Odin**. Under **Who uses this device?** choose **A teacher**, or **Students** to open Odin Student (as in 0.8.2). Then **Try the demo (invented students)**.

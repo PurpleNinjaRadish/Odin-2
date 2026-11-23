@@ -3912,7 +3912,7 @@ const LIBRARY = {
 
 // ===== Odin 0.3: progress monitoring, weekly focus, interests and content matching =====
 // Plain code, no AI. Every number on screen can be traced to a row in the data.
-const ODIN_VERSION = "0.9.4-alpha";
+const ODIN_VERSION = "0.9.5-alpha";
 const CHECK_PASS = 0.8;   // a post-check at or above 80% means the weekly skill is met
 const CHECK_LOW = 0.6;    // two post-checks in a row under 60% on the same skill: not responding yet
 const YEAR_GROWTH = 1.0;  // a typical year of growth on the grade-level scale
@@ -5839,6 +5839,77 @@ function pdfArc(x1, y1, rx, ry, rotDeg, large, sweep, x2, y2) {
   return out;
 }
 
+// ===== Odin 0.9.5: one practice sheet as a PDF page (pdf.js), drawn from the same millimetre layout as the printed page =====
+// Shared by Odin (Save as PDF) and DI-ana (its demo's sample sheets), so a sheet from either scans the same way.
+// o.names: print the student's name (otherwise their code); o.week: the week as words, such as "Oct 5–9, 2026".
+function shPdfSheetPage(doc, rec, cls, o = {}) {
+  const sp = shBuildSheet(rec), L = sp.layout, bits = shCodeBits(rec.id), s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
+  doc.page();
+  SH_MARKS.forEach(([x, y]) => doc.rect(x - SH_MARK / 2, y - SH_MARK / 2, SH_MARK, SH_MARK, { fill: "#000" }));
+  shCodeCells().forEach((c, i) => { if (bits[i]) doc.rect(c.x, c.y, c.w, c.h, { fill: "#000" }); });
+  doc.text(40, 18.9, `Odin sheet ${rec.id} · keep this strip clean`, { f: "M", pt: 6, color: "#555" });
+  const wk = `Week of ${o.week || rec.week}`;
+  doc.text(14, 25, pdfFit(sp.title, "B", 14, 134), { f: "B", pt: 14 });
+  doc.text(201.9, 25, wk, { pt: 9.5, color: "#333", align: "right" });
+  // Name: ____  Date: ____            Score: _____ / 8
+  const nb = 31.4, gap = 1.6, nm = pdfFit(o.names ? s.name : s.code, "B", 10.5, 62);
+  let x = 14;
+  doc.text(x, nb, "Name:", { pt: 10.5 }); x += pdfWidth("Name: ", "R", 10.5);
+  doc.text(x, nb, nm, { f: "B", pt: 10.5 }); x += pdfWidth(nm, "B", 10.5) + gap;
+  doc.line(x, nb + 0.3, x + 38, nb + 0.3, { lw: 0.3 }); x += 38 + gap;
+  doc.text(x, nb, "Date:", { pt: 10.5 }); x += pdfWidth("Date:", "R", 10.5) + gap;
+  doc.line(x, nb + 0.3, x + 26, nb + 0.3, { lw: 0.3 });
+  doc.text(201.9, nb, `Score: _____ / ${sp.total}`, { pt: 10.5, color: "#333", align: "right" });
+  const dlh = 9.5 * SH_PT * 1.25;
+  pdfWrap(sp.directions, "R", 9.5, 187.9).forEach((l, i) => doc.text(14, OdinPdf.mid(33.6 + i * dlh, dlh, 9.5), l, { pt: 9.5, color: "#222" }));
+  if (L.passage) {
+    const P = L.passage, inner = P.w - 7.6;
+    doc.rect(P.x + 0.15, P.y + 0.15, P.w - 0.3, P.h - 0.3, { stroke: "#888", lw: 0.3, r: 2 });
+    doc.text(P.x + 3.8, P.y + 5.4, pdfFit(P.title, "B", 10.5, inner), { f: "B", pt: 10.5 });
+    const room = Math.max(1, Math.floor((P.h - 7.2 - 1.9) / P.lh + 0.01));
+    pdfWrap(sp.passage.text, "R", P.pt, inner).slice(0, room).forEach((l, i) => doc.text(P.x + 3.8, OdinPdf.mid(P.y + 7.2 + i * P.lh, P.lh, P.pt), l, { pt: P.pt }));
+  }
+  L.items.forEach((it, i) => {
+    const item = sp.items[i], r = Math.min(2.6, it.lh * 0.62), npt = Math.max(7, it.pt - 3);
+    doc.circle(it.num.x, it.num.y, r - 0.175, { stroke: "#000", lw: 0.35 });
+    doc.text(it.num.x, OdinPdf.mid(it.num.y - r, 2 * r, npt), String(it.n), { f: "B", pt: npt, align: "center" });
+    // the question, wrapped to its box; a question too long for its box ends with "…" (the layout leaves room, so this is rare)
+    const room = Math.max(1, Math.round(it.stem.h / it.lh));
+    let lines = pdfWrap(item.stem, "R", it.pt, it.stem.w);
+    if (lines.length > room) lines = lines.slice(0, room - 1).concat(pdfFit(lines.slice(room - 1).join(" ") + " …", "R", it.pt, it.stem.w));
+    const base = k => OdinPdf.mid(it.stem.y + k * it.lh, it.lh, it.pt);
+    lines.forEach((l, k) => doc.text(it.stem.x, base(k), l, { pt: it.pt }));
+    if (item.review) {   // a small "review" tag after the question
+      const tw = pdfWidth("review", "R", 7.5) + 2, last = lines.length - 1, after = it.stem.x + pdfWidth(lines[last], "R", it.pt) + 1.4;
+      const [tx, k] = after + tw <= it.stem.x + it.stem.w || lines.length >= room ? [after, last] : [it.stem.x, last + 1];
+      doc.rect(tx, base(k) - 2.75, tw, 3.4, { stroke: "#888", lw: 0.25, r: 1 });
+      doc.text(tx + 1, base(k) - 0.15, "review", { pt: 7.5, color: "#555" });
+    }
+    if (it.hint) {
+      const H = it.hint, hlh = H.pt * SH_PT * 1.25, hroom = Math.max(1, Math.round(H.h / hlh));
+      let hl = pdfWrap("Hint: " + item.hint, "I", H.pt, H.w);
+      if (hl.length > hroom) hl = hl.slice(0, hroom - 1).concat(pdfFit(hl.slice(hroom - 1).join(" "), "I", H.pt, H.w));
+      hl.forEach((l, k) => doc.text(H.x, OdinPdf.mid(H.y + k * hlh, hlh, H.pt), l, { f: "I", pt: H.pt, color: "#333" }));
+    }
+    if (it.fig && it.fig.h > 2) doc.svg(shFig(item.fig, it.fig.w, it.fig.h), it.fig.x, it.fig.y, it.fig.w, it.fig.h);
+    it.choices.forEach(c => {
+      const bpt = (c.r * 1.05) / SH_PT, tx = c.bx + c.r + 1.6, tw = c.w - (c.bx - c.x) - c.r - 1.8;
+      doc.circle(c.bx, c.by, c.r - 0.175, { stroke: "#222", lw: 0.35 });
+      doc.text(c.bx, OdinPdf.mid(c.by - c.r, 2 * c.r, bpt), c.letter, { f: "B", pt: bpt, color: "#b4b4b4", align: "center" });
+      if (c.lines > 1) {
+        const clh = it.pt * SH_PT * 1.15; let cl = pdfWrap(c.text, "R", it.pt, tw);
+        if (cl.length > 2) cl = [cl[0], pdfFit(cl.slice(1).join(" "), "R", it.pt, tw)];
+        const top = c.y + (c.h - cl.length * clh) / 2;
+        cl.forEach((l, k) => doc.text(tx, OdinPdf.mid(top + k * clh, clh, it.pt), l, { pt: it.pt }));
+      } else doc.text(tx, OdinPdf.mid(c.y, c.h, it.pt), pdfFit(c.text, "R", it.pt, tw), { pt: it.pt });
+    });
+  });
+  const foot = pdfWrap(`Fill in bubbles completely with a pencil. Erase cleanly to change an answer. Do not write on the black squares. · ${cls.teacher} · Room ${cls.room}`, "R", 7, 164);
+  foot.slice(0, 2).forEach((l, k) => doc.text(108, OdinPdf.mid(261.6 + k * 2.9, 2.9, 7), l, { pt: 7, color: "#555", align: "center" }));
+}
+
+if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { shPdfSheetPage });
+
 // ===== Odin 0.4: reading scanned answer sheets, inside the browser =====
 // Nothing leaves the computer: images are decoded and read in this page, and only the answers are saved.
 // Steps: find the four corner squares -> fit a perspective transform from the page (mm) to the image (pixels)
@@ -5896,6 +5967,86 @@ function scFindMarks(g, w, h) {
     return n ? [sx / n, sy / n] : [c.x * d.f, c.y * d.f];
   });
 }
+// 0.9.5: the corner squares in a phone camera's picture (DI-ana, and phone photos dropped into Odin). The page may fill
+// only part of the picture, sit on a desk, lean in perspective and have uneven light, so this finder compares each pixel
+// with its neighbourhood instead of one threshold for the whole picture, and picks the four squares that frame the page:
+// the outermost square-ish dark spots of a similar size, about as far apart as the page's corner squares. Same output as
+// scFindMarks. opt.maxDim: how far the picture is shrunk first (smaller is faster, for the live camera preview).
+function scFindMarksCam(g, w, h, opt = {}) {
+  const d = scDownscale(g, w, h, opt.maxDim || 1000), W = d.w, Hh = d.h, N = W * Hh, W1 = W + 1;
+  const I = new Float64Array(W1 * (Hh + 1));
+  for (let y = 0; y < Hh; y++) { let row = 0; for (let x = 0; x < W; x++) { row += d.g[y * W + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; } }
+  const r = Math.max(6, Math.round(Math.min(W, Hh) / 9)), mean = new Float32Array(N);
+  for (let y = 0; y < Hh; y++) {
+    const y0 = Math.max(0, y - r), y1 = Math.min(Hh, y + r + 1);
+    for (let x = 0; x < W; x++) {
+      const x0 = Math.max(0, x - r), x1 = Math.min(W, x + r + 1);
+      mean[y * W + x] = (I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0]) / ((x1 - x0) * (y1 - y0));
+    }
+  }
+  const sum = (a, b, c, e) => I[e * W1 + c] - I[b * W1 + c] - I[e * W1 + a] + I[b * W1 + a];
+  const lab = new Int32Array(N), stack = new Int32Array(N), cands = [], big = Math.min(W, Hh) / 5, dark = new Uint8Array(N);
+  // Two passes: a strict one keeps a square apart from a dark desk right next to the page; a looser one finds it in shadow.
+  for (const k of [0.45, 0.62]) {
+    for (let p = 0; p < N; p++) { dark[p] = d.g[p] < mean[p] * k && d.g[p] < mean[p] - 25 ? 1 : 0; lab[p] = 0; }
+    let next = 0;
+    for (let p0 = 0; p0 < N; p0++) {
+      if (lab[p0] || !dark[p0]) continue;
+      next++; let sp = 0, area = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1, sx = 0, sy = 0, edge = false;
+      stack[sp++] = p0; lab[p0] = next;
+      while (sp) {
+        const p = stack[--sp], x = p % W, y = (p - x) / W;
+        area++; sx += x; sy += y; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        if (x === 0 || y === 0 || x === W - 1 || y === Hh - 1) edge = true;
+        if (x > 0 && !lab[p - 1] && dark[p - 1]) { lab[p - 1] = next; stack[sp++] = p - 1; }
+        if (x < W - 1 && !lab[p + 1] && dark[p + 1]) { lab[p + 1] = next; stack[sp++] = p + 1; }
+        if (y > 0 && !lab[p - W] && dark[p - W]) { lab[p - W] = next; stack[sp++] = p - W; }
+        if (y < Hh - 1 && !lab[p + W] && dark[p + W]) { lab[p + W] = next; stack[sp++] = p + W; }
+      }
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+      if (edge || area < 16 || bw > big || bh > big || bw / bh > 1.7 || bh / bw > 1.7 || area / (bw * bh) < 0.55) continue;
+      // a corner square is black on white paper: much darker than a ring of paper around it (spots on a desk are not)
+      const pad = Math.max(2, Math.round(Math.max(bw, bh) * 0.5)), X0 = Math.max(0, x0 - pad), Y0 = Math.max(0, y0 - pad), X1 = Math.min(W, x1 + 1 + pad), Y1 = Math.min(Hh, y1 + 1 + pad);
+      const inner = sum(x0, y0, x1 + 1, y1 + 1), nIn = bw * bh, ring = (sum(X0, Y0, X1, Y1) - inner) / Math.max(1, (X1 - X0) * (Y1 - Y0) - nIn), blob = inner / nIn;
+      if (ring < blob * 1.8 || ring - blob < 50) continue;
+      const c = { x: sx / area, y: sy / area, s: Math.sqrt(area), x0, y0, x1, y1 };
+      if (!cands.some(o => c.x >= o.x0 && c.x <= o.x1 && c.y >= o.y0 && c.y <= o.y1)) cands.push(c);   // found in both passes: keep the first
+    }
+  }
+  if (opt.debug) opt.debug.cands = cands.map(c => [Math.round(c.x * d.f), Math.round(c.y * d.f), Math.round(c.s * d.f)]);
+  if (cands.length < 4) return null;
+  // for each corner of the picture, the few spots furthest out in that direction; then the best frame of four
+  const dirs = [[-1, -1], [1, -1], [1, 1], [-1, 1]], K = Math.min(8, cands.length);
+  const tops = dirs.map(([a, b]) => cands.slice().sort((p, q) => (b * q.y + a * q.x) - (b * p.y + a * p.x)).slice(0, K));
+  const want = SH_MARK / ((SH_MARKS[1][0] - SH_MARKS[0][0] + SH_MARKS[3][1] - SH_MARKS[0][1]) / 2), aspect = (SH_MARKS[3][1] - SH_MARKS[0][1]) / (SH_MARKS[1][0] - SH_MARKS[0][0]);
+  const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x), dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  let best = null, bestScore = 0;
+  for (const A of tops[0]) for (const B of tops[1]) for (const C of tops[2]) for (const D of tops[3]) {
+    const q = [A, B, C, D];
+    if (new Set(q).size < 4) continue;
+    const ss = q.map(c => c.s), smin = Math.min(...ss), smax = Math.max(...ss);
+    if (smax > smin * 2.2) continue;
+    const turns = [cross(A, B, C), cross(B, C, D), cross(C, D, A), cross(D, A, B)];
+    if (!(turns.every(t => t > 0) || turns.every(t => t < 0))) continue;   // a convex frame, corners in order
+    const e = [dist(A, B), dist(B, C), dist(C, D), dist(D, A)], mean = (e[0] + e[1] + e[2] + e[3]) / 4;
+    if (Math.min(...e) < mean * 0.45) continue;
+    const ratio = (ss.reduce((t, x) => t + x, 0) / 4) / mean;
+    if (ratio < want * 0.45 || ratio > want * 2.2) continue;                // squares about the size of corner squares for a frame this big
+    const ar = (e[1] + e[3]) / (e[0] + e[2]);
+    const ok = Math.max(Math.min(ar / aspect, aspect / ar), Math.min(ar * aspect, 1 / (ar * aspect)));   // the page upright or on its side
+    if (ok < 0.55) continue;
+    const area = Math.abs(turns[0] + turns[2]) / 2, score = area * ok * (smin / smax);
+    if (score > bestScore) { bestScore = score; best = q; }
+  }
+  if (!best) return null;
+  return best.map(c => {
+    const X0 = Math.max(0, Math.floor((c.x0 - 2) * d.f)), Y0 = Math.max(0, Math.floor((c.y0 - 2) * d.f)), X1 = Math.min(w - 1, Math.ceil((c.x1 + 3) * d.f)), Y1 = Math.min(h - 1, Math.ceil((c.y1 + 3) * d.f));
+    let mn = 255, mx = 0; for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) { const v = g[y * w + x]; if (v < mn) mn = v; if (v > mx) mx = v; }
+    const th = (mn + mx) / 2; let sx = 0, sy = 0, n = 0;
+    for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) if (g[y * w + x] < th) { sx += x; sy += y; n++; }
+    return n ? [sx / n, sy / n] : [c.x * d.f, c.y * d.f];
+  });
+}
 // perspective transform from 4 point pairs (src -> dst), as a 3x3 matrix with h33 = 1
 function scHomography(src, dst) {
   const A = [], bv = [];
@@ -5925,7 +6076,14 @@ function scLevels(img, H) {
 function scReadCode(img, H) {
   const { black, white } = scLevels(img, H);
   if (white - black < 40) return null;
-  const thr = (black + white) / 2, bits = shCodeCells().map(c => (scMean(img, H, scGrid(c.cx, c.cy, 0.9, 1.4, 3)) < thr ? 1 : 0));
+  // 0.9.5: light can change across the strip in a camera picture, so each square is judged against the blank paper just
+  // above it and the corner squares' black, from the left one to the right one.
+  const bl = scMean(img, H, scGrid(SH_MARKS[0][0], SH_MARKS[0][1], 2.8, 2.8, 5)), br = scMean(img, H, scGrid(SH_MARKS[1][0], SH_MARKS[1][1], 2.8, 2.8, 5));
+  const bits = shCodeCells().map(c => {
+    const t = (c.cx - SH_MARKS[0][0]) / (SH_MARKS[1][0] - SH_MARKS[0][0]), b = bl + (br - bl) * t;
+    const w = Math.max(scMean(img, H, [[c.cx - 1.2, 9.4], [c.cx, 9.4], [c.cx + 1.2, 9.4], [c.cx, 8.6]]), b + 30);
+    return scMean(img, H, scGrid(c.cx, c.cy, 0.9, 1.4, 3)) < (b + w) / 2 ? 1 : 0;
+  });
   return { id: shCodeRead(bits), black, white, bits };
 }
 // one bubble's darkness: 0 = empty paper, 1 = as dark as the corner squares
@@ -5950,9 +6108,19 @@ function scReadBubbles(img, H, layout, black, white) {
   return { answers: answers.join(""), flags, vals };
 }
 // Read one page. lookup(id) returns the sheet spec (with layout), or null if Odin does not know that sheet number.
-function scReadPage(img, lookup, forceId) {
-  const marks = scFindMarks(img.g, img.w, img.h);
-  if (!marks) return { ok: false, reason: "marks" };
+// 0.9.5: first the scanner's way of finding the corner squares, then the camera's (scFindMarksCam); opt.camera: only the camera's.
+function scReadPage(img, lookup, forceId, opt = {}) {
+  let last = { ok: false, reason: "marks" };
+  for (const find of opt.camera ? [scFindMarksCam] : [scFindMarks, scFindMarksCam]) {
+    const marks = find(img.g, img.w, img.h);
+    if (!marks) continue;
+    const r = scReadMarked(img, marks, lookup, forceId);
+    if (r.ok || r.reason === "unknown") return r;
+    last = r;
+  }
+  return last;
+}
+function scReadMarked(img, marks, lookup, forceId) {
   let hit = null, guess = null;
   const want = forceId ? shCodeBits(forceId) : null;
   for (let k = 0; k < 4 && !hit; k++) {
@@ -6098,7 +6266,7 @@ function scPicture(img, box, H, maxW) {
   cx.putImageData(id, 0, 0);
   return cv.toDataURL("image/jpeg", 0.75);
 }
-if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { scFindMarks, scHomography, scMap, scReadPage, scReadCode, scSynth, scPdfImages, scUnpredict, scOtsu });
+if (typeof module !== "undefined") module.exports = Object.assign(module.exports || {}, { scFindMarks, scFindMarksCam, scReadMarked, scHomography, scMap, scReadPage, scReadCode, scSynth, scPdfImages, scUnpredict, scOtsu });
 
 // ---------- Odin 0.5: passages for fluency practice ----------
 // Written for Odin (not taken from DIBELS or any published program). Six per level, kindergarten to grade 5.
@@ -7762,7 +7930,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   function howV3() {
     return `<div class="panel" style="display:grid;gap:12px">
       <div class="head"><h2>What's new in Odin ${ODIN_VERSION}</h2><span class="muted small">Alpha build</span></div>
-      <div style="display:grid;gap:6px"><h3>New in 0.9.4: practice sheets as PDF files</h3><p class="small" style="max-width:80ch">On the Practice tab, <b>View, print or save as PDF</b> shows the pre-checks, practice packets, post-checks or answer keys, with <b>Print</b> and <b>Save as PDF</b>. Odin draws the PDF itself, from the same measurements as the printed sheet, so a printed PDF scans like any printed sheet: print it at 100% (actual size). A sheet's panel saves that one sheet, or shows all of one student's sheets. <b>Include the Learn it pages</b> can be unticked. File names have the subject and week or the sheet number, never a name. The online preview can't open the print dialog, so there <b>Save as PDF</b> asks first and saves a file to print from. The Odin app on Android prints but doesn't save PDFs, since nothing about students is kept on phones.</p></div>
+      <div style="display:grid;gap:6px"><h3>New in 0.9.5: DI-ana scans the sheets with a phone</h3><p class="small" style="max-width:80ch"><a href="https://github.com/PurpleNinjaRadish/DI-ana" target="_blank" rel="noopener">DI-ana</a> is a separate Android app for teachers: hold the phone over each pre-check, practice sheet or post-check until it beeps, check the few answers it flags, then press Send. Only the answers go to Odin, and DI-ana keeps nothing on the phone. Odin's own <b>Scan sheets</b> now reads phone photos too: a page on a desk, at an angle or in uneven light. A pre- or post-check score now goes on the week's check on the server, one student at a time, so scores saved from different phones and computers never replace each other.</p></div>
+      <div style="display:grid;gap:6px"><h3>0.9.4: practice sheets as PDF files</h3><p class="small" style="max-width:80ch">On the Practice tab, <b>View, print or save as PDF</b> shows the pre-checks, practice packets, post-checks or answer keys, with <b>Print</b> and <b>Save as PDF</b>. Odin draws the PDF itself, from the same measurements as the printed sheet, so a printed PDF scans like any printed sheet: print it at 100% (actual size). A sheet's panel saves that one sheet, or shows all of one student's sheets. <b>Include the Learn it pages</b> can be unticked. File names have the subject and week or the sheet number, never a name. The online preview can't open the print dialog, so there <b>Save as PDF</b> asks first and saves a file to print from. The Odin app on Android prints but doesn't save PDFs, since nothing about students is kept on phones.</p></div>
       <div style="display:grid;gap:6px"><h3>0.9.3: the student side back to 0.8.2's way</h3><p class="small" style="max-width:80ch">The microphone worked on Android in 0.8.2, when Odin Student was a setting in the Odin app. From 0.9.0 the new Odin Student app got "the speech recognizer is busy" from Android. The Odin app's listening code is back to 0.8.2's, <b>Who uses this device? → Students</b> is back in the Odin app, and the Odin Student app's <b>Try the demo</b> opens the online demo, as students' devices did in 0.8.2. On a students' device, the app asks for the microphone as Odin Student opens. The practice changes of 0.9 (quicker help, the word said back right, praise) stay.</p></div>
       <div style="display:grid;gap:6px"><h3>Fixed in 0.9.2: "the speech recognizer is busy"</h3><p class="small" style="max-width:80ch">On a phone, Android's speech service can say it's busy for a few seconds: the first time a new app such as Odin Student uses it, or just after Odin checked the device. Odin gave up after about a second and asked for the teacher. Now the Odin app waits about 8 seconds, starting over with a new recognizer, and Odin tries twice more before asking for the teacher. The device check lets go of its recognizer before a reading can start. The teacher screen says which answer Android gave and has <b>Try again</b>, which starts again at the microphone check.</p></div>
       <div style="display:grid;gap:6px"><h3>Fixed in 0.9.1: a new Odin Student app hears the student</h3><p class="small" style="max-width:80ch">A newly installed app doesn't have the microphone yet. Odin used to ask for it only once a reading began, so its speech check could fail first (and the page said the device couldn't listen), or Android's question came up in the middle of the microphone check. Now the app asks for the microphone before the speech check, and the page waits for the answer. If it isn't allowed, the page says so, with <b>Allow the microphone</b> and where to find it in Android's Settings. The microphone check's 8 seconds start only once the device is listening ("Listening… say it now.").</p></div>
@@ -8625,7 +8794,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       let k = cls.checks.find(x => x.id === kid);
       if (!k) { k = { id: kid, subject: rec.subject, skill: rec.skill, week: rec.week, kind: rec.kind, form: rec.kind === "pre" ? "A" : "B", total: sp.total, title: `Odin sheet · ${SH_KIND[rec.kind]} · ${sp.skillName}`.slice(0, 120), level: rec.level, scores: {} }; cls.checks.push(k); }
       k.scores[rec.code] = sc.right;
-      sync("api/check", { classId: cls.id, check: k });
+      // 0.9.5: the server puts this score on the week's check itself (api/sheet/result), one student at a time, so a score
+      // saved meanwhile from DI-ana or Odin Student is never replaced by this page's older copy of the check.
     }
     saveExtra();
     return sc;
@@ -8850,71 +9020,8 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
     return doc.pages.length ? doc.bytes() : null;
   }
   const PT_MM = 0.3528;
-  function pdfSheetPage(doc, rec, cls) {
-    const sp = specOf(rec), L = sp.layout, bits = shCodeBits(rec.id), s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
-    doc.page();
-    SH_MARKS.forEach(([x, y]) => doc.rect(x - SH_MARK / 2, y - SH_MARK / 2, SH_MARK, SH_MARK, { fill: "#000" }));
-    shCodeCells().forEach((c, i) => { if (bits[i]) doc.rect(c.x, c.y, c.w, c.h, { fill: "#000" }); });
-    doc.text(40, 18.9, `Odin sheet ${rec.id} · keep this strip clean`, { f: "M", pt: 6, color: "#555" });
-    const wk = `Week of ${weekLabel(rec.week)}`;
-    doc.text(14, 25, pdfFit(sp.title, "B", 14, 134), { f: "B", pt: 14 });
-    doc.text(201.9, 25, wk, { pt: 9.5, color: "#333", align: "right" });
-    // Name: ____  Date: ____            Score: _____ / 8
-    const nb = 31.4, gap = 1.6, nm = pdfFit(state.names ? s.name : s.code, "B", 10.5, 62);
-    let x = 14;
-    doc.text(x, nb, "Name:", { pt: 10.5 }); x += pdfWidth("Name: ", "R", 10.5);
-    doc.text(x, nb, nm, { f: "B", pt: 10.5 }); x += pdfWidth(nm, "B", 10.5) + gap;
-    doc.line(x, nb + 0.3, x + 38, nb + 0.3, { lw: 0.3 }); x += 38 + gap;
-    doc.text(x, nb, "Date:", { pt: 10.5 }); x += pdfWidth("Date:", "R", 10.5) + gap;
-    doc.line(x, nb + 0.3, x + 26, nb + 0.3, { lw: 0.3 });
-    doc.text(201.9, nb, `Score: _____ / ${sp.total}`, { pt: 10.5, color: "#333", align: "right" });
-    const dlh = 9.5 * PT_MM * 1.25;
-    pdfWrap(sp.directions, "R", 9.5, 187.9).forEach((l, i) => doc.text(14, OdinPdf.mid(33.6 + i * dlh, dlh, 9.5), l, { pt: 9.5, color: "#222" }));
-    if (L.passage) {
-      const P = L.passage, inner = P.w - 7.6;
-      doc.rect(P.x + 0.15, P.y + 0.15, P.w - 0.3, P.h - 0.3, { stroke: "#888", lw: 0.3, r: 2 });
-      doc.text(P.x + 3.8, P.y + 5.4, pdfFit(P.title, "B", 10.5, inner), { f: "B", pt: 10.5 });
-      const room = Math.max(1, Math.floor((P.h - 7.2 - 1.9) / P.lh + 0.01));
-      pdfWrap(sp.passage.text, "R", P.pt, inner).slice(0, room).forEach((l, i) => doc.text(P.x + 3.8, OdinPdf.mid(P.y + 7.2 + i * P.lh, P.lh, P.pt), l, { pt: P.pt }));
-    }
-    L.items.forEach((it, i) => {
-      const item = sp.items[i], r = Math.min(2.6, it.lh * 0.62), npt = Math.max(7, it.pt - 3);
-      doc.circle(it.num.x, it.num.y, r - 0.175, { stroke: "#000", lw: 0.35 });
-      doc.text(it.num.x, OdinPdf.mid(it.num.y - r, 2 * r, npt), String(it.n), { f: "B", pt: npt, align: "center" });
-      // the question, wrapped to its box; a question too long for its box ends with "…" (the layout leaves room, so this is rare)
-      const room = Math.max(1, Math.round(it.stem.h / it.lh));
-      let lines = pdfWrap(item.stem, "R", it.pt, it.stem.w);
-      if (lines.length > room) lines = lines.slice(0, room - 1).concat(pdfFit(lines.slice(room - 1).join(" ") + " …", "R", it.pt, it.stem.w));
-      const base = k => OdinPdf.mid(it.stem.y + k * it.lh, it.lh, it.pt);
-      lines.forEach((l, k) => doc.text(it.stem.x, base(k), l, { pt: it.pt }));
-      if (item.review) {   // a small "review" tag after the question
-        const tw = pdfWidth("review", "R", 7.5) + 2, last = lines.length - 1, after = it.stem.x + pdfWidth(lines[last], "R", it.pt) + 1.4;
-        const [tx, k] = after + tw <= it.stem.x + it.stem.w || lines.length >= room ? [after, last] : [it.stem.x, last + 1];
-        doc.rect(tx, base(k) - 2.75, tw, 3.4, { stroke: "#888", lw: 0.25, r: 1 });
-        doc.text(tx + 1, base(k) - 0.15, "review", { pt: 7.5, color: "#555" });
-      }
-      if (it.hint) {
-        const H = it.hint, hlh = H.pt * PT_MM * 1.25, hroom = Math.max(1, Math.round(H.h / hlh));
-        let hl = pdfWrap("Hint: " + item.hint, "I", H.pt, H.w);
-        if (hl.length > hroom) hl = hl.slice(0, hroom - 1).concat(pdfFit(hl.slice(hroom - 1).join(" "), "I", H.pt, H.w));
-        hl.forEach((l, k) => doc.text(H.x, OdinPdf.mid(H.y + k * hlh, hlh, H.pt), l, { f: "I", pt: H.pt, color: "#333" }));
-      }
-      if (it.fig && it.fig.h > 2) doc.svg(shFig(item.fig, it.fig.w, it.fig.h), it.fig.x, it.fig.y, it.fig.w, it.fig.h);
-      it.choices.forEach(c => {
-        const bpt = (c.r * 1.05) / PT_MM, tx = c.bx + c.r + 1.6, tw = c.w - (c.bx - c.x) - c.r - 1.8;
-        doc.circle(c.bx, c.by, c.r - 0.175, { stroke: "#222", lw: 0.35 });
-        doc.text(c.bx, OdinPdf.mid(c.by - c.r, 2 * c.r, bpt), c.letter, { f: "B", pt: bpt, color: "#b4b4b4", align: "center" });
-        if (c.lines > 1) {
-          const clh = it.pt * PT_MM * 1.15; let cl = pdfWrap(c.text, "R", it.pt, tw);
-          if (cl.length > 2) cl = [cl[0], pdfFit(cl.slice(1).join(" "), "R", it.pt, tw)];
-          const top = c.y + (c.h - cl.length * clh) / 2;
-          cl.forEach((l, k) => doc.text(tx, OdinPdf.mid(top + k * clh, clh, it.pt), l, { pt: it.pt }));
-        } else doc.text(tx, OdinPdf.mid(c.y, c.h, it.pt), pdfFit(c.text, "R", it.pt, tw), { pt: it.pt });
-      });
-    });
-    const foot = pdfWrap(`Fill in bubbles completely with a pencil. Erase cleanly to change an answer. Do not write on the black squares. · ${cls.teacher} · Room ${cls.room}`, "R", 7, 164);
-    foot.slice(0, 2).forEach((l, k) => doc.text(108, OdinPdf.mid(261.6 + k * 2.9, 2.9, 7), l, { pt: 7, color: "#555", align: "center" }));
-  }
+  // 0.9.5: the sheet itself is drawn by shPdfSheetPage (sheets_pdf.js), which DI-ana uses too.
+  const pdfSheetPage = (doc, rec, cls) => shPdfSheetPage(doc, rec, cls, { names: state.names, week: weekLabel(rec.week) });
   // The Learn it page before practice 1: the page header, the title, the steps, a worked example and a reminder.
   function pdfLearnPage(doc, rec, cls) {
     const sp = specOf(rec), Ln = sp.learn, s = cls.students.find(x => x.code === rec.code) || { code: rec.code, name: rec.code };
@@ -8993,6 +9100,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
       <div class="head"><h3>Scan sheets</h3><button class="btn ghost sm" data-p4="scanclose">Close</button></div>
       <p class="small" style="max-width:80ch">Feed the stack through the scanner in <b>grayscale or color at 200 to 300 dpi</b>, saved as PDF, JPEG or PNG, then drop the files here. Pages can be in any order or upside down. Odin reads them inside this browser: the images are never saved or sent anywhere, only the answers.</p>
       <label class="drop" id="scan-drop"><span>Drop scanned files here, or</span><span class="btn upl">Choose files<input type="file" id="scan-files" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-label="Choose scanned files"></span></label>
+      <p class="small muted" style="max-width:80ch">Phone photos work too: the whole page, flat, in good light. Or use <a href="https://github.com/PurpleNinjaRadish/DI-ana" target="_blank" rel="noopener">DI-ana</a>, the phone app that reads each sheet as you hold the phone over it.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost sm" data-p4="sample">Try it with sample scans</button><span class="small muted">Makes pretend scans of this week's sheets, with a few marks to review, and reads them.</span></div>
       ${S.msg ? `<div class="notice" role="status"><b>${esc(S.msg)}</b></div>` : ""}
       ${pages.length ? `<div class="scroller"><table class="ref"><thead><tr><th></th><th>Page</th><th>Sheet</th><th>Score</th><th>Status</th></tr></thead><tbody>

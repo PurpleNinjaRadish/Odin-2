@@ -1,0 +1,30 @@
+{
+ "name": "DI-ana demo \u00b7 Odin's sheet scanner",
+ "short_name": "DI-ana",
+ "description": "Reads Odin's paper sheets with the camera. A demo with invented students.",
+ "id": "./",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#F3F2F6",
+ "theme_color": "#6B3FA0",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
