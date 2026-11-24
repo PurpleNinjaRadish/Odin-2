@@ -906,7 +906,7 @@ if (typeof module !== "undefined") module.exports = Object.assign(module.exports
   const canSpeak = () => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
   const pad = n => String(n).padStart(2, "0");
   const ISO_TODAY = (d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`)(new Date());
-  const APK = "https://github.com/PurpleNinjaRadish/Fluid/releases/latest/download/fluid-android.apk";
+  const APK = "https://github.com/PurpleNinjaRadish/Fluid/raw/android-build/fluid-android.apk";
   // The page's own storage keeps only passages added here and which AI to use (never a key, never anything about a reader).
   const STORE = {
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
